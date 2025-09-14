@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="terraverde.ico">
+    <title>Centro Psicopedagógico TerraVerde</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <h2>Centro Psicopedagógico TerraVerde</h2>
+        <button class="sesion">Cerrar Sesión</button>
+    </header>
+    <main>
+        <img src="logo.PNG" alt="Menú" class="menu-btn" width="30">
+        <div class="sidebar" id="sidebar">
+            <h3>Módulos</h3>
+            <a href="file:///C:/Users/Colorjet/OneDrive/Documentos/PP3/Proyecto/Pagina%20principal/administrador.html">Administración</a>
+            <a href="">Pacientes</a>
+            <a href="">Turnos</a>
+            <a href="">Calendario</a>
+            <a href="">Historia Clínica</a>
+        </div>
+    </main>
+    <footer>
+        <div class="derechos">
+            <p class="text"> &copy;2025 Centro Psicopedagógico.&nbsp;Todos los derechos reservados.</p>
+        </div>
+    </footer>
+</body>
+<script>
+    const menuBtn = document.querySelector(".menu-btn");
+    const sidebar = document.getElementById("sidebar");
+
+    menuBtn.addEventListener("click", () => {
+      sidebar.classList.toggle("active");
+    });
+</script>
+</html>
