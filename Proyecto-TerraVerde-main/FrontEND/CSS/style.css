@@ -1,0 +1,163 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #e8f5e9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.login-container {
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    max-width: 420px;
+    width: 100%;
+    border: 1px solid #d4e0d9;
+}
+
+.login-container h1 {
+    color: #49814c;
+    font-size: 2em;
+    margin-bottom: 10px;
+}
+
+.login-container h2 {
+    color: #964B00;
+    font-size: 1.5em;
+    margin-bottom: 25px;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.input-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #666;
+    font-weight: bold;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-size: 1em;
+    transition: border-color 0.3s ease;
+}
+
+.input-group input:focus {
+    border-color: #4caf50;
+    outline: none;
+}
+
+button {
+    background-color: #4caf50;
+    color: white;
+    padding: 15px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    margin-top: 10px;
+}
+
+button:hover {
+    background-color: #895129;
+    transform: translateY(-2px);
+}
+
+.forgot-password {
+    margin-top: 20px;
+    color: #777;
+    text-decoration: none;
+    font-size: 0.9em;
+    transition: color 0.3s ease;
+}
+
+.forgot-password:hover {
+    color: #4caf50;
+}
+
+.password-container {
+    position: relative;
+    width: 100%;
+}
+
+.password-container input {
+    /* Mantenemos el estilo del input, solo quitamos el width si lo tenías repetido */
+    width: 100%;
+    padding-right: 45px; /* Deja espacio para el ícono */
+}
+
+.password-container #togglePassword {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #666;
+    transition: color 0.3s ease;
+}
+
+.password-container #togglePassword:hover {
+    color: #2f6b32; /* Cambia de color al pasar el cursor */
+}
+
+
+.login-form-container, .forgot-password-container {
+    display: none; /* Oculta ambos contenedores por defecto */
+}
+
+.login-form-container.active, .forgot-password-container.active {
+    display: block; /* Muestra el contenedor que tenga la clase 'active' */
+}
+
+/* Estilo para el contenedor de recuperación de contraseña */
+
+/* Ajuste del título "Recuperar Contraseña" */
+.forgot-password-container h2 {
+    color: #895129; 
+    font-family: 'Georgia', serif; /* Puedes cambiar 'Georgia' por otra fuente si tienes */
+    font-weight: bold; /* Si quieres que sea más negrita */
+    margin-top: 15px; /* Para separarlo un poco del título principal */
+    margin-bottom: 20px; /* Separación del texto de abajo */
+}
+
+/* Estilo para el texto de instrucciones en el formulario de recuperación */
+.forgot-password-container p {
+    color: #444; /* Un gris más oscuro para mejor legibilidad */
+    font-size: 0.95em; /* Un poco más grande o el tamaño que prefieras */
+    margin-bottom: 25px;
+}
+
+
+/* Estilo para el enlace "Volver al login" */
+.back-to-login-link {
+    color: #388e3c; /* Verde oscuro, como los títulos principales */
+    text-decoration: none; /* Quita el subrayado si no te gusta */
+    font-size: 0.9em;
+    margin-left: 15px; /* Espacio entre el botón y el enlace */
+    transition: color 0.3s ease;
+}
+
+.back-to-login-link:hover {
+    color: #4caf50; /* Verde más claro al pasar el mouse */
+    text-decoration: underline; /* Puedes añadir un subrayado al pasar el mouse si quieres */
+}
