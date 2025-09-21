@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Profesional</title></head>
+<body>
+  <h1>Pacientes</h1>
+  <p><a href="{% url 'profesionales:create' %}">+ Nuevo profesional</a></p>
+  <table border="1" cellpadding="6">
+    <tr><th>Apellido</th><th>Nombre</th><th>DNI</th><th>Acciones</th></tr>
+    {% for p in object_list %}
+      <tr>
+        <td>{{ p.apellido }}</td>
+        <td>{{ p.nombre }}</td>
+        <td>{{ p.dni }}</td>
+        <td>
+          <a href="{% url 'profesionales:detail' p.pk %}">Ver</a> |
+          <a href="{% url 'profesionales:update' p.pk %}">Editar</a> |
+          <a href="{% url 'profesionales:delete' p.pk %}">Eliminar</a>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="4">Sin profesionales</td></tr>
+    {% endfor %}
+  </table>
+
+  {% if is_paginated %}
+    <div>
+      {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">Anterior</a>{% endif %}
+      Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+      {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">Siguiente</a>{% endif %}
+    </div>
+  {% endif %}
+</body>
+</html>
