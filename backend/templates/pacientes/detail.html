@@ -1,0 +1,23 @@
+{% extends "<base_site class=""></base_site>html" %}
+
+{% block title %}Pacientes{% endblock %}
+
+{% block content %}
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Paciente</title></head>
+<body>
+  <h1>{{ object.apellido }}, {{ object.nombre }}</h1>
+  <ul>
+    <li>DNI: {{ object.dni }}</li>
+    <li>Nacimiento: {{ object.fecha_nacimiento }}</li>
+    <li>Email: {{ object.email }}</li>
+    <li>Teléfono: {{ object.telefono }}</li>
+    <li>Obra social: {{ object.obra_social }}</li>
+    <li>Activo: {{ object.activo }}</li>
+  </ul>
+  <p>
+    <a href="{% url 'pacientes:update' object.pk %}">Editar</a> |
+    <a href="{% url 'pacientes:list' %}">Volver</a>
+  </p>
+</body>
+</html>

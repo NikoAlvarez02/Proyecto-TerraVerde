@@ -1,0 +1,18 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>profesionales</title></head>
+<body>
+  <h1>{{ object.apellido }}, {{ object.nombre }}</h1>
+  <ul>
+    <li>DNI: {{ object.dni }}</li>
+    <li>Nacimiento: {{ object.fecha_nacimiento }}</li>
+    <li>Email: {{ object.email }}</li>
+    <li>Teléfono: {{ object.telefono }}</li>
+    <li>Matricula: {{ object.matricula }}</li>
+    <li>Especialidad: {{ object.especialidad }}</li>
+  </ul>
+  <p>
+    <a href="{% url 'profesionales:update' object.pk %}">Editar</a> |
+    <a href="{% url 'profesionales:list' %}">Volver</a>
+  </p>
+</body>
+</html>

@@ -34,6 +34,11 @@ DEBUG = env('DEBUG', default=True)
 # Lista de hosts permitidos para acceder a la aplicación
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
 
+# Personalización del Admin
+ADMIN_SITE_HEADER = "TerraVerde Admin"
+ADMIN_SITE_TITLE = "TerraVerde"
+ADMIN_INDEX_TITLE = "Panel de Administración"
+
 # Definición de aplicaciones instaladas
 INSTALLED_APPS = [
     # Aplicaciones principales de Django
@@ -68,14 +73,19 @@ MIDDLEWARE = [
 # Archivo principal de URLs
 ROOT_URLCONF = 'core.urls'
 
-# Configuración de plantillas (HTML)
+# Configuración del admin
+ADMIN_SITE_HEADER = "🌱 TerraVerde Admin"
+ADMIN_SITE_TITLE = "TerraVerde"
+
+# Configurar templates para admin personalizado
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],  # Carpetas adicionales de plantillas
-        'APP_DIRS': True,  # Busca plantillas en las aplicaciones
+        'DIRS': [BASE_DIR /"core" 'templates'],  # Asegúrate de que esta línea esté
+        'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
@@ -89,16 +99,28 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 # Configuración de la base de datos
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-DATABASES = {
-    'default': {
-        'ENGINE': env('DB_ENGINE'),
-        'NAME': env('DB_NAME', default=BASE_DIR / 'db.sqlite3'),
-        'USER': env('DB_USER', default=''),
-        'PASSWORD': env('DB_PASSWORD', default=''),
-        'HOST': env('DB_HOST', default=''),
-        'PORT': env('DB_PORT', default=''),
+DB_ENGINE = env('DB_ENGINE')
+
+if DB_ENGINE == 'django.db.backends.postgresql':
+    # Configuración para PostgreSQL
+    DATABASES = {
+        'default': {
+            'ENGINE': DB_ENGINE,
+            'NAME': env('DB_NAME'),
+            'USER': env('DB_USER'),
+            'PASSWORD': env('DB_PASSWORD'),
+            'HOST': env('DB_HOST'),
+            'PORT': env('DB_PORT'),
+        }
     }
-}
+else:
+    # Configuración para SQLite (fallback)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # Validadores de contraseñas
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
