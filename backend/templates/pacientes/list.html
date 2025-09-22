@@ -1,0 +1,38 @@
+{% extends "<base_site class=""></base_site>html" %}
+
+{% block title %}lista de Pacientes{% endblock %}
+
+{% block content %}
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Pacientes</title></head>
+<body>
+  <h1>Pacientes</h1>
+  <p><a href="{% url 'pacientes:create' %}">+ Nuevo paciente</a></p>
+  <table border="1" cellpadding="6">
+    <tr><th>Apellido</th><th>Nombre</th><th>DNI</th><th>Acciones</th></tr>
+    {% for p in object_list %}
+      <tr>
+        <td>{{ p.apellido }}</td>
+        <td>{{ p.nombre }}</td>
+        <td>{{ p.dni }}</td>
+        <td>
+          <a href="{% url 'pacientes:detail' p.pk %}">Ver</a> |
+          <a href="{% url 'pacientes:update' p.pk %}">Editar</a> |
+          <a href="{% url 'pacientes:delete' p.pk %}">Eliminar</a>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="4">Sin pacientes</td></tr>
+    {% endfor %}
+  </table>
+
+  {% if is_paginated %}
+    <div>
+      {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">Anterior</a>{% endif %}
+      Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+      {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">Siguiente</a>{% endif %}
+    </div>
+  {% endif %}
+</body>
+</html>
