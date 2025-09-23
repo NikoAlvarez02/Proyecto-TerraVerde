@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     # Aplicaciones propias del proyecto
     'apps.pacientes',
     'apps.profesionales',
+    'apps.turnos',
 ]
 
 # Definición de middleware (procesadores de peticiones/respuestas)
