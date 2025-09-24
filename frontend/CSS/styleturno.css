@@ -1,0 +1,162 @@
+/* Estilos Generales y Comunes a todo el proyecto */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #e8f5e9;
+}
+
+.main-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.main-title {
+    color: #388e3c;
+    font-size: 2em;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Contenedores de formularios y listados */
+.register-container, .turnos-listado {
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px #666;
+    text-align: center;
+    max-width: 800px;
+    width: 100%;
+    border: 1px solid #d4e0d9;
+}
+
+.register-form h2 {
+    color: #555;
+    font-size: 1.5em;
+    margin-bottom: 25px;
+}
+
+/* Estilos de los inputs y campos de formulario */
+.input-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: #666;
+    font-weight: bold;
+}
+
+.input-group input,
+.register-container textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-size: 1em;
+    transition: border-color 0.3s ease;
+}
+
+.input-group input:focus,
+.register-container textarea:focus {
+    border-color: #4caf50;
+    outline: none;
+}
+
+.register-container textarea {
+    resize: vertical;
+}
+
+/* Estilos de los botones */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.btn {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.btn-guardar {
+    background-color: #4caf50;
+    color: white;
+}
+
+.btn-guardar:hover {
+    background-color: #388e3c;
+}
+
+.btn-cancelar-edit, .btn-regresar {
+    background-color: #f44336;
+    color: white;
+}
+
+.btn-cancelar-edit:hover, .btn-regresar:hover {
+    background-color: #d32f2f;
+}
+
+/* Estilos específicos del listado de turnos */
+#turnos-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+#turnos-table th, #turnos-table td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+}
+
+#turnos-table th {
+    background-color: #f2f2f2;
+    color: #388e3c;
+    font-weight: bold;
+}
+
+.btn-editar {
+    background-color: #2196f3;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.btn-editar:hover {
+    background-color: #1976d2;
+}
+
+.btn-eliminar {
+    background-color: #e91e63;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.btn-eliminar:hover {
+    background-color: #c2185b;
+}
