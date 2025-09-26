@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="../ASSETS/terraverde.ico">
+    <title>Registro de Pacientes</title>
+    <link rel="stylesheet" href="../CSS/stylespaciente.css">
+</head>
+<body>
+    <header>
+        <h2>Registro de Pacientes</h2>
+        <button class="sesion">Cerrar Sesión</button>
+    </header>
+    <form class="formulario" action="/registrar" method="post">
+    <div>
+        <label for="nombre">Nombre:</label>
+        <input type="text" id="nombre" name="nombre" placeholder="Ingrese su Nombre" onfocus="this.placeholder=''" onblur="this.placeholder='Ingrese su Nombre'" required>
+    </div>
+    <div>
+        <label for="apellido">Apellido:</label>
+        <input type="text" id="apellido" name="apellido" placeholder="Ingrese su Apellido" onfocus="this.placeholder=''" onblur="this.placeholder='Ingrese su Apellido'" required>
+    </div>
+    <div>
+        <label for="dni">DNI:</label>
+        <input type="number" id="dni" name="dni" placeholder="Ingrese su Documento" onfocus="this.placeholder=''" onblur="this.placeholder='Ingrese su Documento'" required>
+    </div>
+    <div>
+        <label for="fecha">Fecha de Nacimiento:</label>
+        <input type="date" id="fecha" name="fecha" required>
+    </div>
+    <div>
+        <label for="telefono">Teléfono:</label>
+        <input type="number" id="telefono" name="telefono" placeholder="Ingrese su Teléfono" onfocus="this.placeholder=''" onblur="this.placeholder='Ingrese su Teléfono'" required>
+    </div>
+    <div>
+        <label for="direccion">Dirección:</label>
+        <input type="text" id="direccion" name="direccion" placeholder="Ingrese su Dirección" onfocus="this.placeholder=''" onblur="this.placeholder='Ingrese su Dirección'" required>
+    </div>
+    <div>
+        <label for="nacionalidad">Nacionalidad:</label>
+        <input type="text" id="nacionalidad" name="nacionalidad" placeholder="Ingrese su Nacionalidad" onfocus="this.placeholder=''" onblur="this.placeholder='Ingrese su Nacionalidad'" required>
+    </div>
+    <div>
+        <label for="representante">¿Cuenta con un/a representante legal?</label>
+        <select name="representante" id="representante" required>
+            <option value="opcion">Seleccione una opción</option>
+            <option value="si">Si</option>
+            <option value="no">No</option>
+        </select>
+    </div>
+    <div id="datos-representante" class="hidden">
+      <label for="rep-nombre">Nombre:</label>
+      <input type="text" id="rep-nombre" name="rep_nombre" placeholder="Ingrese el Nombre" onfocus="this.placeholder=''" onblur="this.placeholder='Ingrese el Nombre'" required>
+
+      <label for="rep-apellido">Apellido:</label>
+      <input type="text" id="rep-apellido" name="rep_apellido" placeholder="Ingrese el Apellido" onfocus="this.placeholder=''" onblur="this.placeholder='Ingrese el Apellido'" required>
+      
+      <label for="rep-edad">Edad:</label>
+      <input type="text" id="rep-edad" name="rep_edad" placeholder="Ingrese la Edad" onfocus="this.placeholder=''" onblur="this.placeholder='Ingrese la Edad'" required>
+      
+      <label for="rep-telefono">Teléfono:</label>
+      <input type="number" id="rep-telefono" name="rep_telefono" placeholder="Ingrese el Teléfono" onfocus="this.placeholder=''" onblur="this.placeholder='Ingrese el Teléfono'" required>
+      
+      <label for="rep-nacionalidad">Nacionalidad:</label>
+      <input type="text" id="rep-nacionalidad" name="rep_nacionalidad" placeholder="Ingrese la Nacionalidad" onfocus="this.placeholder=''" onblur="this.placeholder='Ingrese la Nacionalidad'" required>
+    </div>
+    <br>
+    <button class="guardar" type="submit">Guardar</button>
+    <button class="cancelar" onclick="history.back()">Cancelar</button>
+    </form>
+</body>
+<script>
+    const selectRepresentante = document.getElementById("representante");
+    const datosRepresentante = document.getElementById("datos-representante");
+    const repNombre = document.getElementById("rep-nombre");
+    const repApellido = document.getElementById("rep-apellido");
+    const repEdad = document.getElementById("rep-edad");
+    const repTelefono = document.getElementById("rep-telefono");
+    const repNacionalidad = document.getElementById("rep-nacionalidad");
+
+    selectRepresentante.addEventListener("change", () => {
+      if (selectRepresentante.value === "si") {
+        datosRepresentante.classList.remove("hidden");
+        repNombre.required = true;
+        repApellido.required = true;
+      } else {
+        datosRepresentante.classList.add("hidden");
+        repNombre.required = false;
+        repApellido.required = false;
+      }
+    });
+  </script>
+</html>

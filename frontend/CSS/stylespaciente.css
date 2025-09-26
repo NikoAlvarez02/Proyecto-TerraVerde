@@ -1,0 +1,187 @@
+h2 {
+    text-align: center;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+h3 {
+    text-align: left;
+    margin-left: 12px;
+    color: rgb(3, 181, 235);
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+.derechos {
+    background-color: rgba(177, 176, 176, 0.959);
+    color: black;
+    text-align: center;
+    padding: 20px;
+    font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+.sesion {
+    float: right;
+    margin-top: -50px;
+    color: white;
+    background-color: red;
+    padding: 7px 15px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+}
+.menu {
+    float: left;
+    line-height: 35px;
+    margin-top: -50px;
+}
+.menu-btn {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    cursor: pointer;
+    z-index: 1001;
+}
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: -250px;
+    width: 250px;
+    height: 100vh;
+    background: #faf7f7;
+    color: white;
+    padding-top: 60px;
+    transition: left 0.3s ease;
+    z-index: 1000;
+}
+.sidebar a {
+    display: block;
+    padding: 12px;
+    text-decoration: none;
+    color: rgb(36, 123, 150);
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+.sidebar a:hover {
+    background: #faf7f7;
+}
+.sidebar.active {
+    left: 0;
+}
+.sesion button:hover {
+    background-color: red;
+}
+main {
+    min-height: 400px;
+    margin: 30px 0;
+}
+a {
+    display: inline-block;
+    padding: 8px 16px;
+    text-decoration: none;
+    color: black;
+}
+a:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+form {
+    background: #f4f4f9;
+    padding: 20px 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    width: 320px;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -30%);
+    padding-top: 40px;  /* espacio extra arriba */
+    padding-bottom: 40px;
+}
+label {
+    font-weight: bold;
+    display: block;
+    margin-top: 10px;
+}
+input, select {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+.guardar {
+    width: auto;
+    padding: 10px;
+    background: red;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    float: left;
+}
+.cancelar {
+    width: auto;
+    padding: 10px;
+    background: red;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    float: right;
+}
+.btn-listado {
+    display: flex;
+    justify-content: center; /* centra horizontal */
+    gap: 20px;               /* espacio entre botones */
+    margin-top: 20px;        /* separación del resto */
+}
+.hidden {
+    display: none;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 6px;
+  overflow: hidden;
+}
+/* Encabezado */
+thead {
+  background-color: #e0e0eb;
+}
+thead th {
+  padding: 12px;
+  text-align: left;
+  font-weight: bold;
+  font-size: 14px;
+  border-bottom: 2px solid #ccc;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+/* Filas */
+tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+tbody td {
+  padding: 12px;
+  font-size: 14px;
+  border-bottom: 1px solid #ddd;
+  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+.modificar {
+    width: auto;
+    padding: 10px;
+    background: rgb(0, 38, 255);
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+}
+.eliminar {
+    width: auto;
+    padding: 10px;
+    background: rgb(0, 38, 255);
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+}
