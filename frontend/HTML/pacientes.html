@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="../ASSETS/terraverde.ico">
+    <title>Centro Psicopedagógico TerraVerde</title>
+    <link rel="stylesheet" href="../CSS/stylespaciente.css">
+</head>
+<body>
+    <header>
+        <h2>Pacientes</h2>
+        <button class="sesion">Cerrar Sesión</button>
+    </header>
+    <main>
+        <img src="../ASSETS/logo.png" alt="Menú" class="menu-btn" width="30">
+        <div class="sidebar" id="sidebar">
+            <h3>Módulos</h3>
+            <a href="file:///C:/Users/Colorjet/OneDrive/Documentos/PP3/Proyecto/Pagina%20principal/registropacientes.html">Registrar Paciente</a>
+            <a href="file:///C:/Users/Colorjet/OneDrive/Documentos/PP3/Proyecto/Pagina%20principal/listadopacientes.html">Listado de Pacientes</a>
+            <a href="file:///C:/Users/Colorjet/OneDrive/Documentos/PP3/Proyecto/Pagina%20principal/index.html">Volver al Inicio</a>
+        </div>
+    </main>
+</body>
+<script>
+    const menuBtn = document.querySelector(".menu-btn");
+    const sidebar = document.getElementById("sidebar");
+
+    menuBtn.addEventListener("click", () => {
+      sidebar.classList.toggle("active");
+    });
+</script>
+</html>

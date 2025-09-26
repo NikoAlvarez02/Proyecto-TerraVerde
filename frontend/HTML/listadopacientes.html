@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="../ASSETS/terraverde.ico">
+    <title>Listado de Pacientes</title>
+    <link rel="stylesheet" href="../CSS/stylespaciente.css">
+</head>
+<body>
+    <header>
+        <h2>Listado de Pacientes</h2>
+        <button class="sesion">Cerrar Sesión</button>
+    </header>
+    <div>
+        <table border="1">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Apellido</th>
+        <th>DNI</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Juan</td>
+        <td>Pérez</td>
+        <td>12345678</td>
+        <td>
+          <button class="modificar">Modificar</button>
+          <button class="eliminar">Eliminar</button>
+        </td>
+      </tr>
+      <tr>
+        <td>Carlos</td>
+        <td>García</td>
+        <td>87654321</td>
+        <td>
+          <button class="modificar">Modificar</button>
+          <button class="eliminar">Eliminar</button>
+        </td>
+      </tr>
+      <tr>
+        <td>Ana</td>
+        <td>Martínez</td>
+        <td>54321678</td>
+        <td>
+          <button class="modificar">Modificar</button>
+          <button class="eliminar">Eliminar</button>
+        </td>
+      </tr>
+      <tr>
+        <td>Luis</td>
+        <td>González</td>
+        <td>76543210</td>
+        <td>
+          <button class="modificar">Modificar</button>
+          <button class="eliminar">Eliminar</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+    </div>
+    <div class="btn-listado">
+        <button class="guardar" type="submit">Guardar</button>
+        <button class="cancelar" onclick="history.back()">Cancelar</button>
+    </div>
+</body>
+</html>
