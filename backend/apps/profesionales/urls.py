@@ -1,15 +1,18 @@
-from django.urls import path
-from .views import (
-    ProfesionalListView, ProfesionalDetailView, ProfesionalCreateView,
-    ProfesionalUpdateView, ProfesionalDeleteView
-)
+from django.urls import path, include
+from rest_framework import routers
+# Si usás docs globales en core/urls.py, podés omitir include_docs_urls acá
+from .views import ProfesionalViewSet   # <- nombre correcto
 
-app_name = "profesionales"
+router = routers.DefaultRouter()
+router.register(r'profesionales', ProfesionalViewSet, basename='profesionales')
 
+app_name = "profesionales"  # para usar {% url 'profesionales:list' %}  
 urlpatterns = [
-    path("", ProfesionalListView.as_view(), name="list"),
-    path("nuevo/", ProfesionalCreateView.as_view(), name="create"),
-    path("<int:pk>/", ProfesionalDetailView.as_view(), name="detail"),
-    path("<int:pk>/editar/", ProfesionalUpdateView.as_view(), name="update"),
-    path("<int:pk>/eliminar/", ProfesionalDeleteView.as_view(), name="delete"),
+    path("api/", include(router.urls)),   # convención en minúsculas
+    # path("docs/", include_docs_urls(title="Profesionales API")),  # opcional
 ]
+
+#get
+#post
+#put
+#delete

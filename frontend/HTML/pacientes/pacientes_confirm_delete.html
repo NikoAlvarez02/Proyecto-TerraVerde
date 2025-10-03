@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Eliminar Paciente | TerraVerde{% endblock %}
+{% block topbar_title %}Eliminar Paciente{% endblock %}
+
+{% block content %}
+<div class="main-wrap" style="display:flex; gap:24px;">
+  <nav class="sidebar" id="sidebar">
+    <h3>Módulos</h3>
+    <a href="{% url 'pacientes:create' %}">Registrar Paciente</a>
+    <a href="{% url 'pacientes:list' %}">Listado de Pacientes</a>
+    <a href="{% url 'home' %}">Volver al Inicio</a>
+  </nav>
+
+  <section class="contenido-principal" style="flex:1;">
+    <h1 class="main-title">Confirmar eliminación</h1>
+    <p>¿Seguro que querés eliminar a <strong>{{ object.apellido }}, {{ object.nombre }}</strong>?</p>
+
+    <form method="post" style="margin-top:14px; display:flex; gap:8px;">
+      {% csrf_token %}
+      <a class="btn btn-regresar" href="{% url 'pacientes:list' %}">Cancelar</a>
+      <button type="submit" class="btn btn-eliminar">Eliminar</button>
+    </form>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+<!-- {% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administración | TerraVerde</title>
+  <link rel="icon" href="{% static 'ASSETS/terraverde.ico' %}">
+  <link rel="stylesheet" href="{% static 'CSS/stylespaciente.css' %}">
+</head>
+<body>
+<header>
+  <h2>Administración TerraVerde</h2>
+  <form method="post" action="{% url 'logout' %}">
+    {% csrf_token %}
+    <button class="sesion" type="submit">Cerrar Sesión</button>
+  </form>
+</header>
+
+<main>
+  <img src="{% static 'ASSETS/logo.png' %}" alt="Menú" class="menu-btn" width="30">
+  <div class="sidebar" id="sidebar">
+    <h3>Sub-módulos</h3>
+
+    {% if request.user.perfil.rol == "admin" %}
+      <a href="{% url 'admin:index' %}" target="_blank">🔑 Panel Django Admin</a>
+      <a href="#">👥 Usuarios</a>
+      <a href="#">📚 Especialidades</a>
+      <a href="#">🏢 Sucursales</a>
+      <a href="#">🔒 Roles</a>
+    {% elif request.user.perfil.rol == "prof" %}
+      <a href="#">📅 Mi Agenda</a>
+    {% elif request.user.perfil.rol == "recep" %}
+      <a href="#">🧾 Turnos y Pacientes</a>
+    {% endif %}
+
+    <a href="{% url 'home' %}">🏠 Volver al Inicio</a>
+  </div>
+</main>
+
+<script>
+  const menuBtn = document.querySelector(".menu-btn");
+  const sidebar = document.getElementById("sidebar");
+  if (menuBtn && sidebar) {
+    menuBtn.addEventListener("click", () => sidebar.classList.toggle("active"));
+  }
+</script>
+</body>
+</html> -->

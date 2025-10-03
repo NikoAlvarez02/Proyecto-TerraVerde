@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>{% block title %}Gestión | TerraVerde{% endblock %}</title>
+
+    <link rel="icon" href="{% static 'ASSETS/terraverde.ico' %}">
+    <link rel="stylesheet" href="{% static 'CSS/styleturno.css' %}"> 
+</head>
+<body>
+    <header class="topbar">
+        <button class="menu-icon" aria-label="Abrir menú">
+            <img src="{% static 'ASSETS/logo.png' %}" alt="Menú" width="26" height="26">
+        </button>
+        <h2 class="app-title">{% block topbar_title %}Gestionar Sistema{% endblock %}</h2>
+        <form method="post" action="{% url 'logout' %}" class="logout-form">
+            {% csrf_token %}
+            <button type="submit" class="btn-logout">Cerrar Sesión</button>
+        </form>
+    </header>
+
+    <main class="main-wrap">
+        <nav class="sidebar" id="sidebar">
+            <h3>Módulos</h3>
+            <a href="{% url 'turnos:list' %}">Turnos</a>
+            <a href="{% url 'pacientes:list' %}">Pacientes</a>
+
+            <a href="{% url 'admin_mod' %}">Administración</a>
+            <a href="{% url 'home' %}">Volver al Inicio</a>
+        </nav>
+
+        <section class="contenido-principal">
+            {% block content %}
+            {% endblock %}
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <p>©2025 Centro Psicopedagógico. Todos los derechos reservados.</p>
+    </footer>
+
+    <script>
+        const menuBtn = document.querySelector(".menu-icon");
+        const sidebar = document.getElementById("sidebar");
+        if (menuBtn && sidebar) {
+            menuBtn.addEventListener("click", () => sidebar.classList.toggle("active"));
+        }
+    </script>
+
+    {% block extra_js %}{% endblock %}
+
+</body>
+</html>

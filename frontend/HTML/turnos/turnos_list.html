@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Listado de Turnos | TerraVerde{% endblock %}
+{% block topbar_title %}Gestión de Turnos{% endblock %}
+
+{% block content %}
+<div class="turnos-listado">
+    <h1 class="main-title">Centro Psicopedagógico TerraVerde</h1>
+    <h2>Listado de Turnos</h2>
+
+    <div class="header-actions">
+        <a href="{% url 'turnos_create' %}" class="btn btn-guardar">Agregar Turno</a>
+    </div>
+
+    <table id="turnos-table">
+        <thead>
+            <tr>
+                <th>Paciente</th>
+                <th>Profesional</th>
+                <th>Fecha</th>
+                <th>Hora</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for t in turnos %}
+                <tr>
+                    <td>{{ t.paciente|default_if_none:"—" }}</td>
+                    <td>{{ t.profesional|default_if_none:"—" }}</td>
+                    <td>{{ t.fecha_hora|date:"Y-m-d" }}</td>
+                    <td>{{ t.fecha_hora|time:"H:i" }}</td>
+                    <td>
+                        <a class="btn btn-editar" href="{% url 'turnos_update' t.id %}">Editar</a>
+                        <form method="post" action="{% url 'turnos_delete' t.id %}" class="inline-form" style="display:inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-eliminar" onclick="return confirm('¿Eliminar este turno?')">Eliminar</button>
+                        </form>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="5" style="text-align:center;color:#666">No hay turnos cargados.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

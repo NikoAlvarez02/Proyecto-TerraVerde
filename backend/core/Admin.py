@@ -1,26 +1,18 @@
+# core/admin.py
 from django.contrib import admin
 from django.contrib.admin import AdminSite
-from django.utils.html import format_html
 
 class TerraVerdeAdminSite(AdminSite):
-    # Títulos del admin
-    site_header = "TerraVerde Admin"
-    site_title = "TerraVerde"
+    site_header = "Administración TerraVerde"   # encabezado grande
+    site_title = "TerraVerde"                   # <title> del HTML
     index_title = "Panel de Administración TerraVerde"
-    
-    # Texto del login
-    login_template = 'admin/login.html'
-    
-    def each_context(self, request):
-        """Agregar contexto personalizado"""
-        context = super().each_context(request)
-        context.update({
-            'site_header': self.site_header,
-            'site_title': self.site_title,
-            'site_url': '/',
-        })
-        return context
+    login_template = "administracion/login.html"         # si querés login custom (opcional)
 
-# Reemplazar el admin por defecto
-admin.site = TerraVerdeAdminSite()
-admin.sites.site = admin.site
+    def each_context(self, request):
+        ctx = super().each_context(request)
+        ctx.update({"site_header": self.site_header, "site_title": self.site_title, "site_url": "/"})
+        return ctx
+
+# # Reemplaza el sitio por defecto
+# admin.site = TerraVerdeAdminSite(name="terrav")  # ← poner un name explícito ayuda
+# admin.sites.site = admin.site

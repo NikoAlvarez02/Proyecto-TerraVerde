@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Pacientes | TerraVerde{% endblock %}
+{% block topbar_title %}Pacientes{% endblock %}
+
+{# Oculta el sidebar global del base.html #}
+{% block sidebar %}{% endblock %}
+
+{% block content %}
+<div class="main-wrap" style="display:flex; gap:24px;">
+  <section class="contenido-principal" style="flex:1;">
+    <div class="card" style="padding:20px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
+        <h1 class="main-title" style="margin:0;">Listado de Pacientes</h1>
+        <a href="{% url 'pacientes:create' %}" class="btn btn-guardar">Nuevo Paciente</a>
+      </div>
+
+      <div style="overflow:auto; margin-top:14px;">
+        <table id="pacientes-table" class="tabla-listado">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Apellido</th>
+              <th>DNI</th>
+              <th style="width:1%; white-space:nowrap;"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in object_list %}
+              <tr>
+                <td>{{ p.nombre }}</td>
+                <td>{{ p.apellido }}</td>
+                <td>{{ p.dni }}</td>
+                <td style="white-space:nowrap; display:flex; gap:6px;">
+                  <a class="btn btn-editar" href="{% url 'pacientes:detail' p.id %}">Ver</a>
+                  <a class="btn btn-editar" href="{% url 'pacientes:update' p.id %}">Editar</a>
+                  <form method="post" action="{% url 'pacientes:delete' p.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button class="btn btn-eliminar" onclick="return confirm('¿Eliminar este paciente?')">Eliminar</button>
+                  </form>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="4" style="text-align:center;color:#666;">No hay pacientes cargados.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% if is_paginated %}
+        <div class="paginacion" style="margin-top:16px; display:flex; gap:8px; align-items:center; justify-content:flex-end;">
+          {% if page_obj.has_previous %}
+            <a class="btn btn-secundario" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+          {% endif %}
+          <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+          {% if page_obj.has_next %}
+            <a class="btn btn-secundario" href="?page={{ page_obj.next_page_number }}">Siguiente</a>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+  </section>
+</div>
+{% endblock %}

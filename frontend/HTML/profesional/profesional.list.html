@@ -1,0 +1,25 @@
+<!-- {% extends "base.html" %}
+{% block content %}
+<h2>Profesionales</h2>
+<a href="{% url 'profesionales:create' %}">➕ Nuevo Profesional</a>
+<table border="1" cellpadding="5">
+    <tr>
+        <th>DNI</th><th>Apellido</th><th>Nombre</th><th>Matrícula</th><th>Acciones</th>
+    </tr>
+    {% for p in profesionales %}
+    <tr>
+        <td>{{ p.dni }}</td>
+        <td>{{ p.apellido }}</td>
+        <td>{{ p.nombre }}</td>
+        <td>{{ p.matricula }}</td>
+        <td>
+            <a href="{% url 'profesionales:detail' p.pk %}">👁️</a> | 
+            <a href="{% url 'profesionales:update' p.pk %}">✏️</a> | 
+            <a href="{% url 'profesionales:delete' p.pk %}">🗑️</a>
+        </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="5">No hay profesionales cargados.</td></tr>
+    {% endfor %}
+</table>
+{% endblock %} -->

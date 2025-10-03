@@ -1,0 +1,18 @@
+{% extends "admin/login.html" %}
+{% load static %}
+
+{% block title %}Administración TerraVerde{% endblock %}
+
+{% block branding %}
+<div id="site-name">
+  <img src="{% static 'ASSETS/logo.png' %}" alt="TerraVerde" style="height:40px; vertical-align:middle;">
+  <span style="margin-left:10px; font-weight:bold;">Administración TerraVerde</span>
+</div>
+{% endblock %}
+
+{% block content %}
+  {{ block.super }}
+  <p style="text-align:center; margin-top:20px; font-size:0.9em; color:#666;">
+    Panel de gestión del Centro Psicopedagógico TerraVerde
+  </p>
+{% endblock %}

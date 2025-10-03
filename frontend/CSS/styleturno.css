@@ -1,162 +1,114 @@
-/* Estilos Generales y Comunes a todo el proyecto */
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background-color: #e8f5e9;
+/* ==============================
+   Base
+============================== */
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: #e8f5e9; }
+
+.hidden { display: none !important; }
+
+/* ==============================
+   Topbar
+============================== */
+.topbar{
+  display:flex; align-items:center; gap:12px;
+  padding:16px 18px; background:#e8f5e9;
+  position:sticky; top:0; z-index:10;
+  border-bottom:1px solid #e6e6e6;
+}
+.menu-icon{
+  border:0; background:#fff; width:38px; height:38px; border-radius:10px;
+  display:grid; place-items:center; box-shadow:0 2px 6px rgba(0,0,0,.08); cursor:pointer;
+}
+.menu-icon img{ display:block; }
+.app-title{ flex:1; text-align:center; margin:0; font-weight:700; }
+.btn-logout{
+  background:#e50914; color:#fff; border:0; padding:10px 16px;
+  border-radius:10px; cursor:pointer; font-weight:600;
+  box-shadow:0 6px 18px rgba(229, 9, 20, .25);
+}
+.btn-logout:hover{ filter: brightness(1.06); }
+
+/* ==============================
+   Layout
+============================== */
+.main-wrap{ display:flex; gap:24px; padding:24px 18px; }
+.sidebar{
+  min-width: 230px; background:#fff;
+  border:1px solid #e7ebef; border-radius:14px; padding:16px;
+  box-shadow:0 8px 24px rgba(0,0,0,.06); height: fit-content;
+}
+.sidebar h3{ margin-top:0; color:#03b5eb; }
+.sidebar a{ display:block; padding:8px 10px; border-radius:8px; color:#247b96; text-decoration:none; }
+.sidebar a:hover{ background:#f3f5f7; }
+
+/* Sidebar móvil */
+@media (max-width: 900px){
+  .sidebar{ position:fixed; top:66px; left:12px; transform:translateX(-115%); transition:transform .25s ease; z-index:20; }
+  .sidebar.active{ transform:translateX(0); }
 }
 
-.main-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    padding: 20px;
+/* Contenido principal */
+.contenido-principal{
+  flex:1; background:#fff; border:1px solid #e7ebef; border-radius:16px; padding:28px;
+  box-shadow:0 10px 28px rgba(0,0,0,.08);
+}
+.contenido-principal h1{ margin-top:0; font-size: clamp(24px, 3.2vw, 36px); }
+
+/* ==============================
+   Sección Turnos / Formularios
+============================== */
+.main-title{
+  color:#388e3c; font-size:2em; margin:0 0 12px; text-align:center;
 }
 
-.main-title {
-    color: #388e3c;
-    font-size: 2em;
-    margin-bottom: 20px;
-    text-align: center;
+.turnos-listado, .register-container{
+  background:#ffffff; padding:22px; border-radius:12px;
+  box-shadow:0 8px 30px rgba(0,0,0,.05); border:1px solid #e8edf2;
+  max-width: 900px; margin: 0 auto;
 }
 
-.hidden {
-    display: none;
+.header-actions{
+  display:flex; justify-content:flex-end; margin-top:10px; margin-bottom:10px;
 }
 
-/* Contenedores de formularios y listados */
-.register-container, .turnos-listado {
-    background: #ffffff;
-    padding: 40px;
-    border-radius: 12px;
-    box-shadow: 0 8px 30px #666;
-    text-align: center;
-    max-width: 800px;
-    width: 100%;
-    border: 1px solid #d4e0d9;
+.register-form h2{
+  color:#555; font-size:1.5em; margin:10px 0 20px;
 }
 
-.register-form h2 {
-    color: #555;
-    font-size: 1.5em;
-    margin-bottom: 25px;
+.input-group{ margin-bottom:15px; text-align:left; }
+.input-group label{ display:block; margin-bottom:6px; color:#666; font-weight:600; }
+.input-group input, .register-container textarea{
+  width:100%; padding:10px; border:1px solid #ccd3da; border-radius:8px;
+  font-size:1em; transition:border-color .2s ease;
+}
+.input-group input:focus, .register-container textarea:focus{
+  border-color:#4caf50; outline:none;
+}
+.register-container textarea{ resize:vertical; }
+
+/* Botones */
+.btn{
+  padding:12px 18px; border:none; border-radius:8px; cursor:pointer;
+  font-weight:700; transition:filter .2s ease, background-color .2s ease;
+}
+.btn-guardar{ background:#4caf50; color:#fff; }
+.btn-guardar:hover{ background:#388e3c; }
+.btn-cancelar-edit{ background:#f44336; color:#fff; }
+.btn-cancelar-edit:hover{ background:#d32f2f; }
+.btn-editar{ background:#2196f3; color:#fff; }
+.btn-editar:hover{ background:#1976d2; }
+.btn-eliminar{ background:#e91e63; color:#fff; }
+.btn-eliminar:hover{ background:#c2185b; }
+
+/* Tabla */
+#turnos-table{ width:100%; border-collapse:collapse; margin-top:16px; }
+#turnos-table th, #turnos-table td{
+  border:1px solid #e6e6e6; padding:12px; text-align:left; font-size:14px;
+}
+#turnos-table th{
+  background:#f2f2f2; color:#388e3c; font-weight:800;
 }
 
-/* Estilos de los inputs y campos de formulario */
-.input-group {
-    margin-bottom: 15px;
-    text-align: left;
-}
-
-.input-group label {
-    display: block;
-    margin-bottom: 5px;
-    color: #666;
-    font-weight: bold;
-}
-
-.input-group input,
-.register-container textarea {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-sizing: border-box;
-    font-size: 1em;
-    transition: border-color 0.3s ease;
-}
-
-.input-group input:focus,
-.register-container textarea:focus {
-    border-color: #4caf50;
-    outline: none;
-}
-
-.register-container textarea {
-    resize: vertical;
-}
-
-/* Estilos de los botones */
-.form-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 20px;
-}
-
-.btn {
-    padding: 12px 25px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.3s ease;
-}
-
-.btn-guardar {
-    background-color: #4caf50;
-    color: white;
-}
-
-.btn-guardar:hover {
-    background-color: #388e3c;
-}
-
-.btn-cancelar-edit, .btn-regresar {
-    background-color: #f44336;
-    color: white;
-}
-
-.btn-cancelar-edit:hover, .btn-regresar:hover {
-    background-color: #d32f2f;
-}
-
-/* Estilos específicos del listado de turnos */
-#turnos-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
-
-#turnos-table th, #turnos-table td {
-    border: 1px solid #ddd;
-    padding: 12px;
-    text-align: left;
-}
-
-#turnos-table th {
-    background-color: #f2f2f2;
-    color: #388e3c;
-    font-weight: bold;
-}
-
-.btn-editar {
-    background-color: #2196f3;
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.3s ease;
-}
-
-.btn-editar:hover {
-    background-color: #1976d2;
-}
-
-.btn-eliminar {
-    background-color: #e91e63;
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.3s ease;
-}
-
-.btn-eliminar:hover {
-    background-color: #c2185b;
-}
+/* Footer */
+.site-footer{ margin:24px 18px; padding:16px; text-align:center; background:#f1f1f1; border-radius:12px; }

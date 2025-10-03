@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}{% if object %}Editar{% else %}Nuevo{% endif %} Paciente | TerraVerde{% endblock %}
+{% block topbar_title %}{% if object %}Editar{% else %}Nuevo{% endif %} Paciente{% endblock %}
+
+{# Oculta el sidebar global del base.html #}
+{% block sidebar %}{% endblock %}
+
+{% block content %}
+<div class="main-wrap" style="display:flex; gap:24px;">
+  <section class="contenido-principal" style="flex:1;">
+    <div class="card" style="padding:20px; max-width:720px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
+        <h1 class="main-title" style="margin:0;">
+          {% if object %}Editar{% else %}Registrar{% endif %} Paciente
+        </h1>
+        <a class="btn btn-secundario" href="{% url 'pacientes:list' %}">Volver al listado</a>
+      </div>
+
+      <form method="post" class="form-card" style="margin-top:16px;">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+
+        {# Si tu form ya viene con widgets y clases, podés dejar {{ form.as_p }} #}
+        {{ form.as_p }}
+
+        <div class="form-actions" style="display:flex; gap:8px; justify-content:flex-end; margin-top:8px;">
+          <a class="btn btn-cancelar-edit" href="{% url 'pacientes:list' %}">Cancelar</a>
+          <button type="submit" class="btn btn-guardar">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </section>
+</div>
+{% endblock %}
