@@ -25,10 +25,12 @@ urlpatterns = [
     ),
 
     # Apps con namespace
-    path("turnos/", include(("apps.turnos.urls", "turnos"), namespace="turnos")),
+    path("turnos/", include(("apps.turnos.urls", "turnos"), namespace="turnos")), 
     path("pacientes/", include(("apps.pacientes.urls", "pacientes"), namespace="pacientes")),
     path("profesionales/", include(("apps.profesionales.urls", "profesionales"), namespace="profesionales")),
     path("usuarios/", include(("apps.usuarios.urls", "usuarios"), namespace="usuarios")),
+    # Documentación API
+     #  
 
     path("api/docs/", include_docs_urls(title="TerraVerde API")),
     path("", login_required(TemplateView.as_view(template_name="paginaprincipal.html")), name="home"),

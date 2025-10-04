@@ -1,15 +1,17 @@
 from django.urls import path, include
-from rest_framework import routers
-# Si usás docs globales en core/urls.py, podés omitir include_docs_urls acá
-from .views import ProfesionalViewSet   # <- nombre correcto
+from rest_framework.routers import DefaultRouter
+from django.views.generic import TemplateView
+from .api_views import ProfesionalViewSet  # o .views si lo dejaste ahí
 
-router = routers.DefaultRouter()
-router.register(r'profesionales', ProfesionalViewSet, basename='profesionales')
+app_name = "profesionales"
 
-app_name = "profesionales"  # para usar {% url 'profesionales:list' %}  
+router = DefaultRouter()
+router.register(r"profesionales", ProfesionalViewSet, basename="profesionales")
+
 urlpatterns = [
-    path("api/", include(router.urls)),   # convención en minúsculas
-    # path("docs/", include_docs_urls(title="Profesionales API")),  # opcional
+    path("api/", include(router.urls)),
+    # SPA por API
+    path("", TemplateView.as_view(template_name="profesionales/profesionales_list.html"), name="list"),
 ]
 
 #get

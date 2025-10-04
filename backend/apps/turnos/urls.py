@@ -1,21 +1,17 @@
 from django.urls import path, include
-from rest_framework import routers
-from django.contrib.auth.decorators import login_required
+from rest_framework.routers import DefaultRouter
 from django.views.generic import TemplateView
-from .views import TurnoViewSet
+from .api_views import TurnoViewSet  # o desde .views si lo dejaste ahí
 
-app_name = "turnos"  # <- para usar {% url 'turnos:list' %}
+app_name = "turnos"
 
-router = routers.DefaultRouter()
-router.register(r'turnos', TurnoViewSet, basename='turnos')
+router = DefaultRouter()
+router.register(r"turnos", TurnoViewSet, basename="turnos")
 
 urlpatterns = [
     path("api/", include(router.urls)),
-    path(
-        "listado/",
-        login_required(TemplateView.as_view(template_name="turnos_list.html")),
-        name="list",  # <- nombre que usará el template
-    ),
+    # SPA (lista + modal CRUD por API)
+    path("", TemplateView.as_view(template_name="turnos/turnos_list.html"), name="list"),
 ]
 
 #get

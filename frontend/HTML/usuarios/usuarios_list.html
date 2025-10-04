@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Pacientes | TerraVerde{% endblock %}
-{% block topbar_title %}Pacientes{% endblock %}
+{% block title %}Usuarios | TerraVerde{% endblock %}
+{% block topbar_title %}Usuarios{% endblock %}
 {% block sidebar %}{% endblock %}
 
 {% block content %}
@@ -10,23 +10,24 @@
   <section class="contenido-principal" style="flex:1;">
     <div class="card" style="padding:20px;">
       <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
-        <h1 class="main-title" style="margin:0;">Listado de Pacientes </h1>
-        <button id="btnNuevo" class="btn btn-guardar">Nuevo Paciente</button>
+        <h1 class="main-title" style="margin:0;">Usuarios</h1>
+        <button id="btnNuevo" class="btn btn-guardar">Nuevo Usuario</button>
       </div>
 
       <div style="overflow:auto; margin-top:14px;">
-        <table id="pacientes-table" class="tabla-listado">
+        <table class="tabla-listado">
           <thead>
             <tr>
-              <th>Apellido</th>
+              <th>Usuario</th>
               <th>Nombre</th>
-              <th>DNI</th>
-              <th>Teléfono</th>
+              <th>Email</th>
+              <th>Activo</th>
+              <th>Staff</th>
               <th style="width:1%; white-space:nowrap;"></th>
             </tr>
           </thead>
-          <tbody id="pacientes-tbody">
-            <tr><td colspan="5">Cargando...</td></tr>
+          <tbody id="usuarios-tbody">
+            <tr><td colspan="6">Cargando...</td></tr>
           </tbody>
         </table>
       </div>
@@ -40,69 +41,49 @@
 <div id="modalForm" class="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.35);">
   <div class="card" style="max-width:720px; width:95%; margin:40px auto; background:#fff; border-radius:12px; padding:16px;">
     <div style="display:flex; justify-content:space-between; align-items:center;">
-      <h2 id="modalTitle" class="main-title" style="margin:0;">Registrar Paciente</h2>
+      <h2 id="modalTitle" class="main-title" style="margin:0;">Nuevo Usuario</h2>
       <button id="btnCerrarModal" class="btn btn-secundario">Cerrar</button>
     </div>
 
-    <form id="formPaciente" style="margin-top:12px;">
+    <form id="formUsuario" style="margin-top:12px;">
       {% csrf_token %}
-      <input type="hidden" id="pacienteId">
+      <input type="hidden" id="usuarioId">
 
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
         <div>
-          <label>Apellido</label>
-          <input type="text" id="apellido" name="apellido" required>
+          <label>Username</label>
+          <input type="text" id="username" name="username" required>
+        </div>
+        <div>
+          <label>Email</label>
+          <input type="email" id="email" name="email" required>
         </div>
         <div>
           <label>Nombre</label>
-          <input type="text" id="nombre" name="nombre" required>
+          <input type="text" id="first_name" name="first_name">
         </div>
         <div>
-          <label>DNI</label>
-          <input type="text" id="dni" name="dni" required>
-        </div>
-        <div>
-          <label>Fecha Nacimiento</label>
-          <input type="date" id="fecha_nacimiento" name="fecha_nacimiento">
-        </div>
-        <div>
-          <label>Teléfono</label>
-          <input type="text" id="telefono" name="telefono">
-        </div>
-        <div>
-          <label>Dirección</label>
-          <input type="text" id="direccion" name="direccion">
-        </div>
-        <div>
-          <label>Nacionalidad</label>
-          <input type="text" id="nacionalidad" name="nacionalidad">
-        </div>
-        <div>
-          <label>
-            <input type="checkbox" id="tiene_representante" name="tiene_representante"> Tiene representante
-          </label>
+          <label>Apellido</label>
+          <input type="text" id="last_name" name="last_name">
         </div>
 
-        <!-- Datos representante (opcionales) -->
         <div>
-          <label>Rep. Nombre</label>
-          <input type="text" id="rep_nombre" name="rep_nombre">
+          <label>Password</label>
+          <input type="password" id="password" name="password">
         </div>
         <div>
-          <label>Rep. Apellido</label>
-          <input type="text" id="rep_apellido" name="rep_apellido">
+          <label>Confirmar Password</label>
+          <input type="password" id="password2" name="password2">
+        </div>
+
+        <div>
+          <label><input type="checkbox" id="is_active" name="is_active" checked> Activo</label>
         </div>
         <div>
-          <label>Rep. Edad</label>
-          <input type="number" id="rep_edad" name="rep_edad" min="0">
+          <label><input type="checkbox" id="is_staff" name="is_staff"> Staff</label>
         </div>
-        <div>
-          <label>Rep. Teléfono</label>
-          <input type="text" id="rep_telefono" name="rep_telefono">
-        </div>
-        <div>
-          <label>Rep. Nacionalidad</label>
-          <input type="text" id="rep_nacionalidad" name="rep_nacionalidad">
+        <div style="grid-column:1 / -1;">
+          <label><input type="checkbox" id="is_superuser" name="is_superuser"> Superusuario</label>
         </div>
       </div>
 
@@ -118,7 +99,7 @@
 <div id="modalConfirm" class="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.35);">
   <div class="card" style="max-width:480px; width:95%; margin:40px auto; background:#fff; border-radius:12px; padding:16px;">
     <h3 style="margin-top:0;">Confirmar eliminación</h3>
-    <p>¿Seguro que querés eliminar este paciente?</p>
+    <p>¿Seguro que querés eliminar este usuario?</p>
     <div style="display:flex; gap:8px; justify-content:flex-end;">
       <button id="btnNo" class="btn btn-regresar">Cancelar</button>
       <button id="btnSi" class="btn btn-eliminar">Eliminar</button>
@@ -126,5 +107,5 @@
   </div>
 </div>
 
-<script src="{% static 'JS/pacientes/spa.js' %}"></script>
+<script src="{% static 'JS/usuarios/spa.js' %}"></script>
 {% endblock %}

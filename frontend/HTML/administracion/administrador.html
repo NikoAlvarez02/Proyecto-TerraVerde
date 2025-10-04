@@ -22,17 +22,27 @@
   <div class="sidebar" id="sidebar">
     <h3>Sub-módulos</h3>
 
-    {% if request.user.perfil.rol == "admin" %}
-      <a href="{% url 'admin:index' %}" target="_blank">🔑 Panel Django Admin</a>
-      <a href="#">👥 Usuarios</a>
-      <a href="#">📚 Especialidades</a>
-      <a href="#">🏢 Sucursales</a>
-      <a href="#">🔒 Roles</a>
-    {% elif request.user.perfil.rol == "prof" %}
-      <a href="#">📅 Mi Agenda</a>
-    {% elif request.user.perfil.rol == "recep" %}
-      <a href="#">🧾 Turnos y Pacientes</a>
+    {# Mostrar enlace al admin solo a staff/superuser #}
+    {% if request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser) %}
+      <a href="{% url 'admin:index' %}" target="_blank" rel="noopener">🔑 Panel Django Admin</a>
     {% endif %}
+
+    {# Links a tus SPAs por API (ajusta si querés) #}
+    <a href="{% url 'usuarios:list' %}">👥 Usuarios</a>
+    <a href="{% url 'profesionales:list' %}">🧑‍⚕️ Profesionales</a>
+    <a href="{% url 'pacientes:list' %}">🧾 Pacientes</a>
+    <a href="{% url 'turnos:list' %}">📅 Turnos</a>
+
+    {# Si igual querés condicionar por perfil/rol, podés mantenerlo así: #}
+    {# 
+    {% if request.user.perfil.rol == "admin" %}
+      ...
+    {% elif request.user.perfil.rol == "prof" %}
+      ...
+    {% elif request.user.perfil.rol == "recep" %}
+      ...
+    {% endif %}
+    #}
 
     <a href="{% url 'home' %}">🏠 Volver al Inicio</a>
   </div>

@@ -1,48 +1,115 @@
 {% extends "base.html" %}
+{% load static %}
 
-{% block title %}Listado de Turnos | TerraVerde{% endblock %}
-{% block topbar_title %}Gestión de Turnos{% endblock %}
+{% block title %}Turnos | TerraVerde{% endblock %}
+{% block topbar_title %}Turnos{% endblock %}
+{% block sidebar %}{% endblock %}
 
 {% block content %}
-<div class="turnos-listado">
-    <h1 class="main-title">Centro Psicopedagógico TerraVerde</h1>
-    <h2>Listado de Turnos</h2>
+<div class="main-wrap" style="display:flex; gap:24px;">
+  <section class="contenido-principal" style="flex:1;">
+    <div class="card" style="padding:20px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
+        <h1 class="main-title" style="margin:0;">Listado de Turnos (API)</h1>
+        <button id="btnNuevo" class="btn btn-guardar">Nuevo Turno</button>
+      </div>
 
-    <div class="header-actions">
-        <a href="{% url 'turnos_create' %}" class="btn btn-guardar">Agregar Turno</a>
+      <div style="overflow:auto; margin-top:14px;">
+        <table class="tabla-listado">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Hora</th>
+              <th>Paciente</th>
+              <th>Profesional</th>
+              <th>Estado</th>
+              <th style="width:1%; white-space:nowrap;"></th>
+            </tr>
+          </thead>
+          <tbody id="turnos-tbody">
+            <tr><td colspan="6">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div id="flash" style="margin-top:12px; display:none;"></div>
+    </div>
+  </section>
+</div>
+
+<!-- Modal Crear/Editar -->
+<div id="modalForm" class="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.35);">
+  <div class="card" style="max-width:720px; width:95%; margin:40px auto; background:#fff; border-radius:12px; padding:16px;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <h2 id="modalTitle" class="main-title" style="margin:0;">Nuevo Turno</h2>
+      <button id="btnCerrarModal" class="btn btn-secundario">Cerrar</button>
     </div>
 
-    <table id="turnos-table">
-        <thead>
-            <tr>
-                <th>Paciente</th>
-                <th>Profesional</th>
-                <th>Fecha</th>
-                <th>Hora</th>
-                <th>Acción</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for t in turnos %}
-                <tr>
-                    <td>{{ t.paciente|default_if_none:"—" }}</td>
-                    <td>{{ t.profesional|default_if_none:"—" }}</td>
-                    <td>{{ t.fecha_hora|date:"Y-m-d" }}</td>
-                    <td>{{ t.fecha_hora|time:"H:i" }}</td>
-                    <td>
-                        <a class="btn btn-editar" href="{% url 'turnos_update' t.id %}">Editar</a>
-                        <form method="post" action="{% url 'turnos_delete' t.id %}" class="inline-form" style="display:inline">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-eliminar" onclick="return confirm('¿Eliminar este turno?')">Eliminar</button>
-                        </form>
-                    </td>
-                </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="5" style="text-align:center;color:#666">No hay turnos cargados.</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <form id="formTurno" style="margin-top:12px;">
+      {% csrf_token %}
+      <input type="hidden" id="turnoId">
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div>
+          <label>Fecha</label>
+          <input type="date" id="fecha" name="fecha" required>
+        </div>
+        <div>
+          <label>Hora</label>
+          <input type="time" id="hora" name="hora" required>
+        </div>
+
+        <div>
+          <label>Paciente</label>
+          <select id="paciente" name="paciente" required>
+            <option value="">Cargando...</option>
+          </select>
+        </div>
+        <div>
+          <label>Profesional</label>
+          <select id="profesional" name="profesional" required>
+            <option value="">Cargando...</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Estado</label>
+          <select id="estado" name="estado" required>
+            <option value="pendiente">Pendiente</option>
+            <option value="confirmado">Confirmado</option>
+            <option value="cancelado">Cancelado</option>
+          </select>
+        </div>
+
+        <div style="grid-column:1 / -1;">
+          <label>Motivo</label>
+          <input type="text" id="motivo" name="motivo" placeholder="Opcional">
+        </div>
+        <div style="grid-column:1 / -1;">
+          <label>Observaciones</label>
+          <textarea id="observaciones" name="observaciones" rows="3" placeholder="Opcional"></textarea>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px;">
+        <button type="button" id="btnCancelar" class="btn btn-cancelar-edit">Cancelar</button>
+        <button type="submit" class="btn btn-guardar">Guardar</button>
+      </div>
+    </form>
+  </div>
 </div>
+
+<!-- Confirmación Eliminación -->
+<div id="modalConfirm" class="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.35);">
+  <div class="card" style="max-width:480px; width:95%; margin:40px auto; background:#fff; border-radius:12px; padding:16px;">
+    <h3 style="margin-top:0;">Confirmar eliminación</h3>
+    <p>¿Seguro que querés eliminar este turno?</p>
+    <div style="display:flex; gap:8px; justify-content:flex-end;">
+      <button id="btnNo" class="btn btn-regresar">Cancelar</button>
+      <button id="btnSi" class="btn btn-eliminar">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'JS/turnos/spa.js' %}"></script>
 {% endblock %}
