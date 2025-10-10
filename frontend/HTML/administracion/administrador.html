@@ -1,4 +1,4 @@
-<!-- {% load static %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -11,10 +11,11 @@
 <body>
 <header>
   <h2>Administración TerraVerde</h2>
-  <form method="post" action="{% url 'logout' %}">
+  <form method="post" action="{% url 'logout' %}" style="float: right;">
     {% csrf_token %}
     <button class="sesion" type="submit">Cerrar Sesión</button>
   </form>
+  <div style="clear: both;"></div>
 </header>
 
 <main>
@@ -23,26 +24,13 @@
     <h3>Sub-módulos</h3>
 
     {# Mostrar enlace al admin solo a staff/superuser #}
-    {% if request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser) %}
-      <a href="{% url 'admin:index' %}" target="_blank" rel="noopener">🔑 Panel Django Admin</a>
+    {% if request.user.is_authenticated %}
+      {% if request.user.is_staff or request.user.is_superuser %}
+        <a href="{% url 'admin:index' %}" target="_blank" rel="noopener">🔑 Panel Django Admin</a>
+      {% endif %}
     {% endif %}
 
-    {# Links a tus SPAs por API (ajusta si querés) #}
-    <a href="{% url 'usuarios:list' %}">👥 Usuarios</a>
-    <a href="{% url 'profesionales:list' %}">🧑‍⚕️ Profesionales</a>
-    <a href="{% url 'pacientes:list' %}">🧾 Pacientes</a>
-    <a href="{% url 'turnos:list' %}">📅 Turnos</a>
-
-    {# Si igual querés condicionar por perfil/rol, podés mantenerlo así: #}
-    {# 
-    {% if request.user.perfil.rol == "admin" %}
-      ...
-    {% elif request.user.perfil.rol == "prof" %}
-      ...
-    {% elif request.user.perfil.rol == "recep" %}
-      ...
-    {% endif %}
-    #}
+   
 
     <a href="{% url 'home' %}">🏠 Volver al Inicio</a>
   </div>
@@ -56,4 +44,4 @@
   }
 </script>
 </body>
-</html> -->
+</html>

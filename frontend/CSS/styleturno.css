@@ -42,13 +42,11 @@ body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-seri
 .sidebar a{ display:block; padding:8px 10px; border-radius:8px; color:#247b96; text-decoration:none; }
 .sidebar a:hover{ background:#f3f5f7; }
 
-/* Sidebar móvil */
 @media (max-width: 900px){
   .sidebar{ position:fixed; top:66px; left:12px; transform:translateX(-115%); transition:transform .25s ease; z-index:20; }
   .sidebar.active{ transform:translateX(0); }
 }
 
-/* Contenido principal */
 .contenido-principal{
   flex:1; background:#fff; border:1px solid #e7ebef; border-radius:16px; padding:28px;
   box-shadow:0 10px 28px rgba(0,0,0,.08);
@@ -58,57 +56,61 @@ body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-seri
 /* ==============================
    Sección Turnos / Formularios
 ============================== */
-.main-title{
-  color:#388e3c; font-size:2em; margin:0 0 12px; text-align:center;
-}
+.main-title{ color:#388e3c; font-size:2em; margin:0 0 12px; text-align:center; }
 
-.turnos-listado, .register-container{
-  background:#ffffff; padding:22px; border-radius:12px;
-  box-shadow:0 8px 30px rgba(0,0,0,.05); border:1px solid #e8edf2;
-  max-width: 900px; margin: 0 auto;
-}
-
-.header-actions{
-  display:flex; justify-content:flex-end; margin-top:10px; margin-bottom:10px;
-}
-
-.register-form h2{
-  color:#555; font-size:1.5em; margin:10px 0 20px;
-}
-
-.input-group{ margin-bottom:15px; text-align:left; }
-.input-group label{ display:block; margin-bottom:6px; color:#666; font-weight:600; }
-.input-group input, .register-container textarea{
-  width:100%; padding:10px; border:1px solid #ccd3da; border-radius:8px;
-  font-size:1em; transition:border-color .2s ease;
-}
-.input-group input:focus, .register-container textarea:focus{
-  border-color:#4caf50; outline:none;
-}
-.register-container textarea{ resize:vertical; }
-
-/* Botones */
-.btn{
-  padding:12px 18px; border:none; border-radius:8px; cursor:pointer;
-  font-weight:700; transition:filter .2s ease, background-color .2s ease;
-}
-.btn-guardar{ background:#4caf50; color:#fff; }
-.btn-guardar:hover{ background:#388e3c; }
-.btn-cancelar-edit{ background:#f44336; color:#fff; }
-.btn-cancelar-edit:hover{ background:#d32f2f; }
-.btn-editar{ background:#2196f3; color:#fff; }
-.btn-editar:hover{ background:#1976d2; }
-.btn-eliminar{ background:#e91e63; color:#fff; }
-.btn-eliminar:hover{ background:#c2185b; }
+.btn{ padding:12px 18px; border:none; border-radius:8px; cursor:pointer; font-weight:700; transition:filter .2s ease, background-color .2s ease; }
+.btn-guardar{ background:#4caf50; color:#fff; } .btn-guardar:hover{ background:#388e3c; }
+.btn-cancelar-edit{ background:#f44336; color:#fff; } .btn-cancelar-edit:hover{ background:#d32f2f; }
+.btn-editar{ background:#2196f3; color:#fff; } .btn-editar:hover{ background:#1976d2; }
+.btn-eliminar{ background:#e91e63; color:#fff; } .btn-eliminar:hover{ background:#c2185b; }
 
 /* Tabla */
 #turnos-table{ width:100%; border-collapse:collapse; margin-top:16px; }
-#turnos-table th, #turnos-table td{
-  border:1px solid #e6e6e6; padding:12px; text-align:left; font-size:14px;
-}
-#turnos-table th{
-  background:#f2f2f2; color:#388e3c; font-weight:800;
-}
+#turnos-table th, #turnos-table td{ border:1px solid #e6e6e6; padding:12px; text-align:left; font-size:14px; }
+#turnos-table th{ background:#f2f2f2; color:#388e3c; font-weight:800; }
 
 /* Footer */
 .site-footer{ margin:24px 18px; padding:16px; text-align:center; background:#f1f1f1; border-radius:12px; }
+
+/* Evita “saltos” al aparecer/disparacer scrollbar */
+html { scrollbar-gutter: stable both-edges; }
+
+/* ==============================
+   Modal (centrado 3 cm) + Drag
+============================== */
+.modal{
+  display:none;
+  position:fixed; inset:0;
+  background:rgba(0,0,0,.35);
+  justify-content:center; align-items:flex-start;
+  padding-top:3cm; z-index:1000;
+}
+.modal.is-open{ display:flex; }
+
+/* La tarjeta del modal: drag por transform */
+#modalForm .modal-card{
+  max-width:720px; width:min(720px,95vw);
+  background:#fff; border-radius:12px; padding:16px; margin:0;
+  transform: translate(0,0);
+  will-change: transform;
+  max-height: calc(100vh - 6cm);
+  overflow:auto;
+}
+#modalForm .drag-handle{ cursor: move; }
+#modalForm.dragging, #modalForm .drag-handle{ user-select: none; }
+
+/* Utilidades grid para el formulario */
+.grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.col-span-2{ grid-column:1 / -1; }
+
+/* ==============================
+   Toast (siempre por encima)
+============================== */
+#toast{
+  position:fixed; left:50%; top:16px; transform:translateX(-50%);
+  z-index:10000; display:none; max-width:min(640px,90vw);
+  padding:12px 16px; border-radius:10px; box-shadow:0 10px 28px rgba(0,0,0,.18);
+  color:#333; font-weight:600; background:#fff;
+}
+.toast-ok{ background:#e6ffed; border:1px solid #89d79d; }
+.toast-error{ background:#ffe6e6; border:1px solid #e08b8b; }

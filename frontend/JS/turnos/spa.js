@@ -32,21 +32,41 @@ const API_PROFESIONALES = '/profesionales/api/profesionales/';
 
 // ====== helpers UI ======
 function showFlash(msg, type = 'ok') {
-  flash.style.display = 'block';
-  flash.style.padding = '8px';
-  flash.style.borderRadius = '8px';
-  flash.style.background = type === 'ok' ? '#e6ffed' : '#ffe6e6';
-  flash.style.border = '1px solid ' + (type === 'ok' ? '#89d79d' : '#e08b8b');
-  flash.style.color = '#333';
-  flash.textContent = msg;
-  setTimeout(() => (flash.style.display = 'none'), 2500);
+  const toast = document.getElementById('toast');
+  const pageFlash = document.getElementById('flash');
+
+  const modalOpen = modalForm?.classList.contains('is-open') || modalConfirm?.classList.contains('is-open');
+  if (modalOpen && toast) {
+    toast.className = type === 'ok' ? 'toast-ok' : 'toast-error';
+    toast.textContent = msg;
+    toast.style.display = 'block';
+    clearTimeout(showFlash._t);
+    showFlash._t = setTimeout(() => (toast.style.display = 'none'), 3500);
+    return;
+  }
+
+  if (pageFlash) {
+    pageFlash.style.display = 'block';
+    pageFlash.style.padding = '8px';
+    pageFlash.style.borderRadius = '8px';
+    pageFlash.style.background = type === 'ok' ? '#e6ffed' : '#ffe6e6';
+    pageFlash.style.border = '1px solid ' + (type === 'ok' ? '#89d79d' : '#e08b8b');
+    pageFlash.style.color = '#333';
+    pageFlash.textContent = msg;
+    clearTimeout(pageFlash._t);
+    pageFlash._t = setTimeout(() => (pageFlash.style.display = 'none'), 2500);
+  }
 }
 
+// ====== abrir/cerrar modales ======
 function openModalCreate() {
   editId = null;
   modalTitle.textContent = 'Nuevo Turno';
   form.reset();
-  modalForm.style.display = 'block';
+  resetModalPosition();
+  modalForm.classList.add('is-open');
+  document.body.classList.add('modal-open');
+  if (flash) flash.style.display = 'none';
 }
 
 function openModalEdit(t) {
@@ -54,46 +74,57 @@ function openModalEdit(t) {
   modalTitle.textContent = 'Editar Turno';
   form.reset();
 
-  // set fields
   document.getElementById('turnoId').value = t.id;
-  document.getElementById('fecha').value = (t.fecha || '').slice(0,10);
-  document.getElementById('hora').value = (t.hora || '').slice(0,5);
+  
+  // CAMBIO: usa fecha_display y hora_display del serializer
+  document.getElementById('fecha').value = t.fecha_display || '';
+  document.getElementById('hora').value = t.hora_display || '';
+  
   document.getElementById('estado').value = t.estado || 'pendiente';
   document.getElementById('motivo').value = t.motivo || '';
   document.getElementById('observaciones').value = t.observaciones || '';
 
-  // selects (asegurate que ya estén cargados)
-  selPaciente.value = t.paciente || '';
-  selProfesional.value = t.profesional || '';
+  selPaciente.value = String(t.paciente ?? '');
+  selProfesional.value = String(t.profesional ?? '');
 
-  modalForm.style.display = 'block';
+  resetModalPosition();
+  modalForm.classList.add('is-open');
+  document.body.classList.add('modal-open');
+  if (flash) flash.style.display = 'none';
 }
 
 function closeModal() {
-  modalForm.style.display = 'none';
+  modalForm.classList.remove('is-open');
+  document.body.classList.remove('modal-open');
+  resetModalPosition();
 }
 
 function openConfirm(id) {
   deleteId = id;
-  modalConfirm.style.display = 'block';
+  modalConfirm.classList.add('is-open');
+  document.body.classList.add('modal-open');
+  if (flash) flash.style.display = 'none';
 }
 
 function closeConfirm() {
   deleteId = null;
-  modalConfirm.style.display = 'none';
+  modalConfirm.classList.remove('is-open');
+  document.body.classList.remove('modal-open');
 }
 
-// ====== API base ======
+// ====== API ======
 async function apiList() {
   const resp = await fetch(API_TURNOS, { credentials:'same-origin' });
   if (!resp.ok) throw new Error('GET ' + resp.status);
   return await resp.json();
 }
+
 async function apiGet(id) {
   const resp = await fetch(API_TURNOS + id + '/', { credentials:'same-origin' });
   if (!resp.ok) throw new Error('GET id ' + resp.status);
   return await resp.json();
 }
+
 async function apiCreate(payload) {
   const resp = await fetch(API_TURNOS, {
     method: 'POST',
@@ -105,6 +136,7 @@ async function apiCreate(payload) {
   if (!resp.ok) throw new Error('POST ' + resp.status);
   return await resp.json();
 }
+
 async function apiUpdate(id, payload) {
   const resp = await fetch(API_TURNOS + id + '/', {
     method: 'PUT',
@@ -116,6 +148,7 @@ async function apiUpdate(id, payload) {
   if (!resp.ok) throw new Error('PUT ' + resp.status);
   return await resp.json();
 }
+
 async function apiDelete(id) {
   const resp = await fetch(API_TURNOS + id + '/', {
     method: 'DELETE',
@@ -125,7 +158,7 @@ async function apiDelete(id) {
   if (!resp.ok) throw new Error('DELETE ' + resp.status);
 }
 
-// ====== cargar selects (pacientes / profesionales) ======
+// ====== cargar selects ======
 async function loadPacientes() {
   selPaciente.innerHTML = `<option value="">Cargando...</option>`;
   const resp = await fetch(API_PACIENTES, { credentials:'same-origin' });
@@ -134,12 +167,12 @@ async function loadPacientes() {
   selPaciente.innerHTML = `<option value="">Seleccione…</option>`;
   data.forEach(p => {
     const opt = document.createElement('option');
-    // Ajustá label según tus campos reales
     opt.value = p.id;
     opt.textContent = `${p.apellido ?? ''}, ${p.nombre ?? ''} (${p.dni ?? ''})`;
     selPaciente.appendChild(opt);
   });
 }
+
 async function loadProfesionales() {
   selProfesional.innerHTML = `<option value="">Cargando...</option>`;
   const resp = await fetch(API_PROFESIONALES, { credentials:'same-origin' });
@@ -148,12 +181,12 @@ async function loadProfesionales() {
   selProfesional.innerHTML = `<option value="">Seleccione…</option>`;
   data.forEach(p => {
     const opt = document.createElement('option');
-    // Ajustá label según tus campos reales
     opt.value = p.id;
     opt.textContent = `${p.apellido ?? ''}, ${p.nombre ?? ''}`;
     selProfesional.appendChild(opt);
   });
 }
+
 async function ensureOptions() {
   await Promise.all([loadPacientes(), loadProfesionales()]);
 }
@@ -170,9 +203,11 @@ async function renderList() {
     tbody.innerHTML = '';
     list.forEach(t => {
       const tr = document.createElement('tr');
+      
+      // CAMBIO: usa fecha_display y hora_display
       tr.innerHTML = `
-        <td>${t.fecha ?? ''}</td>
-        <td>${(t.hora || '').slice(0,5)}</td>
+        <td>${t.fecha_display ?? ''}</td>
+        <td>${t.hora_display ?? ''}</td>
         <td>${t.paciente_nombre ?? t.paciente}</td>
         <td>${t.profesional_nombre ?? t.profesional}</td>
         <td>${t.estado ?? ''}</td>
@@ -181,10 +216,11 @@ async function renderList() {
           <button class="btn btn-eliminar" data-del="${t.id}">Eliminar</button>
         </td>
       `;
+      
       tr.querySelector('[data-edit]').addEventListener('click', async () => {
         try {
           const full = await apiGet(t.id);
-          await ensureOptions();        // asegurá opciones cargadas
+          await ensureOptions();
           openModalEdit(full);
         } catch (e) {
           console.error(e);
@@ -204,7 +240,6 @@ async function renderList() {
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
 
-  // validación mínima
   const fecha = document.getElementById('fecha').value;
   const hora = document.getElementById('hora').value;
   const paciente = selPaciente.value;
@@ -225,16 +260,6 @@ form.addEventListener('submit', async (e) => {
     motivo: document.getElementById('motivo').value || '',
     observaciones: document.getElementById('observaciones').value || '',
   };
-
-  // Si tu modelo usa fecha_hora (DateTimeField), usá esto en su lugar:
-  // const payload = {
-  //   paciente: Number(paciente),
-  //   profesional: Number(profesional),
-  //   estado,
-  //   motivo: ...,
-  //   observaciones: ...,
-  //   fecha_hora: `${fecha}T${hora}:00`, // o construir un ISO completo
-  // };
 
   try {
     if (editId === null) {
@@ -277,5 +302,95 @@ btnSi.addEventListener('click', async () => {
   }
 });
 
+document.addEventListener('keydown', (ev) => {
+  if (ev.key === 'Escape') {
+    if (modalConfirm.classList.contains('is-open')) closeConfirm();
+    else if (modalForm.classList.contains('is-open')) closeModal();
+  }
+});
+
+[modalForm, modalConfirm].forEach(overlay => {
+  overlay?.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      overlay.id === 'modalConfirm' ? closeConfirm() : closeModal();
+    }
+  });
+});
+
+// ====== Drag del modal ======
+function resetModalPosition() {
+  const card = document.querySelector('#modalForm .card');
+  if (!card) return;
+  card.style.position = 'relative';
+  card.style.left = '';
+  card.style.top = '';
+  card.style.margin = '0 auto';
+  card.classList.remove('dragging');
+}
+
+function makeModalDraggable() {
+  const overlay = document.getElementById('modalForm');
+  const card = document.querySelector('#modalForm .card');
+  const handle = document.querySelector('#modalForm .drag-handle');
+  if (!overlay || !card || !handle) return;
+
+  let isDown = false;
+  let offsetX = 0, offsetY = 0;
+
+  const pointer = (e) => e.touches ? e.touches[0] : e;
+
+  function onDown(e){
+    const p = pointer(e);
+    const rect = card.getBoundingClientRect();
+    
+    card.style.position = 'absolute';
+    card.style.margin = '0';
+    card.style.left = rect.left + 'px';
+    card.style.top  = rect.top  + 'px';
+    
+    isDown = true;
+    offsetX = p.clientX - rect.left;
+    offsetY = p.clientY - rect.top;
+    card.classList.add('dragging');
+    overlay.classList.add('dragging');
+    e.preventDefault();
+  }
+  
+  function onMove(e){
+    if(!isDown) return;
+    const p = pointer(e);
+    let nx = p.clientX - offsetX;
+    let ny = p.clientY - offsetY;
+
+    const minPad = 8;
+    const maxX = window.innerWidth  - card.offsetWidth  - minPad;
+    const maxY = window.innerHeight - card.offsetHeight - minPad;
+
+    nx = Math.max(minPad, Math.min(nx, maxX));
+    ny = Math.max(minPad, Math.min(ny, maxY));
+
+    card.style.left = nx + 'px';
+    card.style.top  = ny + 'px';
+    e.preventDefault();
+  }
+  
+  function onUp(){
+    isDown = false;
+    card.classList.remove('dragging');
+    overlay.classList.remove('dragging');
+  }
+
+  handle.addEventListener('mousedown', onDown);
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onUp);
+
+  handle.addEventListener('touchstart', onDown, { passive:false });
+  window.addEventListener('touchmove', onMove, { passive:false });
+  window.addEventListener('touchend', onUp);
+}
+
 // ====== init ======
-document.addEventListener('DOMContentLoaded', renderList);
+document.addEventListener('DOMContentLoaded', () => {
+  renderList();
+  makeModalDraggable();
+});

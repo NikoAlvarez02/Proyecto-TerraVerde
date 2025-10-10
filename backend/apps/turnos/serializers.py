@@ -1,75 +1,89 @@
 from rest_framework import serializers
 from .models import Turno
-from datetime import datetime, date, time
+from datetime import datetime
 
 class TurnoSerializer(serializers.ModelSerializer):
-    # Para mostrar nombres legibles en la grilla
-    paciente_nombre = serializers.SerializerMethodField()
-    profesional_nombre = serializers.SerializerMethodField()
-
-    # Campos que el frontend envía por separado (write_only: no salen en la resp automática)
-    fecha = serializers.DateField(write_only=True, required=False)
-    hora  = serializers.TimeField(write_only=True, required=False)
+    # Campos separados para el frontend (solo escritura)
+    fecha = serializers.DateField(write_only=True, required=True)
+    hora = serializers.TimeField(write_only=True, required=True)
+    
+    # fecha_hora NO es requerido en el input porque lo construimos internamente
+    fecha_hora = serializers.DateTimeField(read_only=True)
+    
+    # Campos de lectura con nombres de relaciones
+    paciente_nombre = serializers.SerializerMethodField(read_only=True)
+    profesional_nombre = serializers.SerializerMethodField(read_only=True)
+    
+    # Para compatibilidad con el frontend (devuelve fecha y hora separadas)
+    fecha_display = serializers.SerializerMethodField(read_only=True)
+    hora_display = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Turno
         fields = [
-            "id",
-            "paciente", "profesional",
-            "fecha_hora",     # campo real del modelo
-            "estado", "motivo", "observaciones",
-            "paciente_nombre", "profesional_nombre",
-            "fecha", "hora",  # write-only (entrada), pero los agregamos manualmente en la salida
+            'id', 'paciente', 'profesional', 'fecha_hora',
+            'fecha', 'hora',  # write_only
+            'fecha_display', 'hora_display',  # read_only
+            'estado', 'motivo', 'observaciones',
+            'paciente_nombre', 'profesional_nombre',
+            'creado', 'actualizado'
         ]
-
-    # ---- Salida legible (agregar fecha y hora a la representación) ----
-    def to_representation(self, instance):
-        rep = super().to_representation(instance)
-        fh = rep.get("fecha_hora")
-        if fh:
-            # fh tipo "YYYY-MM-DDTHH:MM:SS[.fff][Z]" → partimos a mano
-            rep["fecha"] = fh[:10]
-            rep["hora"]  = fh[11:16]
-        else:
-            rep["fecha"] = None
-            rep["hora"]  = None
-        return rep
-
-    # ---- Entrada: combinar fecha + hora en fecha_hora si vino separado ----
-    def _ensure_fecha_hora(self, validated_data):
-        # Si ya vino fecha_hora, no hacemos nada
-        if validated_data.get("fecha_hora"):
-            return validated_data
-
-        f = validated_data.pop("fecha", None)
-        h = validated_data.pop("hora", None)
-
-        if f and h:
-            if isinstance(f, str):
-                f = date.fromisoformat(f)
-            if isinstance(h, str):
-                # acepta "HH:MM" o "HH:MM:SS"
-                h = time.fromisoformat(h if len(h) > 5 else f"{h}:00")
-            validated_data["fecha_hora"] = datetime.combine(f, h)
-        return validated_data
-
-    def create(self, validated_data):
-        validated_data = self._ensure_fecha_hora(validated_data)
-        return super().create(validated_data)
-
-    def update(self, instance, validated_data):
-        validated_data = self._ensure_fecha_hora(validated_data)
-        return super().update(instance, validated_data)
-
-    # ---- Campos legibles para tabla ----
+        read_only_fields = ['id', 'creado', 'actualizado', 'fecha_hora']
+        extra_kwargs = {
+            'paciente': {'required': True},
+            'profesional': {'required': True},
+            'estado': {'required': True},
+        }
+    
     def get_paciente_nombre(self, obj):
-        try:
-            return f"{obj.paciente.apellido}, {obj.paciente.nombre}"
-        except Exception:
-            return str(obj.paciente_id)
-
+        return f"{obj.paciente.apellido}, {obj.paciente.nombre}"
+    
     def get_profesional_nombre(self, obj):
-        try:
-            return f"{obj.profesional.apellido}, {obj.profesional.nombre}"
-        except Exception:
-            return str(obj.profesional_id)
+        return f"{obj.profesional.apellido}, {obj.profesional.nombre}"
+    
+    def get_fecha_display(self, obj):
+        return obj.fecha_hora.date().isoformat()
+    
+    def get_hora_display(self, obj):
+        return obj.fecha_hora.time().strftime('%H:%M')
+    
+    def validate(self, data):
+        """Validación custom antes de crear/actualizar"""
+        # Verificar que fecha y hora estén presentes
+        if 'fecha' not in data or 'hora' not in data:
+            raise serializers.ValidationError({
+                'fecha': 'La fecha es requerida',
+                'hora': 'La hora es requerida'
+            })
+        return data
+    
+    def create(self, validated_data):
+        # Extraer fecha y hora
+        fecha = validated_data.pop('fecha')
+        hora = validated_data.pop('hora')
+        
+        # Combinar en fecha_hora
+        fecha_hora = datetime.combine(fecha, hora)
+        validated_data['fecha_hora'] = fecha_hora
+        
+        return super().create(validated_data)
+    
+    def update(self, instance, validated_data):
+        # Extraer fecha y hora si están presentes
+        fecha = validated_data.pop('fecha', None)
+        hora = validated_data.pop('hora', None)
+        
+        # Si ambos están presentes, combinarlos
+        if fecha and hora:
+            fecha_hora = datetime.combine(fecha, hora)
+            validated_data['fecha_hora'] = fecha_hora
+        elif fecha:
+            # Solo fecha: mantener la hora anterior
+            fecha_hora = datetime.combine(fecha, instance.fecha_hora.time())
+            validated_data['fecha_hora'] = fecha_hora
+        elif hora:
+            # Solo hora: mantener la fecha anterior
+            fecha_hora = datetime.combine(instance.fecha_hora.date(), hora)
+            validated_data['fecha_hora'] = fecha_hora
+        
+        return super().update(instance, validated_data)

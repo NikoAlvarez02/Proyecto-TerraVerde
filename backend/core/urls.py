@@ -11,7 +11,7 @@ from django.views.generic import TemplateView
 from rest_framework.documentation import include_docs_urls
 
 # Personalizar títulos del admin
-admin.site.site_header = "🌱 Administración TerraVerde"
+admin.site.site_header = " Administración TerraVerde"
 admin.site.site_title = "TerraVerde Admin"
 admin.site.index_title = "Panel de Administración"
 
@@ -20,7 +20,7 @@ urlpatterns = [
 
     path(
         "admin-mod/",
-        login_required(TemplateView.as_view(template_name="administrador.html")),
+        login_required(TemplateView.as_view(template_name='administracion/administrador.html')),
         name="admin_mod",
     ),
 
@@ -29,8 +29,9 @@ urlpatterns = [
     path("pacientes/", include(("apps.pacientes.urls", "pacientes"), namespace="pacientes")),
     path("profesionales/", include(("apps.profesionales.urls", "profesionales"), namespace="profesionales")),
     path("usuarios/", include(("apps.usuarios.urls", "usuarios"), namespace="usuarios")),
-    # Documentación API
-     #  
+   
+    #    documentacion de la API
+    path("docs/", include_docs_urls(title="TerraVerde API")), 
 
     path("api/docs/", include_docs_urls(title="TerraVerde API")),
     path("", login_required(TemplateView.as_view(template_name="paginaprincipal.html")), name="home"),
