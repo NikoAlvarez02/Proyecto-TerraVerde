@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Generar Reporte | TerraVerde{% endblock %}
+{% block topbar_title %}Generador de Reportes{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'CSS/reports.css' %}">
+{% endblock %}
+
+{% block content %}
+  <div class="rp-page">
+    <div class="rp-actions">
+      <button class="btn btn-outline" onclick="history.back()">⟵ Volver</button>
+      <a class="btn btn-primary" href="{% url 'reportes:dashboard' %}">Ir al Panel de Reportes</a>
+    </div>
+
+    <section class="card" style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+      <label>Tipo:
+        <select id="tipo">
+          <option value="historia">Historia Clínica</option>
+          <option value="epicrisis">Epicrisis</option>
+          <option value="certificado">Certificado Médico</option>
+        </select>
+      </label>
+      <label>Paciente:
+        <select id="paciente_sel" style="min-width:260px"></select>
+      </label>
+      <span class="rangos">
+        <label>Desde: <input id="desde" type="date"></label>
+        <label>Hasta: <input id="hasta" type="date"></label>
+      </span>
+      <span class="cert" style="display:none; gap:6px;">
+        <label>Diagnóstico: <input id="diag" type="text"></label>
+        <label>Días de reposo: <input id="reposo" type="number" min="0" style="width:80px;"></label>
+        <label>Profesional (opcional):
+          <select id="prof_sel" style="min-width:220px"></select>
+        </label>
+      </span>
+      <button id="btnGenerar" class="btn btn-primary">Generar</button>
+    </section>
+
+    <h2 class="rp-subtitle">Estadísticos</h2>
+    <section class="card" style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+      <label>Tipo:
+        <select id="est_tipo">
+          <option value="atenciones">Atenciones por Centro</option>
+          <option value="productividad">Productividad por Profesional</option>
+          <option value="epidemiologico">Epidemiológico</option>
+        </select>
+      </label>
+      <label>Desde: <input id="est_desde" type="date"></label>
+      <label>Hasta: <input id="est_hasta" type="date"></label>
+      <button id="btnEst" class="btn btn-primary">Generar</button>
+    </section>
+    <section class="card">
+      <h3 class="rp-subtitle">Resultado</h3>
+      <div id="resultado" class="rp-result"></div>
+    </section>
+  </div>
+
+  <script src="{% static 'JS/reports/pdf-export.js' %}"></script>
+  <script>
+    const tipoSel = document.getElementById('tipo');
+    const pacSel = document.getElementById('paciente_sel');
+    const profSel = document.getElementById('prof_sel');
+    const spanRangos = document.querySelector('.rangos');
+    const spanCert = document.querySelector('.cert');
+    tipoSel.addEventListener('change', ()=>{
+      const t = tipoSel.value;
+      spanRangos.style.display = (t === 'historia' || t === 'epicrisis') ? 'inline-flex' : 'none';
+      spanCert.style.display = (t === 'certificado') ? 'inline-flex' : 'none';
+    });
+
+    document.getElementById('btnGenerar').onclick = async ()=>{
+      const t = tipoSel.value;
+      const paciente_id = pacSel.value ? parseInt(pacSel.value) : NaN;
+      if(!paciente_id){
+        document.getElementById('resultado').textContent = 'Seleccioná un paciente';
+        return;
+      }
+      const params = { paciente: paciente_id, orientacion:'portrait', tamano_pagina:'A4' };
+      let url = '';
+      if (t === 'historia') {
+        params.desde = document.getElementById('desde').value || undefined;
+        params.hasta = document.getElementById('hasta').value || undefined;
+        url = '/reportes/api/pacientes/';
+      } else if (t === 'epicrisis') {
+        params.desde = document.getElementById('desde').value || undefined;
+        params.hasta = document.getElementById('hasta').value || undefined;
+        url = '/reportes/api/pacientes/epicrisis/';
+      } else if (t === 'certificado') {
+        params.diagnostico = document.getElementById('diag').value || '';
+        params.reposo_dias = document.getElementById('reposo').value || '';
+        const prof = profSel.value;
+        if (prof) params.profesional = parseInt(prof);
+        url = '/reportes/api/pacientes/certificado/';
+      }
+      const res = await exportReportToPDF(url, params);
+      const div = document.getElementById('resultado');
+      if(res && (res.archivo_url || res.archivo_pdf)){
+        const url = res.archivo_url || res.archivo_pdf;
+        div.innerHTML = `<a class="btn btn-outline" href="${url}" target="_blank">Descargar PDF</a>`;
+      } else {
+        div.textContent = (res && (res.error || res.detail)) ? (res.error || res.detail) : 'Error generando reporte';
+      }
+    };
+
+    document.getElementById('btnEst').onclick = async ()=>{
+      const t = document.getElementById('est_tipo').value;
+      const body = { desde: document.getElementById('est_desde').value || undefined,
+                     hasta: document.getElementById('est_hasta').value || undefined };
+      let url = '';
+      if (t === 'atenciones') url = '/reportes/api/estadisticas/atenciones/';
+      if (t === 'productividad') url = '/reportes/api/estadisticas/productividad/';
+      if (t === 'epidemiologico') url = '/reportes/api/estadisticas/epidemiologico/';
+      const res = await exportReportToPDF(url, body);
+      const div = document.getElementById('resultado');
+      if(res && (res.archivo_url || res.archivo_pdf)){
+        const url = res.archivo_url || res.archivo_pdf;
+        div.innerHTML = `<a class=\"btn btn-outline\" href=\"${url}\" target=\"_blank\">Descargar PDF</a>`;
+      } else {
+        div.textContent = (res && (res.error || res.detail)) ? (res.error || res.detail) : 'Error generando reporte';
+      }
+    };
+  </script>
+  <script>
+    // Cargar combos para evitar confusión con IDs
+    async function apiJson(url){ const r = await fetch(url, {credentials:'include'}); if(!r.ok) throw new Error(await r.text()); return r.json(); }
+    (async ()=>{
+      try{
+        const [pacs, profs] = await Promise.all([
+          apiJson('/pacientes/api/pacientes/'),
+          apiJson('/profesionales/api/profesionales/')
+        ]);
+        pacSel.innerHTML = '<option value="">-- Seleccionar --</option>' + pacs.map(p=>`<option value="${p.id}">${p.apellido}, ${p.nombre} (${p.dni||''})</option>`).join('');
+        profSel.innerHTML = '<option value="">-- Seleccionar --</option>' + profs.map(p=>`<option value="${p.id}">${p.apellido}, ${p.nombre}</option>`).join('');
+      }catch(e){ console.error(e); }
+    })();
+  </script>
+{% endblock %}

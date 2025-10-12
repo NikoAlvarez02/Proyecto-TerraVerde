@@ -29,6 +29,16 @@ let deleteId = null;
 const API_TURNOS = '/turnos/api/turnos/';
 const API_PACIENTES = '/pacientes/api/pacientes/';
 const API_PROFESIONALES = '/profesionales/api/profesionales/';
+let t_pageSize = 10;
+let t_ordering = '-fecha_hora';
+let t_query = '';
+let t_next = null;
+let t_prev = null;
+let t_fechaDesde = '';
+let t_fechaHasta = '';
+let t_estado = '';
+let t_profesionalId = '';
+let t_pacienteId = '';
 
 // ====== helpers UI ======
 function showFlash(msg, type = 'ok') {
@@ -113,8 +123,14 @@ function closeConfirm() {
 }
 
 // ====== API ======
-async function apiList() {
-  const resp = await fetch(API_TURNOS, { credentials:'same-origin' });
+async function apiList(url=null) {
+  let listUrl = url || `${API_TURNOS}?page_size=${t_pageSize}&ordering=${encodeURIComponent(t_ordering)}${t_query?`&search=${encodeURIComponent(t_query)}`:''}`;
+  if(t_fechaDesde) listUrl += `&fecha_hora__date__gte=${encodeURIComponent(t_fechaDesde)}`;
+  if(t_fechaHasta) listUrl += `&fecha_hora__date__lte=${encodeURIComponent(t_fechaHasta)}`;
+  if(t_estado) listUrl += `&estado=${encodeURIComponent(t_estado)}`;
+  if(t_profesionalId) listUrl += `&profesional=${encodeURIComponent(t_profesionalId)}`;
+  if(t_pacienteId) listUrl += `&paciente=${encodeURIComponent(t_pacienteId)}`;
+  const resp = await fetch(listUrl, { credentials:'include' });
   if (!resp.ok) throw new Error('GET ' + resp.status);
   return await resp.json();
 }
@@ -161,11 +177,11 @@ async function apiDelete(id) {
 // ====== cargar selects ======
 async function loadPacientes() {
   selPaciente.innerHTML = `<option value="">Cargando...</option>`;
-  const resp = await fetch(API_PACIENTES, { credentials:'same-origin' });
+  const resp = await fetch(`${API_PACIENTES}?page_size=500&ordering=apellido`, { credentials:'include' });
   if (!resp.ok) { selPaciente.innerHTML = `<option value="">Error</option>`; return; }
   const data = await resp.json();
   selPaciente.innerHTML = `<option value="">Seleccione…</option>`;
-  data.forEach(p => {
+  (Array.isArray(data)?data:(data.results||[])).forEach(p => {
     const opt = document.createElement('option');
     opt.value = p.id;
     opt.textContent = `${p.apellido ?? ''}, ${p.nombre ?? ''} (${p.dni ?? ''})`;
@@ -175,11 +191,11 @@ async function loadPacientes() {
 
 async function loadProfesionales() {
   selProfesional.innerHTML = `<option value="">Cargando...</option>`;
-  const resp = await fetch(API_PROFESIONALES, { credentials:'same-origin' });
+  const resp = await fetch(`${API_PROFESIONALES}?page_size=500&ordering=apellido`, { credentials:'include' });
   if (!resp.ok) { selProfesional.innerHTML = `<option value="">Error</option>`; return; }
   const data = await resp.json();
   selProfesional.innerHTML = `<option value="">Seleccione…</option>`;
-  data.forEach(p => {
+  (Array.isArray(data)?data:(data.results||[])).forEach(p => {
     const opt = document.createElement('option');
     opt.value = p.id;
     opt.textContent = `${p.apellido ?? ''}, ${p.nombre ?? ''}`;
@@ -195,7 +211,9 @@ async function ensureOptions() {
 async function renderList() {
   tbody.innerHTML = `<tr><td colspan="6">Cargando...</td></tr>`;
   try {
-    const list = await apiList();
+    const data = await apiList();
+    const list = Array.isArray(data) ? data : (data.results||[]);
+    t_next = data.next || null; t_prev = data.previous || null;
     if (!Array.isArray(list) || list.length === 0) {
       tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#666;">No hay turnos.</td></tr>`;
       return;
@@ -386,11 +404,64 @@ function makeModalDraggable() {
 
   handle.addEventListener('touchstart', onDown, { passive:false });
   window.addEventListener('touchmove', onMove, { passive:false });
-  window.addEventListener('touchend', onUp);
+window.addEventListener('touchend', onUp);
 }
 
 // ====== init ======
 document.addEventListener('DOMContentLoaded', () => {
+  // filtros
+  const t_inputQ = document.getElementById('t_q');
+  const t_selectOrden = document.getElementById('t_orden');
+  const t_btnBuscar = document.getElementById('t_buscar');
+  const t_btnPrev = document.getElementById('t_prev');
+  const t_btnNext = document.getElementById('t_next');
+  const t_pageInfoEl = document.getElementById('t_pageInfo');
+  const t_inputDesde = document.getElementById('t_desde');
+  const t_inputHasta = document.getElementById('t_hasta');
+  const t_selectEstado = document.getElementById('t_estado');
+  const t_selectPac = document.getElementById('t_pac');
+  const t_selectProf = document.getElementById('t_prof');
+  const t_btnHoy = document.getElementById('t_hoy');
+  const t_btnSemana = document.getElementById('t_semana');
+  const t_btnMes = document.getElementById('t_mes');
+  const t_btnLimpiar = document.getElementById('t_limpiar');
+
+  if(t_btnBuscar){ t_btnBuscar.addEventListener('click', async ()=>{ 
+    t_query=(t_inputQ?.value||'').trim(); 
+    t_ordering=t_selectOrden?.value||'-fecha_hora'; 
+    t_fechaDesde = t_inputDesde?.value || ''; 
+    t_fechaHasta = t_inputHasta?.value || ''; 
+    t_estado = t_selectEstado?.value || ''; 
+    t_pacienteId = t_selectPac?.value || '';
+    t_profesionalId = t_selectProf?.value || '';
+    await renderList(); 
+  }); }
+
+  // Rápidos de rango
+  function fmt(d){ const y=d.getFullYear(); const m=String(d.getMonth()+1).padStart(2,'0'); const day=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
+  if(t_btnHoy){ t_btnHoy.addEventListener('click', ()=>{ const d=new Date(); t_inputDesde.value=fmt(d); t_inputHasta.value=fmt(d); }); }
+  if(t_btnSemana){ t_btnSemana.addEventListener('click', ()=>{ const d=new Date(); const dow=d.getDay()||7; const start=new Date(d); start.setDate(d.getDate()-(dow-1)); const end=new Date(start); end.setDate(start.getDate()+6); t_inputDesde.value=fmt(start); t_inputHasta.value=fmt(end); }); }
+  if(t_btnMes){ t_btnMes.addEventListener('click', ()=>{ const d=new Date(); const start=new Date(d.getFullYear(), d.getMonth(), 1); const end=new Date(d.getFullYear(), d.getMonth()+1, 0); t_inputDesde.value=fmt(start); t_inputHasta.value=fmt(end); }); }
+
+  // Limpiar filtros
+  if(t_btnLimpiar){ t_btnLimpiar.addEventListener('click', async ()=>{
+    if(t_inputQ) t_inputQ.value=''; if(t_inputDesde) t_inputDesde.value=''; if(t_inputHasta) t_inputHasta.value='';
+    if(t_selectEstado) t_selectEstado.value=''; if(t_selectOrden) t_selectOrden.value='-fecha_hora';
+    if(t_selectPac) t_selectPac.value=''; if(t_selectProf) t_selectProf.value='';
+    t_query=t_fechaDesde=t_fechaHasta=t_estado=t_pacienteId=t_profesionalId='';
+    await renderList();
+  }); }
+
+  // Cargar opciones en filtros de Paciente/Profesional
+  (async ()=>{
+    try{
+      if(t_selectPac){ const r=await fetch('/pacientes/api/pacientes/?page_size=500&ordering=apellido', {credentials:'include'}); if(r.ok){ const d=await r.json(); const list=Array.isArray(d)?d:(d.results||[]); t_selectPac.innerHTML='<option value="">Paciente (todos)</option>'; list.forEach(p=>{ const opt=document.createElement('option'); opt.value=p.id; opt.textContent=`${p.apellido||''}, ${p.nombre||''}`; t_selectPac.appendChild(opt); }); }}
+      if(t_selectProf){ const r=await fetch('/profesionales/api/profesionales/?page_size=500&ordering=apellido', {credentials:'include'}); if(r.ok){ const d=await r.json(); const list=Array.isArray(d)?d:(d.results||[]); t_selectProf.innerHTML='<option value="">Profesional (todos)</option>'; list.forEach(p=>{ const opt=document.createElement('option'); opt.value=p.id; opt.textContent=`${p.apellido||''}, ${p.nombre||''}`; t_selectProf.appendChild(opt); }); }}
+    }catch(e){ console.error('cargar filtros turno', e); }
+  })();
+  if(t_btnPrev){ t_btnPrev.addEventListener('click', async ()=>{ if(t_prev){ const d=await apiList(t_prev); t_next=d.next; t_prev=d.previous; await renderList(); } }); }
+  if(t_btnNext){ t_btnNext.addEventListener('click', async ()=>{ if(t_next){ const d=await apiList(t_next); t_next=d.next; t_prev=d.previous; await renderList(); } }); }
+
   renderList();
   makeModalDraggable();
 });

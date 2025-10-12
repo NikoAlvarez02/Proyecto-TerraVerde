@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class Turno(models.Model):
     ESTADOS = (
         ('pendiente', 'Pendiente'),
@@ -41,4 +42,5 @@ class Turno(models.Model):
         ]
 
     def __str__(self):
-        return f'{self.paciente} con {self.profesional} — {self.fecha_hora:%d/%m/%Y %H:%M}'
+        return f'{self.paciente} con {self.profesional} - {self.fecha_hora:%d/%m/%Y %H:%M}'
+

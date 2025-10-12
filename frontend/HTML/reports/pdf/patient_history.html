@@ -1,0 +1,102 @@
+{% load static %}
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 12px; }
+    h1 { font-size: 18px; margin: 0 0 6px; }
+    .header { display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #ccc; padding-bottom:8px; margin-bottom:12px; }
+    .muted { color:#666; font-size: 11px; }
+    .obs { margin-bottom:12px; }
+    .obs h3 { font-size: 13px; margin:4px 0; }
+    .obs p { margin:2px 0; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <h1>Historia Clínica</h1>
+      <div class="muted">Generado: {{ generado|date:"Y-m-d H:i" }}</div>
+    </div>
+    <div class="muted">Paciente: {{ paciente }}</div>
+  </div>
+
+  <div class="muted">Total observaciones: {{ observaciones|length }}</div>
+
+  <h3>Resumen</h3>
+  <table style="width:100%; border-collapse:collapse; margin:6px 0;">
+    <thead>
+      <tr>
+        <th style="text-align:left; border-bottom:1px solid #ccc;">Profesional</th>
+        <th style="text-align:right; border-bottom:1px solid #ccc;">Atenciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in sum_prof %}
+      <tr>
+        <td>{{ p.profesional }}</td>
+        <td style="text-align:right;">{{ p.c }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="2" class="muted">Sin datos</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <table style="width:100%; border-collapse:collapse; margin:6px 0;">
+    <thead>
+      <tr>
+        <th style="text-align:left; border-bottom:1px solid #ccc;">Diagnóstico</th>
+        <th style="text-align:right; border-bottom:1px solid #ccc;">Casos</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for d in sum_diag %}
+      <tr>
+        <td>{{ d.diagnostico_texto }}{% if d.diagnostico_codigo %} ({{ d.diagnostico_codigo }}){% endif %}</td>
+        <td style="text-align:right;">{{ d.c }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="2" class="muted">Sin datos</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <table style="width:100%; border-collapse:collapse; margin:6px 0;">
+    <thead>
+      <tr>
+        <th style="text-align:left; border-bottom:1px solid #ccc;">Estudio</th>
+        <th style="text-align:right; border-bottom:1px solid #ccc;">Cant.</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for e in sum_estudios %}
+      <tr>
+        <td>{{ e.nombre }}</td>
+        <td style="text-align:right;">{{ e.c }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="2" class="muted">Sin datos</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h3 style="margin-top:14px;">Línea de tiempo</h3>
+  <div style="border-left:2px solid #ccc; margin-left:8px; padding-left:12px;">
+    {% for o in observaciones %}
+    <div class="obs" style="position:relative;">
+      <div style="position:absolute; left:-11px; top:6px; width:8px; height:8px; background:#4caf50; border-radius:50%;"></div>
+      <h3>{{ o.fecha_hora|date:"Y-m-d H:i" }} · {{ o.profesional }}</h3>
+      <p><strong>Motivo:</strong> {{ o.motivo }}</p>
+      {% if o.anamnesis %}<p><strong>Anamnesis:</strong> {{ o.anamnesis }}</p>{% endif %}
+      {% if o.examen_fisico %}<p><strong>Examen físico:</strong> {{ o.examen_fisico }}</p>{% endif %}
+      {% if o.diagnostico_texto %}<p><strong>Diagnóstico:</strong> {{ o.diagnostico_texto }} {% if o.diagnostico_codigo %}({{ o.diagnostico_codigo }}){% endif %}</p>{% endif %}
+      {% if o.estudios_solicitados %}<p><strong>Estudios:</strong> {{ o.estudios_solicitados }}</p>{% endif %}
+      {% if o.tratamiento %}<p><strong>Tratamiento:</strong> {{ o.tratamiento }}</p>{% endif %}
+      {% if o.indicaciones %}<p><strong>Indicaciones:</strong> {{ o.indicaciones }}</p>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</body>
+</html>

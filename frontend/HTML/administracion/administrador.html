@@ -21,18 +21,16 @@
 <main>
   <img src="{% static 'ASSETS/logo.png' %}" alt="Menú" class="menu-btn" width="30">
   <div class="sidebar" id="sidebar">
-    <h3>Sub-módulos</h3>
+    <h3>Submódulos</h3>
 
     {# Mostrar enlace al admin solo a staff/superuser #}
     {% if request.user.is_authenticated %}
       {% if request.user.is_staff or request.user.is_superuser %}
-        <a href="{% url 'admin:index' %}" target="_blank" rel="noopener">🔑 Panel Django Admin</a>
+        <a href="{% url 'admin:index' %}" target="_blank" rel="noopener">Panel de administración de Django</a>
       {% endif %}
     {% endif %}
 
-   
-
-    <a href="{% url 'home' %}">🏠 Volver al Inicio</a>
+    <a href="{% url 'home' %}">Volver al inicio</a>
   </div>
 </main>
 
@@ -42,6 +40,7 @@
   if (menuBtn && sidebar) {
     menuBtn.addEventListener("click", () => sidebar.classList.toggle("active"));
   }
-</script>
+  </script>
 </body>
 </html>
+
