@@ -1,0 +1,24 @@
+/* Reportes - estilos ligeros para integrarse con base */
+
+:root{
+  --rp-border: #e6eef0;
+  --rp-primary: #2e7d32;
+  --rp-primary-2: #43a047;
+}
+
+.rp-page{ display:grid; gap:16px; }
+.card{ background:#fff; border:1px solid var(--rp-border); border-radius:14px; padding:16px; box-shadow:0 10px 26px rgba(0,0,0,.06); }
+.rp-actions{ display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-start; }
+
+.btn{ padding:10px 14px; border-radius:10px; border:1px solid transparent; cursor:pointer; font-weight:700; }
+.btn-primary{ background: var(--rp-primary); color:#fff; }
+.btn-primary:hover{ background: var(--rp-primary-2); }
+.btn-outline{ background:#fff; color: var(--rp-primary); border-color: var(--rp-primary); }
+.btn-outline:hover{ background:#f2fbf4; }
+
+.rp-subtitle{ margin:0 0 8px; color: var(--rp-primary); }
+.rp-list{ margin:0; padding-left:18px; }
+.rp-list a{ color:#247b96; text-decoration:none; }
+.rp-list a:hover{ text-decoration:underline; }
+.rp-result{ min-height: 40px; display:flex; align-items:center; }
+

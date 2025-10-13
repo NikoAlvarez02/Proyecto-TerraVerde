@@ -14,7 +14,16 @@
         <button id="btnNuevo" class="btn btn-guardar">Nuevo Profesional</button>
       </div>
 
-      <div style="overflow:auto; margin-top:14px;">
+      <div style="display:flex; gap:8px; align-items:center; justify-content:flex-end; margin-top:8px;">
+        <input id="pr_q" type="search" placeholder="Buscar DNI / nombre / especialidad" style="padding:6px 10px; min-width:260px;" />
+        <select id="pr_orden" style="padding:6px 10px;">
+          <option value="apellido">Apellido A→Z</option>
+          <option value="-apellido">Apellido Z→A</option>
+        </select>
+        <button id="pr_buscar" class="btn">Filtrar</button>
+      </div>
+
+      <div style="overflow:auto; margin-top:10px;">
         <table class="tabla-listado">
           <thead>
             <tr>
@@ -30,6 +39,12 @@
             <tr><td colspan="6">Cargando...</td></tr>
           </tbody>
         </table>
+      </div>
+
+      <div style="display:flex; gap:10px; align-items:center; justify-content:flex-end; margin-top:10px;">
+        <button id="pr_prev" class="btn">Anterior</button>
+        <span id="pr_pageInfo" style="color:#666;"></span>
+        <button id="pr_next" class="btn">Siguiente</button>
       </div>
 
       <div id="flash" style="margin-top:12px; display:none;"></div>
@@ -94,8 +109,94 @@
         <button type="submit" class="btn btn-guardar">Guardar</button>
       </div>
     </form>
+
+    <!-- Gestión de horarios por centro -->
+    <div id="horariosWrap" style="margin-top:18px; border-top:1px solid #eee; padding-top:14px; display:none;">
+      <h3 style="margin:0 0 10px;">Horarios por Centro</h3>
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr 1fr; gap:10px; align-items:end;">
+        <div>
+          <label>Centro</label>
+          <select id="h_centro"></select>
+        </div>
+        <div>
+          <label>Día</label>
+          <select id="h_dia">
+            <option value="0">Lunes</option>
+            <option value="1">Martes</option>
+            <option value="2">Miércoles</option>
+            <option value="3">Jueves</option>
+            <option value="4">Viernes</option>
+            <option value="5">Sábado</option>
+            <option value="6">Domingo</option>
+          </select>
+        </div>
+        <div>
+          <label>Hora inicio</label>
+          <input type="time" id="h_inicio" />
+        </div>
+        <div>
+          <label>Hora fin</label>
+          <input type="time" id="h_fin" />
+        </div>
+        <div style="display:flex; gap:8px;">
+          <label style="display:flex; align-items:center; gap:6px;">
+            <input type="checkbox" id="h_activo" checked /> Activo
+          </label>
+          <button id="h_agregar" class="btn" type="button">Agregar</button>
+        </div>
+      </div>
+
+      <div style="overflow:auto; margin-top:10px;">
+        <table class="tabla-listado">
+          <thead>
+            <tr>
+              <th>Centro</th>
+              <th>Día</th>
+              <th>Desde</th>
+              <th>Hasta</th>
+              <th>Activo</th>
+              <th style="width:1%; white-space:nowrap;"></th>
+            </tr>
+          </thead>
+          <tbody id="horarios-tbody">
+            <tr><td colspan="6">Sin horarios</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>
+
+<script>
+// Cargar centros para selector M2M en modal si existe el contenedor
+document.addEventListener('DOMContentLoaded', async () => {
+  try{
+    const modal = document.getElementById('modalForm');
+    if(!modal) return;
+    // crear select múltiple si no existe aún
+    if(!document.getElementById('centrosSelect')){
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = `
+        <div style="grid-column:1 / -1;">
+          <label>Centros</label>
+          <select id="centrosSelect" multiple size="4" style="width:100%; padding:6px 10px;"></select>
+        </div>
+      `;
+      const grid = modal.querySelector('form #direccion')?.closest('div')?.parentElement;
+      if(grid){ grid.appendChild(wrapper.firstElementChild); }
+    }
+    const sel = document.getElementById('centrosSelect');
+    if(sel && !sel.dataset.loaded){
+      const r = await fetch('/centros/api/centros/?page_size=500', {credentials:'include'});
+      if(r.ok){ const d = await r.json(); const list = Array.isArray(d)?d:(d.results||[]);
+        sel.innerHTML = '';
+        list.forEach(c=>{ const opt=document.createElement('option'); opt.value=c.id; opt.textContent=`${c.nombre} (${c.codigo})`; sel.appendChild(opt); });
+        sel.dataset.loaded = '1';
+      }
+    }
+  }catch(err){ console.error('centrosSelect init', err); }
+});
+</script>
 
 <!-- Confirmación Eliminación -->
 <div id="modalConfirm" class="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.35);">

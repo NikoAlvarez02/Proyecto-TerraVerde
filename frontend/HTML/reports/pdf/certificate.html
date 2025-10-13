@@ -1,0 +1,23 @@
+{% load static %}
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 12px; }
+    h1 { font-size: 18px; text-align:center; margin: 0 0 12px; }
+    .muted { color:#666; font-size: 11px; }
+    .block { margin: 8px 0; }
+  </style>
+</head>
+<body>
+  <h1>Certificado Médico</h1>
+  <div class="muted">Generado: {{ generado|date:"Y-m-d H:i" }}</div>
+  <div class="block"><strong>Paciente:</strong> {{ paciente }}</div>
+  <div class="block"><strong>Profesional:</strong> {{ profesional }}</div>
+  {% if datos.diagnostico %}<div class="block"><strong>Diagnóstico:</strong> {{ datos.diagnostico }}</div>{% endif %}
+  {% if datos.reposo_dias %}<div class="block"><strong>Reposo:</strong> {{ datos.reposo_dias }} día(s)</div>{% endif %}
+  {% if datos.observaciones %}<div class="block"><strong>Observaciones:</strong> {{ datos.observaciones }}</div>{% endif %}
+</body>
+</html>
+

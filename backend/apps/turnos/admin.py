@@ -1,22 +1,25 @@
+# apps/turnos/admin.py
 from django.contrib import admin
 from .models import Turno
 
-# @admin.register(Turno)
-# class TurnoAdmin(admin.ModelAdmin):
-#     list_display = ('id', 'paciente', 'profesional', 'fecha_hora', 'estado')
-#     list_filter = ('estado', 'profesional')
-#     search_fields = ('paciente__apellido', 'paciente__nombre', 'profesional__apellido', 'motivo')
-#     ordering = ('-fecha_hora',)
-#     date_hierarchy = 'fecha_hora'
-#     fieldsets = (
-#         (None, {
-#             'fields': ('paciente', 'profesional', 'fecha_hora', 'estado')
-#         }),
-#         ('Detalles adicionales', {
-#             'fields': ('motivo', 'observaciones'),
-#             'classes': ('collapse',),
-#         }),
-#     )
-#     readonly_fields = ('id',)
-#     actions = ['marcar_como_completado', 'marcar_como_cancelado']
+@admin.register(Turno)
+class TurnoAdmin(admin.ModelAdmin):
+    list_display = ('id', 'paciente', 'profesional', 'fecha_hora', 'estado', 'motivo')
+    list_filter = ('estado', 'fecha_hora', 'profesional')
+    search_fields = ('paciente__nombre', 'paciente__apellido', 'profesional__nombre', 'motivo')
+    date_hierarchy = 'fecha_hora'
+    ordering = ('-fecha_hora',)
+    readonly_fields = ('creado', 'actualizado')
     
+    fieldsets = (
+        ('Información del Turno', {
+            'fields': ('paciente', 'profesional', 'fecha_hora', 'estado')
+        }),
+        ('Detalles', {
+            'fields': ('motivo', 'observaciones')
+        }),
+        ('Auditoría', {
+            'fields': ('creado', 'actualizado'),
+            'classes': ('collapse',)
+        }),
+    )

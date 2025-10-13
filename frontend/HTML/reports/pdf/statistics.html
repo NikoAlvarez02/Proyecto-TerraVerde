@@ -1,0 +1,35 @@
+{% load static %}
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 12px; }
+    h1 { font-size: 18px; margin: 0 0 6px; }
+    .header { display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #ccc; padding-bottom:8px; margin-bottom:12px; }
+    .muted { color:#666; font-size: 11px; }
+    table { width:100%; border-collapse:collapse; margin:8px 0; }
+    th, td { border-bottom:1px solid #eee; padding:4px; text-align:left; }
+    th { border-bottom-color:#ccc; }
+    img { max-width:100%; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <h1>{{ title }}</h1>
+      <div class="muted">Generado: {{ generado|date:"Y-m-d H:i" }}</div>
+    </div>
+  </div>
+
+  {% if charts %}
+    {% for c in charts %}
+      <img src="{{ c }}" alt="chart" />
+    {% endfor %}
+  {% endif %}
+
+  <h3>Datos</h3>
+  <pre style="white-space:pre-wrap; font-family:monospace;">{{ resumen|safe }}</pre>
+</body>
+</html>
+

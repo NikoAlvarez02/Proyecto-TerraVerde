@@ -1,0 +1,249 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Historias Clínicas | TerraVerde{% endblock %}
+{% block topbar_title %}Historias Clínicas{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'CSS/historias.css' %}">
+{% endblock %}
+
+{% block content %}
+  <div class="hc-page hc-wrap">
+    <!-- Fuerza seteo de cookie CSRF en la carga de la página -->
+    <form style="display:none">{% csrf_token %}</form>
+
+    <!-- Filtros y selección -->
+    <section class="card">
+      <div class="form-grid">
+        <div class="row">
+          <label>Paciente</label>
+          <select id="paciente"></select>
+        </div>
+        <div class="row">
+          <label>Profesional</label>
+          <select id="profesional"></select>
+        </div>
+        <div class="row">
+          <label>Centro</label>
+          <select id="centro"></select>
+        </div>
+        <div class="row">
+          <label>Fecha y hora</label>
+          <input id="fecha_hora" type="datetime-local" />
+        </div>
+
+        <div class="row">
+          <label>Desde</label>
+          <input id="fdesde" type="date">
+        </div>
+        <div class="row">
+          <label>Hasta</label>
+          <input id="fhasta" type="date">
+        </div>
+        <div class="hc-actions full">
+          <button id="btnNueva" class="btn btn-outline">Agregar Observación</button>
+          <button id="btnFiltrar" class="btn btn-outline">Filtrar</button>
+          <button id="btnPDF" class="btn btn-primary">Exportar Historia PDF</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Formulario de observación -->
+    <section class="card">
+      <div class="form-grid">
+        <div class="row full">
+          <label>Motivo</label>
+          <input id="motivo" type="text" placeholder="Motivo de consulta">
+        </div>
+        <div class="row full">
+          <label>Anamnesis</label>
+          <textarea id="anamnesis" rows="3"></textarea>
+        </div>
+        <div class="row full">
+          <label>Examen físico</label>
+          <textarea id="examen_fisico" rows="3"></textarea>
+        </div>
+        <div class="row">
+          <label>Código Dx</label>
+          <input id="diagnostico_codigo" type="text">
+        </div>
+        <div class="row full">
+          <label>Diagnóstico</label>
+          <input id="diagnostico_texto" type="text">
+        </div>
+        <div class="row full">
+          <label>Estudios solicitados <span class="hint">(Separar por coma o ;)</span></label>
+          <textarea id="estudios_solicitados" rows="2"></textarea>
+        </div>
+        <div class="row full">
+          <label>Tratamiento</label>
+          <textarea id="tratamiento" rows="2"></textarea>
+        </div>
+        <div class="row full">
+          <label>Indicaciones</label>
+          <textarea id="indicaciones" rows="2"></textarea>
+        </div>
+        <div class="row">
+          <label>Próximo control</label>
+          <input id="proximo_control" type="date">
+        </div>
+        <div class="hc-actions full">
+          <button id="btnGuardar" class="btn btn-primary">Guardar Observación</button>
+          <span id="msg" class="hint" style="display:none">Guardado</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tabla -->
+    <section class="card">
+      <h3 style="margin:0 0 10px; color:#2e7d32;">Observaciones del paciente</h3>
+      <table class="hc-table">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Profesional</th>
+            <th>Motivo</th>
+            <th>Diagnóstico</th>
+          </tr>
+        </thead>
+        <tbody id="tablaObs"></tbody>
+      </table>
+    </section>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{% static 'JS/reports/pdf-export.js' %}"></script>
+  <script>
+  function getCookie(name){
+    const m = document.cookie.match('(?:^|; )' + name.replace(/([.$?*|{}()\[\]\\\/\+^])/g, '\\$1') + '=([^;]*)');
+    return m ? decodeURIComponent(m[1]) : undefined;
+  }
+
+  async function apiGet(url){
+    const r = await fetch(url, { credentials: 'include' });
+    if(!r.ok) throw new Error(await r.text());
+    return r.json();
+  }
+  async function apiPost(url, body){
+    const csrftoken = getCookie('csrftoken');
+    const r = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...(csrftoken?{'X-CSRFToken': csrftoken}:{}) },
+      credentials: 'include',
+      body: JSON.stringify(body)
+    });
+    if(!r.ok) throw new Error(await r.text());
+    return r.json();
+  }
+
+  const selPac = document.getElementById('paciente');
+  const selProf = document.getElementById('profesional');
+  const selCentro = document.getElementById('centro');
+  const tablaObs = document.getElementById('tablaObs');
+
+  function nowLocal(){
+    const d = new Date();
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().slice(0,16);
+  }
+  document.getElementById('fecha_hora').value = nowLocal();
+
+  const profMap = new Map();
+  async function cargarCombos(){
+    const [pacs, profs, centros] = await Promise.all([
+      apiGet('/pacientes/api/pacientes/'),
+      apiGet('/profesionales/api/profesionales/'),
+      apiGet('/centros/api/centros/?page_size=200')
+    ]);
+    selPac.innerHTML = '<option value="">-- Seleccionar --</option>' + pacs.map(p=>`<option value="${p.id}">${p.apellido}, ${p.nombre} (${p.dni||''})</option>`).join('');
+    selProf.innerHTML = '<option value="">-- Seleccionar --</option>' + profs.map(p=>{ profMap.set(p.id, `${p.apellido}, ${p.nombre}`); return `<option value="${p.id}">${p.apellido}, ${p.nombre}</option>` }).join('');
+    selCentro.innerHTML = '<option value="">-- Seleccionar --</option>' + (centros.results||centros||[]).map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');
+  }
+
+  async function listarObs(){
+    const pid = selPac.value; if(!pid){ tablaObs.innerHTML=''; return; }
+    const d = document.getElementById('fdesde').value;
+    const h = document.getElementById('fhasta').value;
+    const q = new URLSearchParams({ paciente: pid });
+    if(d) q.append('fecha_hora__date__gte', d);
+    if(h) q.append('fecha_hora__date__lte', h);
+    const data = await apiGet('/historias/api/observaciones/?'+q.toString());
+    const items = data.results || data;
+    tablaObs.innerHTML = items.map(o=>`
+      <tr>
+        <td>${new Date(o.fecha_hora).toLocaleString()}</td>
+        <td>${profMap.get(o.profesional) || o.profesional}</td>
+        <td>${o.motivo||''}</td>
+        <td>${o.diagnostico_texto||''}</td>
+      </tr>
+    `).join('');
+  }
+
+  document.getElementById('btnFiltrar').onclick = listarObs;
+  selPac.onchange = listarObs;
+
+  document.getElementById('btnGuardar').onclick = async ()=>{
+    const body = {
+      paciente: selPac.value ? parseInt(selPac.value) : null,
+      profesional: selProf.value ? parseInt(selProf.value) : null,
+      centro: selCentro.value ? parseInt(selCentro.value) : null,
+      fecha_hora: document.getElementById('fecha_hora').value,
+      motivo: document.getElementById('motivo').value,
+      anamnesis: document.getElementById('anamnesis').value,
+      examen_fisico: document.getElementById('examen_fisico').value,
+      diagnostico_codigo: document.getElementById('diagnostico_codigo').value,
+      diagnostico_texto: document.getElementById('diagnostico_texto').value,
+      estudios_solicitados: document.getElementById('estudios_solicitados').value,
+      tratamiento: document.getElementById('tratamiento').value,
+      indicaciones: document.getElementById('indicaciones').value,
+      proximo_control: document.getElementById('proximo_control').value || null,
+    };
+    if(!body.paciente){ alert('Seleccioná un paciente'); return; }
+    if(!body.profesional){ alert('Seleccioná un profesional'); return; }
+    if(!body.centro){ alert('Seleccioná un centro'); return; }
+    try{
+      await apiPost('/historias/api/observaciones/', body);
+      document.getElementById('msg').style.display='inline';
+      setTimeout(()=>document.getElementById('msg').style.display='none', 1500);
+      listarObs();
+    }catch(e){
+      alert('Error al guardar: ' + e.message);
+    }
+  };
+
+  document.getElementById('btnNueva').onclick = ()=>{
+    document.getElementById('motivo').value='';
+    document.getElementById('anamnesis').value='';
+    document.getElementById('examen_fisico').value='';
+    document.getElementById('diagnostico_codigo').value='';
+    document.getElementById('diagnostico_texto').value='';
+    document.getElementById('estudios_solicitados').value='';
+    document.getElementById('tratamiento').value='';
+    document.getElementById('indicaciones').value='';
+    document.getElementById('proximo_control').value='';
+    document.getElementById('fecha_hora').value = nowLocal();
+  };
+
+  document.getElementById('btnPDF').onclick = async ()=>{
+    const pid = selPac.value ? parseInt(selPac.value) : null;
+    if(!pid){ alert('Seleccioná un paciente'); return; }
+    const params = { paciente: pid, desde: document.getElementById('fdesde').value || undefined, hasta: document.getElementById('fhasta').value || undefined, orientacion:'portrait', tamano_pagina:'A4' };
+    const res = await exportReportToPDF('/reportes/api/pacientes/', params);
+    if(res && (res.archivo_pdf || res.archivo_url)){
+      let url = String((res.archivo_url || res.archivo_pdf) || '').trim();
+      if(url && !/^https?:\/\//i.test(url)){
+        if(!url.startsWith('/')) url = '/' + url;
+      }
+      window.open(url, '_blank');
+    } else {
+      try { console.log('PDF response:', res); } catch(_){}
+      const msg = res && (res.error || res.detail || JSON.stringify(res)) || 'No se pudo generar el PDF';
+      alert(msg);
+    }
+  };
+
+  cargarCombos().then(listarObs).catch(err=>console.error(err));
+  </script>
+{% endblock %}

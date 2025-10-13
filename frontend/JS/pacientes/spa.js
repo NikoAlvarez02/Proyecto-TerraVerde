@@ -8,6 +8,16 @@ const csrftoken = getCookie('csrftoken');
 // ---------- refs ----------
 const tbody = document.getElementById('pacientes-tbody');
 const flash = document.getElementById('flash');
+const inputQ = document.getElementById('q');
+const selectOrden = document.getElementById('orden');
+const btnBuscar = document.getElementById('btnBuscar');
+let nextUrl = null;
+let prevUrl = null;
+let totalCount = 0;
+let currentPage = 1;
+let pageSize = 10;
+let currentOrdering = '-fecha_registro';
+let currentQuery = '';
 
 const modalForm = document.getElementById('modalForm');
 const modalTitle = document.getElementById('modalTitle');
@@ -56,6 +66,15 @@ function openModalEdit(p) {
   document.getElementById('fecha_nacimiento').value = (p.fecha_nacimiento || '').slice(0, 10);
   document.getElementById('telefono').value = p.telefono ?? '';
   document.getElementById('direccion').value = p.direccion ?? '';
+  document.getElementById('email').value = p.email ?? '';
+  document.getElementById('genero').value = p.genero ?? '';
+  document.getElementById('grupo_sanguineo').value = p.grupo_sanguineo ?? '';
+  document.getElementById('alergias').value = p.alergias ?? '';
+  document.getElementById('antecedentes').value = p.antecedentes ?? '';
+  document.getElementById('contacto_emergencia_nombre').value = p.contacto_emergencia_nombre ?? '';
+  document.getElementById('contacto_emergencia_telefono').value = p.contacto_emergencia_telefono ?? '';
+  // centro
+  if (document.getElementById('centro')) document.getElementById('centro').value = p.centro ?? '';
   document.getElementById('nacionalidad').value = p.nacionalidad ?? '';
   document.getElementById('tiene_representante').checked = !!p.tiene_representante;
   document.getElementById('rep_nombre').value = p.rep_nombre ?? '';
@@ -84,11 +103,20 @@ function closeConfirm() {
 // ---------- API base ----------
 const API_BASE = '/pacientes/api/pacientes/';
 
-async function apiList() {
-  const resp = await fetch(API_BASE, {
+function buildQuery(){
+  const params = new URLSearchParams();
+  params.set('page_size', String(pageSize));
+  if(currentOrdering) params.set('ordering', currentOrdering);
+  if(currentQuery) params.set('search', currentQuery);
+  return params.toString();
+}
+
+async function apiList(url=null) {
+  const listUrl = url || (API_BASE + '?' + buildQuery());
+  const resp = await fetch(listUrl, {
     method: 'GET',
     headers: { 'Accept': 'application/json' },
-    credentials: 'same-origin',
+    credentials: 'include',
   });
   if (!resp.ok) throw new Error('GET ' + resp.status);
   return await resp.json();
@@ -153,9 +181,24 @@ async function apiDelete(id) {
 async function renderList() {
   tbody.innerHTML = `<tr><td colspan="5">Cargando...</td></tr>`;
   try {
-    const list = await apiList();
+    const data = await apiList();
+    console.log('Pacientes API payload:', data);
+    const list = Array.isArray(data) ? data : (data.results || []);
+    totalCount = Array.isArray(data) ? list.length : (data.count ?? list.length);
+    nextUrl = data.next || null;
+    prevUrl = data.previous || null;
+    // page calc aproximado si viene paginado
+    const pageInfo = document.getElementById('pageInfo');
+    if(pageInfo){
+      if(data.next || data.previous){
+        // infer page from next/prev
+        const qp = new URLSearchParams((new URL(window.location.origin + (data.next || data.previous || ''))).search);
+        pageSize = Number(qp.get('page_size')||pageSize);
+      }
+      pageInfo.textContent = totalCount ? `${list.length} de ${totalCount}` : `${list.length}`;
+    }
     if (!Array.isArray(list) || list.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#666;">No hay pacientes cargados.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#666;">No hay pacientes cargados.</td></tr>`;
       return;
     }
     tbody.innerHTML = '';
@@ -166,6 +209,7 @@ async function renderList() {
         <td>${p.nombre ?? ''}</td>
         <td>${p.dni ?? ''}</td>
         <td>${p.telefono ?? ''}</td>
+        <td>${p.centro_nombre || (p.centro ?? '')}</td>
         <td style="white-space:nowrap; display:flex; gap:6px;">
           <button class="btn btn-editar" data-edit="${p.id}">Editar</button>
           <button class="btn btn-eliminar" data-del="${p.id}">Eliminar</button>
@@ -212,6 +256,14 @@ form.addEventListener('submit', async (e) => {
     fecha_nacimiento: document.getElementById('fecha_nacimiento').value || null,
     telefono: document.getElementById('telefono').value || '',
     direccion: document.getElementById('direccion').value || '',
+    email: document.getElementById('email').value || '',
+    centro: document.getElementById('centro')?.value ? Number(document.getElementById('centro').value) : null,
+    genero: document.getElementById('genero').value || '',
+    grupo_sanguineo: document.getElementById('grupo_sanguineo').value || '',
+    alergias: document.getElementById('alergias').value || '',
+    antecedentes: document.getElementById('antecedentes').value || '',
+    contacto_emergencia_nombre: document.getElementById('contacto_emergencia_nombre').value || '',
+    contacto_emergencia_telefono: document.getElementById('contacto_emergencia_telefono').value || '',
     nacionalidad: document.getElementById('nacionalidad').value || '',
     tiene_representante: document.getElementById('tiene_representante').checked,
     rep_nombre: document.getElementById('rep_nombre').value || '',
@@ -265,3 +317,46 @@ btnSi.addEventListener('click', async () => {
 
 // ---------- init ----------
 document.addEventListener('DOMContentLoaded', renderList);
+
+// Controles de filtros y paginación
+if(btnBuscar){
+  btnBuscar.addEventListener('click', async ()=>{
+    currentQuery = (inputQ?.value || '').trim();
+    currentOrdering = selectOrden?.value || '-fecha_registro';
+    await renderList();
+  });
+}
+
+const btnPrev = document.getElementById('btnPrev');
+const btnNext = document.getElementById('btnNext');
+if(btnPrev){ btnPrev.addEventListener('click', async ()=>{ if(prevUrl){ await apiList(prevUrl); const data = await apiList(prevUrl); nextUrl=data.next; prevUrl=data.previous; await renderList(); } }); }
+if(btnNext){ btnNext.addEventListener('click', async ()=>{ if(nextUrl){ await apiList(nextUrl); const data = await apiList(nextUrl); nextUrl=data.next; prevUrl=data.previous; await renderList(); } }); }
+
+// Asegurar cabecera con columna Centro (por compatibilidad con plantilla actual)
+document.addEventListener('DOMContentLoaded', () => {
+  const headerRow = document.querySelector('#pacientes-table thead tr');
+  if (headerRow) {
+    const ths = headerRow.querySelectorAll('th');
+    // Si hay 5 columnas (Apellido, Nombre, DNI, Tel..., Acciones), insertar Centro antes de Acciones
+    if (ths.length === 5) {
+      const thCentro = document.createElement('th');
+      thCentro.textContent = 'Centro';
+      headerRow.insertBefore(thCentro, ths[ths.length - 1]);
+    }
+  }
+  // cargar centros en el select del formulario
+  const selCentro = document.getElementById('centro');
+  if (selCentro) {
+    fetch('/centros/api/centros/?page_size=500', {credentials:'include'})
+      .then(r=>r.ok?r.json():null)
+      .then(d=>{
+        const list = Array.isArray(d)?d:(d?.results||[]);
+        selCentro.innerHTML = '<option value="">(sin centro)</option>';
+        list.forEach(c=>{
+          const opt=document.createElement('option');
+          opt.value=c.id; opt.textContent=`${c.nombre} (${c.codigo})`;
+          selCentro.appendChild(opt);
+        });
+      }).catch(()=>{});
+  }
+});

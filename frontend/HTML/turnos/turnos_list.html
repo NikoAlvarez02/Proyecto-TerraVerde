@@ -10,11 +10,38 @@
   <section class="contenido-principal" style="flex:1;">
     <div class="card" style="padding:20px;">
       <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
-        <h1 class="main-title" style="margin:0;">Listado de Turnos (API)</h1>
+        <h1 class="main-title" style="margin:0;">Listado de Turnos</h1>
         <button id="btnNuevo" class="btn btn-guardar">Nuevo Turno</button>
       </div>
 
-      <div style="overflow:auto; margin-top:14px;">
+      <div style="display:flex; gap:8px; align-items:center; justify-content:flex-end; margin-top:8px; flex-wrap:wrap;">
+        <input id="t_q" type="search" placeholder="Buscar paciente/profesional/motivo" style="padding:6px 10px; min-width:240px;" />
+        <select id="t_pac" style="padding:6px 10px; min-width:180px;"><option value="">Paciente (todos)</option></select>
+        <select id="t_prof" style="padding:6px 10px; min-width:180px;"><option value="">Profesional (todos)</option></select>
+        <input id="t_desde" type="date" style="padding:6px 10px;" />
+        <input id="t_hasta" type="date" style="padding:6px 10px;" />
+        <select id="t_estado" style="padding:6px 10px;">
+          <option value="">Todos</option>
+          <option value="pendiente">Pendiente</option>
+          <option value="confirmado">Confirmado</option>
+          <option value="cancelado">Cancelado</option>
+          <option value="atendido">Atendido</option>
+          <option value="ausente">Ausente</option>
+        </select>
+        <select id="t_orden" style="padding:6px 10px;">
+          <option value="-fecha_hora">Más recientes</option>
+          <option value="fecha_hora">Más antiguos</option>
+        </select>
+        <div style="display:flex; gap:6px; align-items:center;">
+          <button id="t_hoy" class="btn">Hoy</button>
+          <button id="t_semana" class="btn">Semana</button>
+          <button id="t_mes" class="btn">Mes</button>
+        </div>
+        <button id="t_buscar" class="btn">Filtrar</button>
+        <button id="t_limpiar" class="btn btn-secundario">Limpiar</button>
+      </div>
+
+      <div style="overflow:auto; margin-top:10px;">
         <table class="tabla-listado">
           <thead>
             <tr>
@@ -32,15 +59,21 @@
         </table>
       </div>
 
+      <div style="display:flex; gap:10px; align-items:center; justify-content:flex-end; margin-top:10px;">
+        <button id="t_prev" class="btn">Anterior</button>
+        <span id="t_pageInfo" style="color:#666;"></span>
+        <button id="t_next" class="btn">Siguiente</button>
+      </div>
+
       <div id="flash" style="margin-top:12px; display:none;"></div>
     </div>
   </section>
 </div>
 
 <!-- Modal Crear/Editar -->
-<div id="modalForm" class="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.35);">
-  <div class="card" style="max-width:720px; width:95%; margin:40px auto; background:#fff; border-radius:12px; padding:16px;">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
+<div id="modalForm" class="modal">
+  <div class="card" style="max-width:720px; width:95%; background:#fff; border-radius:12px; padding:16px; margin:0;">
+    <div class="drag-handle" style="display:flex; justify-content:space-between; align-items:center;">
       <h2 id="modalTitle" class="main-title" style="margin:0;">Nuevo Turno</h2>
       <button id="btnCerrarModal" class="btn btn-secundario">Cerrar</button>
     </div>
@@ -58,7 +91,6 @@
           <label>Hora</label>
           <input type="time" id="hora" name="hora" required>
         </div>
-
         <div>
           <label>Paciente</label>
           <select id="paciente" name="paciente" required>
@@ -71,7 +103,6 @@
             <option value="">Cargando...</option>
           </select>
         </div>
-
         <div>
           <label>Estado</label>
           <select id="estado" name="estado" required>
@@ -80,7 +111,6 @@
             <option value="cancelado">Cancelado</option>
           </select>
         </div>
-
         <div style="grid-column:1 / -1;">
           <label>Motivo</label>
           <input type="text" id="motivo" name="motivo" placeholder="Opcional">
@@ -100,8 +130,8 @@
 </div>
 
 <!-- Confirmación Eliminación -->
-<div id="modalConfirm" class="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.35);">
-  <div class="card" style="max-width:480px; width:95%; margin:40px auto; background:#fff; border-radius:12px; padding:16px;">
+<div id="modalConfirm" class="modal">
+  <div class="card" style="max-width:480px; width:95%; background:#fff; border-radius:12px; padding:16px; margin:0;">
     <h3 style="margin-top:0;">Confirmar eliminación</h3>
     <p>¿Seguro que querés eliminar este turno?</p>
     <div style="display:flex; gap:8px; justify-content:flex-end;">
@@ -110,6 +140,9 @@
     </div>
   </div>
 </div>
+
+<!-- Toast global -->
+<div id="toast" style="display:none;"></div>
 
 <script src="{% static 'JS/turnos/spa.js' %}"></script>
 {% endblock %}

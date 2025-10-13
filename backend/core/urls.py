@@ -1,6 +1,8 @@
 # backend/core/urls.py
 from django.contrib import admin
 from django.urls import path, include, reverse_lazy
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib.auth.views import (
     LoginView, LogoutView,
     PasswordResetView, PasswordResetDoneView,
@@ -8,10 +10,15 @@ from django.contrib.auth.views import (
 )
 from django.contrib.auth.decorators import login_required
 from django.views.generic import TemplateView
-from rest_framework.documentation import include_docs_urls
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularSwaggerView,
+    SpectacularRedocView,
+)
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 # Personalizar títulos del admin
-admin.site.site_header = "🌱 Administración TerraVerde"
+admin.site.site_header = "Administración TerraVerde"
 admin.site.site_title = "TerraVerde Admin"
 admin.site.index_title = "Panel de Administración"
 
@@ -20,7 +27,7 @@ urlpatterns = [
 
     path(
         "admin-mod/",
-        login_required(TemplateView.as_view(template_name="administrador.html")),
+        login_required(TemplateView.as_view(template_name='administracion/administrador.html')),
         name="admin_mod",
     ),
 
@@ -29,10 +36,14 @@ urlpatterns = [
     path("pacientes/", include(("apps.pacientes.urls", "pacientes"), namespace="pacientes")),
     path("profesionales/", include(("apps.profesionales.urls", "profesionales"), namespace="profesionales")),
     path("usuarios/", include(("apps.usuarios.urls", "usuarios"), namespace="usuarios")),
-    # Documentación API
-     #  
-
-    path("api/docs/", include_docs_urls(title="TerraVerde API")),
+    path("centros/", include(("apps.centers.urls", "centros"), namespace="centros")),
+    path("historias/", include(("apps.medical_records.urls", "historias"), namespace="historias")),
+    path("reportes/", include(("apps.reports.urls", "reportes"), namespace="reportes")),
+   
+    # OpenAPI schema + UIs (drf-spectacular)
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
+    path("api/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
     path("", login_required(TemplateView.as_view(template_name="paginaprincipal.html")), name="home"),
     # ... resto (login, logout, reset, etc.)
 
@@ -43,6 +54,8 @@ urlpatterns = [
     # Auth
     path("login/",  LoginView.as_view(template_name="registration/login.html"), name="login"),
     path("logout/", LogoutView.as_view(), name="logout"),
+    path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
 
     # Password reset
     path(
@@ -75,3 +88,7 @@ urlpatterns = [
         name="password_reset_complete",
     ),
 ]
+
+# Servir media en desarrollo
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

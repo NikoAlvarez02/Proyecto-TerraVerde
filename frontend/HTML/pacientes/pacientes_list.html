@@ -8,17 +8,27 @@
 {% block content %}
 <div class="main-wrap" style="display:flex; gap:24px;">
   <section class="contenido-principal" style="flex:1;">
-    <div class="card" style="padding:20px;">
-      <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
-        <h1 class="main-title" style="margin:0;">Listado de Pacientes </h1>
-        <button id="btnNuevo" class="btn btn-guardar">Nuevo Paciente</button>
-      </div>
+      <div class="card" style="padding:20px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
+          <h1 class="main-title" style="margin:0;">Listado de Pacientes </h1>
+          <button id="btnNuevo" class="btn btn-guardar">Nuevo Paciente</button>
+        </div>
+
+        <div style="display:flex; gap:8px; align-items:center; justify-content:flex-end; margin-top:10px;">
+          <input id="q" type="search" placeholder="Buscar DNI / nombre / apellido" style="padding:6px 10px; min-width:260px;">
+          <select id="orden" style="padding:6px 10px;">
+            <option value="-fecha_registro">Más recientes</option>
+            <option value="apellido">Apellido A→Z</option>
+            <option value="-apellido">Apellido Z→A</option>
+          </select>
+          <button id="btnBuscar" class="btn">Filtrar</button>
+        </div>
 
       <div style="overflow:auto; margin-top:14px;">
         <table id="pacientes-table" class="tabla-listado">
           <thead>
             <tr>
-              <th>Apellido</th>
+              <th>Apellido</th> 
               <th>Nombre</th>
               <th>DNI</th>
               <th>Teléfono</th>
@@ -103,6 +113,49 @@
         <div>
           <label>Rep. Nacionalidad</label>
           <input type="text" id="rep_nacionalidad" name="rep_nacionalidad">
+        </div>
+        <div>
+          <label>Email</label>
+          <input type="email" id="email" name="email">
+        </div>
+        <div>
+          <label>Centro</label>
+          <select id="centro" name="centro"></select>
+        </div>
+        <div>
+          <label>Género</label>
+          <select id="genero" name="genero">
+            <option value="">(sin especificar)</option>
+            <option value="M">Masculino</option>
+            <option value="F">Femenino</option>
+            <option value="X">Otro/No binario</option>
+          </select>
+        </div>
+        <div>
+          <label>Grupo Sanguíneo</label>
+          <select id="grupo_sanguineo" name="grupo_sanguineo">
+            <option value="">(sin especificar)</option>
+            <option>A+</option><option>A-</option>
+            <option>B+</option><option>B-</option>
+            <option>AB+</option><option>AB-</option>
+            <option>O+</option><option>O-</option>
+          </select>
+        </div>
+        <div style="grid-column:1/-1;">
+          <label>Alergias</label>
+          <textarea id="alergias" rows="2"></textarea>
+        </div>
+        <div style="grid-column:1/-1;">
+          <label>Antecedentes</label>
+          <textarea id="antecedentes" rows="2"></textarea>
+        </div>
+        <div>
+          <label>Contacto Emergencia (Nombre)</label>
+          <input type="text" id="contacto_emergencia_nombre">
+        </div>
+        <div>
+          <label>Contacto Emergencia (Teléfono)</label>
+          <input type="text" id="contacto_emergencia_telefono">
         </div>
       </div>
 

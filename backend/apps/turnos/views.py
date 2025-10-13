@@ -5,3 +5,4 @@ from .serializers import TurnoSerializer   # <- acá el cambio
 class TurnoViewSet(viewsets.ModelViewSet):
     queryset = Turno.objects.all()
     serializer_class = TurnoSerializer
+    

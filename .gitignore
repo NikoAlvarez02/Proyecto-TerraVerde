@@ -1,2 +1,28 @@
-node_modules/
-frontend/node_modules/
+# Python / Django
+__pycache__/
+*.py[cod]
+*.log
+*.sqlite3
+db.sqlite3
+
+# Entornos
+.venv/
+env/
+venv/
+
+# Django build
+staticfiles/
+media/
+*.pdf
+
+# IDE / SO
+.vscode/
+.idea/
+.DS_Store
+
+# Entornos y secretos
+*.env
+.env
+backend/.env
+frontend/.env
+

@@ -7,7 +7,9 @@
     <title>{% block title %}Gestión | TerraVerde{% endblock %}</title>
 
     <link rel="icon" href="{% static 'ASSETS/terraverde.ico' %}">
-    <link rel="stylesheet" href="{% static 'CSS/styleturno.css' %}"> 
+    <link rel="stylesheet" href="{% static 'CSS/styleturno.css' %}">
+    {% block extra_css %}{% endblock %}
+     
 </head>
 <body>
     <header class="topbar">
@@ -26,6 +28,7 @@
             <h3>Módulos</h3>
             <a href="{% url 'turnos:list' %}">Turnos</a>
             <a href="{% url 'pacientes:list' %}">Pacientes</a>
+            <a href="{% url 'historias:historia' %}">Historias Clínicas</a>
 
             <a href="{% url 'admin_mod' %}">Administración</a>
             <a href="{% url 'home' %}">Volver al Inicio</a>
