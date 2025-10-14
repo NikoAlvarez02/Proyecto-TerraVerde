@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Certificado Médico - TerraVerde</title>
+    <style>
+        @page { margin: 2cm; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family: Arial, sans-serif; color:#2c3e50; line-height:1.6; }
+        .page { max-width:21cm; margin:0 auto; padding:2cm; }
+        .header { display:flex; align-items:center; justify-content:space-between; padding-bottom:20px; border-bottom:3px solid #2d5f4f; margin-bottom:30px; }
+        .logo-section { display:flex; align-items:center; gap:15px; }
+        .logo { width:70px; height:70px; border-radius:10px; border:3px solid #2d5f4f; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+        .logo img { width:100%; height:100%; object-fit:contain; }
+        .title-section h1 { color:#2d5f4f; font-size:22px; font-weight:bold; }
+        .title-section h2 { color:#5a8c73; font-size:16px; }
+        .header-right { text-align:right; color:#666; font-size:12px; }
+        .document-title { background:linear-gradient(135deg,#2d5f4f 0%,#5a8c73 100%); color:#fff; padding:12px 20px; border-radius:8px; margin-bottom:20px; }
+        .section { margin:20px 0; }
+        .section-title { color:#2d5f4f; font-weight:bold; font-size:16px; margin-bottom:8px; border-bottom:2px solid #e0e0e0; padding-bottom:4px; }
+        .signature-section { margin-top: 50px; padding-top: 30px; border-top: 1px solid #ddd; text-align:center; }
+        .signature-line { width: 300px; border-top: 2px solid #2d5f4f; margin: 0 auto 10px; }
+        .signature-info { color:#2d5f4f; font-weight:bold; }
+        .signature-detail { color:#666; font-size:12px; }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="header">
+            <div class="logo-section">
+                <div class="logo">
+                    {% if logo_b64 %}
+                        <img src="data:image/png;base64,{{ logo_b64 }}" alt="TERRAVERDE">
+                    {% else %}
+                        <img src="frontend/ASSETS/terraverde.png" alt="TERRAVERDE">
+                    {% endif %}
+                </div>
+                <div class="title-section">
+                    <h1>TERRAVERDE</h1>
+                    <h2>Espacio de Desarrollo Integral</h2>
+                </div>
+            </div>
+            <div class="header-right">
+                <div><strong>Fecha:</strong> {{ generado|date:"d/m/Y" }}</div>
+            </div>
+        </div>
+
+        <div class="document-title">
+            <strong>CERTIFICADO MÉDICO</strong>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Paciente</div>
+            <div>{{ paciente }}</div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Detalle</div>
+            <div>Diagnóstico: {{ datos.diagnostico }}</div>
+            <div>Reposo (días): {{ datos.reposo_dias }}</div>
+            <div>Observaciones: {{ datos.observaciones }}</div>
+        </div>
+
+        <div class="signature-section">
+            <div class="signature-line"></div>
+            <div class="signature-info">{{ profesional|default:"" }}</div>
+        </div>
+    </div>
+</body>
+</html>

@@ -52,6 +52,8 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    # Registrar auditoría después de que el usuario esté resuelto
+    "apps.usuarios.middleware.AuditMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -71,6 +73,8 @@ TEMPLATES = [{
             'django.template.context_processors.request',
             'django.contrib.auth.context_processors.auth',
             'django.contrib.messages.context_processors.messages',
+            'apps.usuarios.context_processors.perfil_permisos',
+            'apps.usuarios.context_processors.perfil_permisos',
         ],
     },
 }]
@@ -229,3 +233,5 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': _td(minutes=60),
     'REFRESH_TOKEN_LIFETIME': _td(days=7),
 }
+
+
