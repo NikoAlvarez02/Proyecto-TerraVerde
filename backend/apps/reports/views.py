@@ -1,9 +1,10 @@
 from rest_framework import viewsets, permissions, decorators, response, status
+from core.permissions import require_perfil_attr
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.core.files.base import ContentFile
 from django.utils.text import slugify
-from datetime import datetime
+from datetime import datetime, date
 from .models import ReportTemplate, GeneratedReport, ScheduledReport
 from .serializers import (
     ReportTemplateSerializer,
@@ -47,8 +48,19 @@ class ScheduledReportViewSet(viewsets.ModelViewSet):
     authentication_classes = [CsrfExemptSessionAuthentication, TokenAuthentication, JWTAuthentication]
 
 
+def _json_safe(value):
+    """Convierte fechas a ISO y recorre estructuras para JSONField."""
+    if isinstance(value, (datetime, date)):
+        return value.isoformat()
+    if isinstance(value, dict):
+        return {k: _json_safe(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_safe(v) for v in value]
+    return value
+
+
 class PatientReportViewSet(viewsets.ViewSet):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, require_perfil_attr('puede_generar_reportes')]
     authentication_classes = [CsrfExemptSessionAuthentication, TokenAuthentication, JWTAuthentication]
 
     @decorators.action(methods=['post'], detail=False, url_path='historia')
@@ -115,7 +127,7 @@ class PatientReportViewSet(viewsets.ViewSet):
             nombre = request.data.get('nombre_archivo') or f"Historia_{slugify(str(paciente))}_{datetime.now():%Y-%m-%d}.pdf"
             gr = GeneratedReport(
                 tipo='historia_completa',
-                parametros_json=params.validated_data,
+                parametros_json=_json_safe(params.validated_data),
                 usuario_generador=request.user,
             )
             gr.archivo_pdf.save(nombre, ContentFile(pdf_bytes))
@@ -149,7 +161,7 @@ class PatientReportViewSet(viewsets.ViewSet):
             nombre = request.data.get('nombre_archivo') or f"Epicrisis_{slugify(str(paciente))}_{datetime.now():%Y-%m-%d}.pdf"
             gr = GeneratedReport(
                 tipo='epicrisis',
-                parametros_json=params.validated_data,
+                parametros_json=_json_safe(params.validated_data),
                 usuario_generador=request.user,
             )
             gr.archivo_pdf.save(nombre, ContentFile(pdf_bytes))
@@ -200,7 +212,7 @@ class PatientReportViewSet(viewsets.ViewSet):
 
 
 class StatisticsReportViewSet(viewsets.ViewSet):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, require_perfil_attr('puede_ver_estadisticas')]
     authentication_classes = [CsrfExemptSessionAuthentication, TokenAuthentication, JWTAuthentication]
 
     @decorators.action(methods=['post'], detail=False, url_path='atenciones-por-centro')
@@ -228,7 +240,7 @@ class StatisticsReportViewSet(viewsets.ViewSet):
             except Exception:
                 pass
             nombre = request.data.get('nombre_archivo') or f"Atenciones_Centro_{datetime.now():%Y-%m-%d}.pdf"
-            gr = GeneratedReport(tipo='estadistico', parametros_json=params.validated_data, usuario_generador=request.user)
+            gr = GeneratedReport(tipo='estadistico', parametros_json=_json_safe(params.validated_data), usuario_generador=request.user)
             gr.archivo_pdf.save(nombre, ContentFile(pdf_bytes)); gr.save()
             return response.Response(GeneratedReportSerializer(gr, context={'request': request}).data, status=201)
         except Exception as e:
@@ -258,7 +270,7 @@ class StatisticsReportViewSet(viewsets.ViewSet):
             except Exception:
                 pass
             nombre = request.data.get('nombre_archivo') or f"Productividad_{datetime.now():%Y-%m-%d}.pdf"
-            gr = GeneratedReport(tipo='estadistico', parametros_json=params.validated_data, usuario_generador=request.user)
+            gr = GeneratedReport(tipo='estadistico', parametros_json=_json_safe(params.validated_data), usuario_generador=request.user)
             gr.archivo_pdf.save(nombre, ContentFile(pdf_bytes)); gr.save()
             return response.Response(GeneratedReportSerializer(gr, context={'request': request}).data, status=201)
         except Exception as e:
@@ -280,7 +292,7 @@ class StatisticsReportViewSet(viewsets.ViewSet):
             pass
         pdf_bytes = pdf.generate_statistical_report_pdf('Epidemiológico', resumen, params.validated_data, charts)
         nombre = request.data.get('nombre_archivo') or f"Epidemiologico_{datetime.now():%Y-%m-%d}.pdf"
-        gr = GeneratedReport(tipo='estadistico', parametros_json=params.validated_data, usuario_generador=request.user)
+        gr = GeneratedReport(tipo='estadistico', parametros_json=_json_safe(params.validated_data), usuario_generador=request.user)
         gr.archivo_pdf.save(nombre, ContentFile(pdf_bytes)); gr.save()
         return response.Response(GeneratedReportSerializer(gr).data, status=201)
 
@@ -295,6 +307,6 @@ class AdministrativeReportViewSet(viewsets.ViewSet):
         # Placeholder administrativo
         pdf_bytes = pdf.generate_statistical_report_pdf('Reporte Administrativo', {'estado': 'OK'}, params.validated_data)
         nombre = request.data.get('nombre_archivo') or f"Administrativo_{datetime.now():%Y-%m-%d}.pdf"
-        gr = GeneratedReport(tipo='administrativo', parametros_json=params.validated_data, usuario_generador=request.user)
+        gr = GeneratedReport(tipo='administrativo', parametros_json=_json_safe(params.validated_data), usuario_generador=request.user)
         gr.archivo_pdf.save(nombre, ContentFile(pdf_bytes)); gr.save()
         return response.Response(GeneratedReportSerializer(gr).data, status=201)

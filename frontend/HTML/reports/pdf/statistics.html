@@ -1,35 +1,165 @@
-{% load static %}
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="es">
 <head>
   <meta charset="utf-8">
+  <title>{{ titulo }}</title>
   <style>
-    body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 12px; }
-    h1 { font-size: 18px; margin: 0 0 6px; }
-    .header { display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #ccc; padding-bottom:8px; margin-bottom:12px; }
-    .muted { color:#666; font-size: 11px; }
-    table { width:100%; border-collapse:collapse; margin:8px 0; }
-    th, td { border-bottom:1px solid #eee; padding:4px; text-align:left; }
-    th { border-bottom-color:#ccc; }
-    img { max-width:100%; }
+    @page { margin: 2cm; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: Arial, DejaVu Sans, sans-serif; color:#2c3e50; line-height:1.6; font-size:12px; }
+    .page { max-width:21cm; margin:0 auto; }
+    .wrap { padding:2cm; }
+    .header { display:flex; align-items:center; justify-content:space-between; padding-bottom:16px; border-bottom:3px solid #2d5f4f; margin-bottom:20px; }
+    .logo { width:64px; height:64px; border-radius:8px; border:2px solid #2d5f4f; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+    .logo img { width:100%; height:100%; object-fit:contain; }
+    .title h1 { color:#2d5f4f; font-size:20px; margin:0; }
+    .title h2 { color:#5a8c73; font-size:14px; margin:0; }
+    .muted { color:#666; font-size:11px; }
+    .document-title { background:linear-gradient(135deg,#2d5f4f 0%,#5a8c73 100%); color:#fff; padding:10px 16px; border-radius:8px; margin-bottom:14px; font-weight:bold; }
+    .kpi-grid { display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin:10px 0 18px; }
+    .kpi { background:#f8f9fa; border-left:4px solid #5a8c73; padding:8px 10px; border-radius:6px; font-size:12px; }
+    .kpi .label { color:#2d5f4f; font-weight:bold; }
+    .section { margin:18px 0; }
+    .section-title { color:#2d5f4f; font-weight:bold; font-size:14px; margin-bottom:8px; border-bottom:2px solid #e0e0e0; padding-bottom:6px; }
+    table { width:100%; border-collapse: collapse; font-size:12px; }
+    th, td { border-bottom:1px solid #e5e5e5; padding:6px 4px; }
+    th { text-align:left; color:#2d5f4f; }
+    .chart { margin:12px 0; }
+    .bar { background:#e9f3ee; border:1px solid #b7d1c3; height:14px; border-radius:7px; overflow:hidden; }
+    .bar > span { display:block; height:100%; background:#2d5f4f; }
+    .row { display:flex; align-items:center; gap:8px; margin:6px 0; }
+    .row .label { width:45%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .row .value { width:8%; text-align:right; }
+    .row .bar { flex:1; }
   </style>
 </head>
 <body>
-  <div class="header">
-    <div>
-      <h1>{{ title }}</h1>
-      <div class="muted">Generado: {{ generado|date:"Y-m-d H:i" }}</div>
+  <div class="page">
+    <div class="wrap">
+      <div class="header">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div class="logo">
+            {% if logo_b64 %}
+              <img src="data:image/png;base64,{{ logo_b64 }}" alt="TERRAVERDE">
+            {% endif %}
+          </div>
+          <div class="title">
+            <h1>TERRAVERDE</h1>
+            <h2>Espacio de Desarrollo Integral</h2>
+          </div>
+        </div>
+        <div class="muted">Generado: {{ generado|date:"Y-m-d H:i" }}</div>
+      </div>
+
+      <div class="document-title">{{ titulo|default:"Reporte Estadístico" }}</div>
+
+      <div class="kpi-grid">
+        <div class="kpi"><div class="label">Desde</div><div>{{ params.desde|default:"-" }}</div></div>
+        <div class="kpi"><div class="label">Hasta</div><div>{{ params.hasta|default:"-" }}</div></div>
+        <div class="kpi"><div class="label">Total</div><div>{{ total|default:"-" }}</div></div>
+      </div>
+
+      {% if resumen.por_centro %}
+      <div class="section">
+        <div class="section-title">Atenciones por Centro</div>
+        <table>
+          <thead><tr><th>Centro</th><th style="text-align:right">Atenciones</th></tr></thead>
+          <tbody>
+          {% for it in resumen.por_centro %}
+            <tr>
+              <td>
+                {% if it.centro__nombre %}{{ it.centro__nombre }}
+                {% elif it.centro %}{{ it.centro }}
+                {% else %}-{% endif %}
+              </td>
+              <td style="text-align:right">{{ it.c }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="2">Sin datos</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
+
+      {% if resumen.productividad or resumen.por_profesional %}
+      <div class="section">
+        <div class="section-title">Productividad por Profesional</div>
+        <table>
+          <thead><tr><th>Profesional</th><th style="text-align:right">Atenciones</th></tr></thead>
+          <tbody>
+          {% if resumen.productividad %}
+            {% for it in resumen.productividad %}
+              <tr>
+                <td>{{ it.profesional__apellido }}, {{ it.profesional__nombre }}</td>
+                <td style="text-align:right">{{ it.c }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="2">Sin datos</td></tr>
+            {% endfor %}
+          {% elif resumen.por_profesional %}
+            {% for it in resumen.por_profesional %}
+              <tr>
+                <td>{{ it.profesional__apellido }}, {{ it.profesional__nombre }}</td>
+                <td style="text-align:right">{{ it.c }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="2">Sin datos</td></tr>
+            {% endfor %}
+          {% endif %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
+
+      {% if resumen.por_cie10 or resumen.top_diagnosticos %}
+      <div class="section">
+        <div class="section-title">Diagnósticos</div>
+        <table>
+          <thead><tr><th>Diagnóstico / Código</th><th style="text-align:right">Casos</th></tr></thead>
+          <tbody>
+          {% if resumen.por_cie10 %}
+            {% for it in resumen.por_cie10 %}
+              <tr>
+                <td>{{ it.diagnostico_codigo|default:"N/A" }}</td>
+                <td style="text-align:right">{{ it.c }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="2">Sin datos</td></tr>
+            {% endfor %}
+          {% elif resumen.top_diagnosticos %}
+            {% for it in resumen.top_diagnosticos %}
+              <tr>
+                <td>{{ it.diagnostico_texto|default:"N/A" }}</td>
+                <td style="text-align:right">{{ it.c }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="2">Sin datos</td></tr>
+            {% endfor %}
+          {% endif %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
+
+      {% if chart_blocks %}
+      <div class="section">
+        <div class="section-title">Gráficos</div>
+        {% for ch in chart_blocks %}
+          <div class="chart">
+            <div class="muted" style="margin-bottom:6px"><strong>{{ ch.title }}</strong></div>
+            {% for r in ch.rows %}
+              <div class="row">
+                <div class="label">{{ r.label }}</div>
+                <div class="bar"><span style="width: {{ r.perc }}%"></span></div>
+                <div class="value">{{ r.value }}</div>
+              </div>
+            {% endfor %}
+          </div>
+        {% endfor %}
+      </div>
+      {% endif %}
     </div>
   </div>
-
-  {% if charts %}
-    {% for c in charts %}
-      <img src="{{ c }}" alt="chart" />
-    {% endfor %}
-  {% endif %}
-
-  <h3>Datos</h3>
-  <pre style="white-space:pre-wrap; font-family:monospace;">{{ resumen|safe }}</pre>
 </body>
 </html>
-

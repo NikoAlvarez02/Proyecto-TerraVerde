@@ -26,8 +26,8 @@
     <main class="main-wrap">
         <nav class="sidebar" id="sidebar">
             <h3>Módulos</h3>
-            <a href="{% url 'turnos:list' %}">Turnos</a>
-            <a href="{% url 'pacientes:list' %}">Pacientes</a>
+            {% if request.user.is_authenticated and request.user.perfil and request.user.perfil.puede_ver_calendario %}<a href="{% url 'turnos:list' %}">Turnos</a>{% endif %}
+            {% if request.user.is_authenticated and request.user.perfil and request.user.perfil.puede_ver_pacientes %}<a href="{% url 'pacientes:list' %}">Pacientes</a>{% endif %}
             <a href="{% url 'historias:historia' %}">Historias Clínicas</a>
 
             <a href="{% url 'admin_mod' %}">Administración</a>
@@ -56,3 +56,4 @@
 
 </body>
 </html>
+

@@ -27,7 +27,12 @@
     {% if request.user.is_authenticated %}
       {% if request.user.is_staff or request.user.is_superuser %}
         <a href="{% url 'admin:index' %}" target="_blank" rel="noopener">Panel de administración de Django</a>
-      {% endif %}
+        <a href="{% url 'centros:list' %}">Centros</a>
+        <a href="{% url 'historias:historia' %}">Historia Clínica</a>
+        <a href="{% url 'reportes:dashboard' %}">Reportes</a>
+        <a href="{% url 'reportes:viewer' %}">Visor de Reportes</a>
+        <a href="{% url 'usuarios:list' %}">Usuarios</a>
+        {% endif %}
     {% endif %}
 
     <a href="{% url 'home' %}">Volver al inicio</a>

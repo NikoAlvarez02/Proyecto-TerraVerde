@@ -16,6 +16,7 @@ from drf_spectacular.views import (
     SpectacularRedocView,
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from . import views as core_views
 
 # Personalizar títulos del admin
 admin.site.site_header = "Administración TerraVerde"
@@ -45,6 +46,8 @@ urlpatterns = [
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
     path("api/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
     path("", login_required(TemplateView.as_view(template_name="paginaprincipal.html")), name="home"),
+    path("weasy/pdf/", core_views.weasy_pdf_test, name="weasy_pdf_test"),
+    path("weasy/diagnostico/", core_views.weasy_diagnostico, name="weasy_diagnostico"),
     # ... resto (login, logout, reset, etc.)
 
     
