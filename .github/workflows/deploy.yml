@@ -3,7 +3,7 @@ name: Deploy to VPS
 on:
   push:
     branches:
-      - main  # o la rama que uses para el deploy
+      - main  # o la rama que uses para desplegar
 
 jobs:
   deploy:
@@ -20,6 +20,27 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            cd /var/www/Proyecto-TerraVerde || exit 1
+            cd /root/Proyecto-TerraVerde/backend || exit 1
+
+            echo "📦 Actualizando código..."
             git pull
-            docker compose up -d --build
+
+            echo "🐍 Activando entorno virtual..."
+            source venv/bin/activate
+
+            echo "🔧 Instalando dependencias..."
+            pip install -r requirements.txt
+
+            echo "🗃️ Aplicando migraciones..."
+            python manage.py migrate --noinput
+
+            echo "📁 Recolectando archivos estáticos..."
+            python manage.py collectstatic --noinput
+
+            echo "🔄 Reiniciando Gunicorn..."
+            systemctl restart gunicorn
+
+            echo "✅ Reinicio de Gunicorn completo"
+
+            echo "🧱 (Opcional) Reiniciando Nginx..."
+            systemctl reload nginx || echo "Nginx no recargado (no es crítico)"
