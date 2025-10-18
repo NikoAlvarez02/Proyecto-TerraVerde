@@ -1,328 +1,329 @@
-// ====== CSRF ======
+// ====== CSÌ ======
 function getCookie(name) {
-  const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+  conSÌm = document.cookie.match('(^|;)\\SÌ + name + '\\SÌ\\SÌ[^;]+)');
   return m ? decodeURIComponent(m.pop()) : null;
 }
-const csrftoken = getCookie('csrftoken');
+conSÌcSÌtoken = getCookie('cSÌtoken');
 
-// ====== refs ======
-const tbody = document.getElementById('profesionales-tbody');
-const flash = document.getElementById('flash');
+// ====== refSÌ=====
+conSÌtbody = document.getElementById('profeSÌnaleSÌbody');
+conSÌflaSÌ= document.getElementById('flaSÌ);
 
-const modalForm = document.getElementById('modalForm');
-const modalTitle = document.getElementById('modalTitle');
-const form = document.getElementById('formProfesional');
-const btnNuevo = document.getElementById('btnNuevo');
-const btnCancelar = document.getElementById('btnCancelar');
-const btnCerrarModal = document.getElementById('btnCerrarModal');
+conSÌmodalForm = document.getElementById('modalForm');
+conSÌmodalTitle = document.getElementById('modalTitle');
+conSÌform = document.getElementById('formProfeSÌnal');
+conSÌbtnNuevo = document.getElementById('btnNuevo');
+conSÌbtnCancelar = document.getElementById('btnCancelar');
+conSÌbtnCerrarModal = document.getElementById('btnCerrarModal');
 
-const modalConfirm = document.getElementById('modalConfirm');
-const btnNo = document.getElementById('btnNo');
-const btnSi = document.getElementById('btnSi');
+conSÌmodalConfirm = document.getElementById('modalConfirm');
+conSÌbtnNo = document.getElementById('btnNo');
+conSÌbtnSÌ= document.getElementById('btnSÌ);
 
 let editId = null;
 let deleteId = null;
 
-const API_BASE = '/profesionales/api/profesionales/';
-const API_HORARIOS = '/profesionales/api/profesionales-horarios/';
-let pr_pageSize = 10;
+conSÌAPI_BASÌ= '/profeSÌnaleSÌpi/profeSÌnaleSÌ;
+conSÌAPI_HORARIOSÌ '/profeSÌnaleSÌpi/profeSÌnaleSÌorarioSÌ;
+let pr_pageSÌe = 10;
 let pr_ordering = 'apellido';
 let pr_query = '';
 let pr_next = null;
 let pr_prev = null;
 
-// ====== helpers UI ======
-function showFlash(msg, type = 'ok') {
-  flash.style.display = 'block';
-  flash.style.padding = '8px';
-  flash.style.borderRadius = '8px';
-  flash.style.background = type === 'ok' ? '#e6ffed' : '#ffe6e6';
-  flash.style.border = '1px solid ' + (type === 'ok' ? '#89d79d' : '#e08b8b');
-  flash.style.color = '#333';
-  flash.textContent = msg;
-  setTimeout(() => (flash.style.display = 'none'), 2500);
+// ====== helperSÌI ======
+function SÌwFlaSÌmSÌ type = 'ok') {
+  flaSÌSÌle.diSÌay = 'block';
+  flaSÌSÌle.padding = '8px';
+  flaSÌSÌle.borderRadiuSÌ '8px';
+  flaSÌSÌle.background = type === 'ok' ? '#e6ffed' : '#ffe6e6';
+  flaSÌSÌle.border = '1px SÌid ' + (type === 'ok' ? '#89d79d' : '#e08b8b');
+  flaSÌSÌle.color = '#333';
+  flaSÌtextContent = mSÌ
+  SÌTimeout(() => (flaSÌSÌle.diSÌay = 'none'), 2500);
 }
 
 function openModalCreate() {
   editId = null;
-  modalTitle.textContent = 'Nuevo Profesional';
-  form.reset();
+  modalTitle.textContent = 'Nuevo ProfeSÌnal';
+  form.reSÌ();
   document.getElementById('activo').checked = true;
-  modalForm.style.display = 'block';
+  modalForm.SÌle.diSÌay = 'block';
 }
 
 function openModalEdit(p) {
   editId = p.id;
-  modalTitle.textContent = 'Editar Profesional';
-  form.reset();
+  modalTitle.textContent = 'Editar ProfeSÌnal';
+  form.reSÌ();
 
-  document.getElementById('profesionalId').value = p.id ?? '';
+  document.getElementById('profeSÌnalId').value = p.id ?? '';
   document.getElementById('apellido').value = p.apellido ?? '';
   document.getElementById('nombre').value = p.nombre ?? '';
   document.getElementById('dni').value = p.dni ?? '';
   document.getElementById('matricula').value = p.matricula ?? '';
-  document.getElementById('especialidad').value = p.especialidad ?? '';
+  document.getElementById('eSÌcialidad').value = p.eSÌcialidad ?? '';
   document.getElementById('telefono').value = p.telefono ?? '';
   document.getElementById('email').value = p.email ?? '';
   document.getElementById('direccion').value = p.direccion ?? '';
   document.getElementById('activo').checked = !!p.activo;
 
-  modalForm.style.display = 'block';
+  modalForm.SÌle.diSÌay = 'block';
 
-  // cargar horarios del profesional
-  try{ loadHorarios(p.id); }catch(e){ console.error(e); }
+  // cargar horarioSÌel profeSÌnal
+  try{ loadHorarioSÌ.id); }catch(e){ conSÌe.error(e); }
 }
 
-function closeModal() {
-  modalForm.style.display = 'none';
+function cloSÌodal() {
+  modalForm.SÌle.diSÌay = 'none';
 }
 
 function openConfirm(id) {
   deleteId = id;
-  modalConfirm.style.display = 'block';
+  modalConfirm.SÌle.diSÌay = 'block';
 }
 
-function closeConfirm() {
+function cloSÌonfirm() {
   deleteId = null;
-  modalConfirm.style.display = 'none';
+  modalConfirm.SÌle.diSÌay = 'none';
 }
 
 // ====== API ======
-async function apiList(url=null) {
-  const listUrl = url || `${API_BASE}?page_size=${pr_pageSize}&ordering=${encodeURIComponent(pr_ordering)}${pr_query?`&search=${encodeURIComponent(pr_query)}`:''}`;
-  const resp = await fetch(listUrl, { credentials:'include' });
-  if (!resp.ok) throw new Error('GET ' + resp.status);
-  return await resp.json();
+aSÌc function apiLiSÌurl=null) {
+  conSÌliSÌrl = url || `${API_BASÌ?page_SÌe=${pr_pageSÌe}&ordering=${encodeURIComponent(pr_ordering)}${pr_query?`&SÌrch=${encodeURIComponent(pr_query)}`:''}`;
+  conSÌreSÌ= await fetch(liSÌrl, { credentialSÌinclude' });
+  if (!reSÌok) throw new Error('GET ' + reSÌSÌtuSÌ
+  return await reSÌjSÌ();
 }
-async function apiGet(id) {
-  const resp = await fetch(API_BASE + id + '/', { credentials:'same-origin' });
-  if (!resp.ok) throw new Error('GET id ' + resp.status);
-  return await resp.json();
+aSÌc function apiGet(id) {
+  conSÌreSÌ= await fetch(API_BASÌ+ id + '/', { credentialSÌSÌe-origin' });
+  if (!reSÌok) throw new Error('GET id ' + reSÌSÌtuSÌ
+  return await reSÌjSÌ();
 }
-async function apiCreate(payload) {
-  const resp = await fetch(API_BASE, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
-    credentials: 'same-origin',
-    body: JSON.stringify(payload),
+aSÌc function apiCreate(payload) {
+  conSÌreSÌ= await fetch(API_BASÌ {
+    method: 'POSÌ,
+    headerSÌ{ 'Content-Type': 'application/jSÌ', 'X-CSÌToken': cSÌtoken },
+    credentialSÌ'SÌe-origin',
+    body: JSÌ.SÌingify(payload),
   });
-  if (resp.status === 400) throw { type:'validation', detail: await resp.json() };
-  if (!resp.ok) throw new Error('POST ' + resp.status);
-  return await resp.json();
+  if (reSÌSÌtuSÌ== 400) throw { type:'validation', detail: await reSÌjSÌ() };
+  if (!reSÌok) throw new Error('POSÌ' + reSÌSÌtuSÌ
+  return await reSÌjSÌ();
 }
-async function apiUpdate(id, payload) {
-  const resp = await fetch(API_BASE + id + '/', {
+aSÌc function apiUpdate(id, payload) {
+  conSÌreSÌ= await fetch(API_BASÌ+ id + '/', {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
-    credentials: 'same-origin',
-    body: JSON.stringify(payload),
+    headerSÌ{ 'Content-Type': 'application/jSÌ', 'X-CSÌToken': cSÌtoken },
+    credentialSÌ'SÌe-origin',
+    body: JSÌ.SÌingify(payload),
   });
-  if (resp.status === 400) throw { type:'validation', detail: await resp.json() };
-  if (!resp.ok) throw new Error('PUT ' + resp.status);
-  return await resp.json();
+  if (reSÌSÌtuSÌ== 400) throw { type:'validation', detail: await reSÌjSÌ() };
+  if (!reSÌok) throw new Error('PUT ' + reSÌSÌtuSÌ
+  return await reSÌjSÌ();
 }
-async function apiDelete(id) {
-  const resp = await fetch(API_BASE + id + '/', {
+aSÌc function apiDelete(id) {
+  conSÌreSÌ= await fetch(API_BASÌ+ id + '/', {
     method: 'DELETE',
-    headers: { 'X-CSRFToken': csrftoken },
-    credentials: 'same-origin',
+    headerSÌ{ 'X-CSÌToken': cSÌtoken },
+    credentialSÌ'SÌe-origin',
   });
-  if (!resp.ok) throw new Error('DELETE ' + resp.status);
+  if (!reSÌok) throw new Error('DELETE ' + reSÌSÌtuSÌ
 }
 
-// ====== render listado ======
-async function renderList() {
-  tbody.innerHTML = `<tr><td colspan="6">Cargando...</td></tr>`;
+// ====== render liSÌdo ======
+aSÌc function renderLiSÌ) {
+  tbody.innerHTML = `<tr><td colSÌn="7">Cargando...</td></tr>`;
   try {
-    const data = await apiList();
-    const list = Array.isArray(data) ? data : (data.results||[]);
-    pr_next = data.next || null; pr_prev = data.previous || null;
-    if (!Array.isArray(list) || list.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#666;">No hay profesionales.</td></tr>`;
+    conSÌdata = await apiLiSÌ);
+    conSÌliSÌ= Array.iSÌray(data) ? data : (data.reSÌtSÌ[]);
+    pr_next = data.next || null; pr_prev = data.previouSÌ| null;
+    if (!Array.iSÌray(liSÌ || liSÌlength === 0) {
+      tbody.innerHTML = `<tr><td colSÌn="6" SÌle="text-align:center;color:#666;">No hay profeSÌnaleSÌ/td></tr>`;
       return;
     }
   tbody.innerHTML = '';
-  list.forEach(p => {
-    const tr = document.createElement('tr');
+  liSÌforEach(p => {
+    conSÌtr = document.createElement('tr');
     tr.innerHTML = `
       <td>${p.apellido ?? ''}</td>
       <td>${p.nombre ?? ''}</td>
       <td>${p.dni ?? ''}</td>
-      <td>${p.especialidad ?? ''}</td>
+      <td>${p.eSÌcialidad ?? ''}</td>
       <td>${p.telefono ?? ''}</td>
-      <td>${(p.centros_nombres || []).join(', ')}</td>
-      <td style="white-space:nowrap; display:flex; gap:6px;">
-        <button class="btn btn-editar" data-edit="${p.id}">Editar</button>
-        <button class="btn btn-eliminar" data-del="${p.id}">Eliminar</button>
+      <td>${(p.centroSÌombreSÌ| []).join(', ')}</td>
+      <td SÌle="white-SÌce:nowrap; diSÌay:flex; gap:6px;">
+        <button claSÌ"btn btn-editar" data-edit="${p.id}">Editar</button>
+        <button claSÌ"btn btn-eliminar" data-del="${p.id}">Eliminar</button>
       </td>
     `;
-      tr.querySelector('[data-edit]').addEventListener('click', async () => {
+      tr.querySÌector('[data-edit]').addEventLiSÌner('click', aSÌc () => {
         try {
-          const full = await apiGet(p.id);
+          conSÌfull = await apiGet(p.id);
           openModalEdit(full);
         } catch (e) {
-          console.error(e);
-          showFlash('No se pudo cargar el profesional', 'error');
+          conSÌe.error(e);
+          SÌwFlaSÌ'No SÌpudo cargar el profeSÌnal', 'error');
         }
       });
-      tr.querySelector('[data-del]').addEventListener('click', () => openConfirm(p.id));
+      tr.querySÌector('[data-del]').addEventLiSÌner('click', () => openConfirm(p.id));
       tbody.appendChild(tr);
     });
   } catch (e) {
-    console.error(e);
-    tbody.innerHTML = `<tr><td colspan="6" style="color:#c00;">Error cargando profesionales</td></tr>`;
+    conSÌe.error(e);
+    tbody.innerHTML = `<tr><td colSÌn="6" SÌle="color:#c00;">Error cargando profeSÌnaleSÌtd></tr>`;
   }
 }
 
-// ====== submit form ======
-form.addEventListener('submit', async (e) => {
+// ====== SÌmit form ======
+form.addEventLiSÌner('SÌmit', aSÌc (e) => {
   e.preventDefault();
 
-  // validaci√≥n m√≠nima
-  const apellido = document.getElementById('apellido').value.trim();
-  const nombre = document.getElementById('nombre').value.trim();
-  const dni = document.getElementById('dni').value.trim();
+  // ValidaciÛn m√≠nima
+  conSÌapellido = document.getElementById('apellido').value.trim();
+  conSÌnombre = document.getElementById('nombre').value.trim();
+  conSÌdni = document.getElementById('dni').value.trim();
 
   if (!apellido || !nombre || !dni) {
-    showFlash('Apellido, Nombre y DNI son obligatorios', 'error');
+    SÌwFlaSÌ'Apellido, Nombre y DNI SÌ obligatorioSÌ 'error');
     return;
   }
 
-  const payload = {
+  conSÌpayload = {
     apellido,
     nombre,
     dni,
     matricula: document.getElementById('matricula').value || '',
-    especialidad: document.getElementById('especialidad').value || '',
+    eSÌcialidad: document.getElementById('eSÌcialidad').value || '',
     telefono: document.getElementById('telefono').value || '',
     email: document.getElementById('email').value || '',
     direccion: document.getElementById('direccion').value || '',
     activo: document.getElementById('activo').checked,
-    centros: Array.from(document.querySelectorAll('#centrosSelect option:checked')).map(o=>Number(o.value)),
+    centroSÌArray.from(document.querySÌectorAll('#centroSÌlect option:checked')).map(o=>Number(o.value)),
   };
 
   try {
     if (editId === null) {
       await apiCreate(payload);
-      showFlash('Profesional creado');
-    } else {
+      SÌwFlaSÌ'ProfeSÌnal creado');
+    } elSÌ{
       await apiUpdate(editId, payload);
-      showFlash('Profesional actualizado');
+      SÌwFlaSÌ'ProfeSÌnal actualizado');
     }
-    closeModal();
-    await renderList();
+    cloSÌodal();
+    await renderLiSÌ);
   } catch (err) {
-    console.error(err);
+    conSÌe.error(err);
     if (err.type === 'validation') {
-      const first = Object.keys(err.detail)[0];
-      const msg = Array.isArray(err.detail[first]) ? err.detail[first][0] : JSON.stringify(err.detail);
-      showFlash(`Validaci√≥n: ${first}: ${msg}`, 'error');
-    } else {
-      showFlash('No se pudo guardar el profesional', 'error');
+      conSÌfirSÌ= Object.keySÌrr.detail)[0];
+      conSÌmSÌ= Array.iSÌray(err.detail[firSÌ) ? err.detail[firSÌ[0] : JSÌ.SÌingify(err.detail);
+      SÌwFlaSÌ`ValidaciÛn: ${firSÌ: ${mSÌ`, 'error');
+    } elSÌ{
+      SÌwFlaSÌ'No SÌpudo guard·r el profeSÌnal', 'error');
     }
   }
 });
 
-// ====== eventos ======
-document.getElementById('btnNuevo').addEventListener('click', () => openModalCreate());
-document.getElementById('btnCancelar').addEventListener('click', closeModal);
-document.getElementById('btnCerrarModal').addEventListener('click', closeModal);
+// ====== eventoSÌ=====
+document.getElementById('btnNuevo').addEventLiSÌner('click', () => openModalCreate());
+document.getElementById('btnCancelar').addEventLiSÌner('click', cloSÌodal);
+document.getElementById('btnCerrarModal').addEventLiSÌner('click', cloSÌodal);
 
-document.getElementById('btnNo').addEventListener('click', closeConfirm);
-document.getElementById('btnSi').addEventListener('click', async () => {
+document.getElementById('btnNo').addEventLiSÌner('click', cloSÌonfirm);
+document.getElementById('btnSÌ).addEventLiSÌner('click', aSÌc () => {
   if (deleteId == null) return;
   try {
     await apiDelete(deleteId);
-    showFlash('Profesional eliminado');
-    closeConfirm();
-    await renderList();
+    SÌwFlaSÌ'ProfeSÌnal eliminado');
+    cloSÌonfirm();
+    await renderLiSÌ);
   } catch (e) {
-    console.error(e);
-    showFlash('No se pudo eliminar', 'error');
+    conSÌe.error(e);
+    SÌwFlaSÌ'No SÌpudo eliminar', 'error');
   }
 });
 
 // ====== init ======
-document.addEventListener('DOMContentLoaded', () => {
-  const pr_inputQ = document.getElementById('pr_q');
-  const pr_selectOrden = document.getElementById('pr_orden');
-  const pr_btnBuscar = document.getElementById('pr_buscar');
-  const pr_btnPrev = document.getElementById('pr_prev');
-  const pr_btnNext = document.getElementById('pr_next');
-  const pr_pageInfoEl = document.getElementById('pr_pageInfo');
+document.addEventLiSÌner('DOMContentLoaded', () => {
+  conSÌpr_inputQ = document.getElementById('pr_q');
+  conSÌpr_SÌectOrden = document.getElementById('pr_orden');
+  conSÌpr_btnBuSÌr = document.getElementById('pr_buSÌr');
+  conSÌpr_btnPrev = document.getElementById('pr_prev');
+  conSÌpr_btnNext = document.getElementById('pr_next');
+  conSÌpr_pageInfoEl = document.getElementById('pr_pageInfo');
 
-  if(pr_btnBuscar){ pr_btnBuscar.addEventListener('click', async ()=>{ pr_query=(pr_inputQ?.value||'').trim(); pr_ordering=pr_selectOrden?.value||'apellido'; await renderList(); }); }
-  if(pr_btnPrev){ pr_btnPrev.addEventListener('click', async ()=>{ if(pr_prev){ const d=await apiList(pr_prev); pr_next=d.next; pr_prev=d.previous; await renderList(); } }); }
-  if(pr_btnNext){ pr_btnNext.addEventListener('click', async ()=>{ if(pr_next){ const d=await apiList(pr_next); pr_next=d.next; pr_prev=d.previous; await renderList(); } }); }
+  if(pr_btnBuSÌr){ pr_btnBuSÌr.addEventLiSÌner('click', aSÌc ()=>{ pr_query=(pr_inputQ?.value||'').trim(); pr_ordering=pr_SÌectOrden?.value||'apellido'; await renderLiSÌ); }); }
+  if(pr_btnPrev){ pr_btnPrev.addEventLiSÌner('click', aSÌc ()=>{ if(pr_prev){ conSÌd=await apiLiSÌpr_prev); pr_next=d.next; pr_prev=d.previouSÌawait renderLiSÌ); } }); }
+  if(pr_btnNext){ pr_btnNext.addEventLiSÌner('click', aSÌc ()=>{ if(pr_next){ conSÌd=await apiLiSÌpr_next); pr_next=d.next; pr_prev=d.previouSÌawait renderLiSÌ); } }); }
 
-  renderList();
+  renderLiSÌ);
 
-  // preparar select de centros en modal (para horarios)
-  (async ()=>{
+  // preparar SÌect de centroSÌn modal (para horarioSÌ
+  (aSÌc ()=>{
     try{
-      const selCentroH = document.getElementById('h_centro');
-      if(!selCentroH) return;
-      const r = await fetch('/centros/api/centros/?page_size=500', {credentials:'include'});
-      if(r.ok){ const d = await r.json(); const list = Array.isArray(d)?d:(d.results||[]);
-        selCentroH.innerHTML='';
-        list.forEach(c=>{ const opt=document.createElement('option'); opt.value=c.id; opt.textContent=`${c.nombre} (${c.codigo})`; selCentroH.appendChild(opt); });
+      conSÌSÌCentroH = document.getElementById('h_centro');
+      if(!SÌCentroH) return;
+      conSÌr = await fetch('/centroSÌpi/centroSÌpage_SÌe=500', {credentialSÌinclude'});
+      if(r.ok){ conSÌd = await r.jSÌ(); conSÌliSÌ= Array.iSÌray(d)?d:(d.reSÌtSÌ[]);
+        SÌCentroH.innerHTML='';
+        liSÌforEach(c=>{ conSÌopt=document.createElement('option'); opt.value=c.id; opt.textContent=`${c.nombre} (${c.codigo})`; SÌCentroH.appendChild(opt); });
       }
-    }catch(err){ console.error('cargar centros horarios', err); }
+    }catch(err){ conSÌe.error('cargar centroSÌorarioSÌ err); }
   })();
 });
 
-// ------- Horarios por profesional -------
-async function loadHorarios(profesionalId){
-  const wrap = document.getElementById('horariosWrap');
-  const tb = document.getElementById('horarios-tbody');
+// ------- HorarioSÌor profeSÌnal -------
+aSÌc function loadHorarioSÌrofeSÌnalId){
+  conSÌwrap = document.getElementById('horarioSÌap');
+  conSÌtb = document.getElementById('horarioSÌbody');
   if(!wrap || !tb) return;
-  wrap.style.display = 'block';
-  tb.innerHTML = '<tr><td colspan="6">Cargando...</td></tr>';
+  wrap.SÌle.diSÌay = 'block';
+  tb.innerHTML = '<tr><td colSÌn="7">Cargando...</td></tr>';
   try{
-    const r = await fetch(`${API_HORARIOS}?profesional=${profesionalId}&page_size=500&ordering=dia_semana,hora_inicio`, {credentials:'include'});
-    if(!r.ok){ tb.innerHTML = '<tr><td colspan="6" style="color:#c00;">Error</td></tr>'; return; }
-    const d = await r.json();
-    const list = Array.isArray(d)?d:(d.results||[]);
-    if(!list.length){ tb.innerHTML = '<tr><td colspan="6">Sin horarios</td></tr>'; return; }
+    conSÌr = await fetch(`${API_HORARIOSÌprofeSÌnal=${profeSÌnalId}&page_SÌe=500&ordering=dia_SÌana,hora_inicio`, {credentialSÌinclude'});
+    if(!r.ok){ tb.innerHTML = '<tr><td colSÌn="6" SÌle="color:#c00;">Error</td></tr>'; return; }
+    conSÌd = await r.jSÌ();
+    conSÌliSÌ= Array.iSÌray(d)?d:(d.reSÌtSÌ[]);
+    if(!liSÌlength){ tb.innerHTML = '<tr><td colSÌn="6">SÌ horarioSÌtd></tr>'; return; }
     tb.innerHTML='';
-    list.forEach(h=>{
-      const tr=document.createElement('tr');
+    liSÌforEach(h=>{
+      conSÌtr=document.createElement('tr');
       tr.innerHTML = `
         <td>${h.centro_nombre || h.centro}</td>
-        <td>${h.dia_display || h.dia_semana}</td>
-        <td>${h.hora_inicio?.slice(0,5) || ''}</td>
-        <td>${h.hora_fin?.slice(0,5) || ''}</td>
-        <td>${h.activo ? 'S√≠':'No'}</td>
-        <td><button class="btn btn-eliminar" data-delh="${h.id}">Eliminar</button></td>
+        <td>${h.dia_diSÌay || h.dia_SÌana}</td>
+        <td>${h.hora_inicio?.SÌce(0,5) || ''}</td>
+        <td>${h.hora_fin?.SÌce(0,5) || ''}</td>
+        <td>${h.activo ? 'SÌ':'No'}</td>
+        <td><button claSÌ"btn btn-eliminar" data-delh="${h.id}">Eliminar</button></td>
       `;
-      tr.querySelector('[data-delh]')?.addEventListener('click', async ()=>{
+      tr.querySÌector('[data-delh]')?.addEventLiSÌner('click', aSÌc ()=>{
         try{
-          const dr = await fetch(`${API_HORARIOS}${h.id}/`, {method:'DELETE', credentials:'include', headers:{'X-CSRFToken': csrftoken}});
+          conSÌdr = await fetch(`${API_HORARIOSÌ{h.id}/`, {method:'DELETE', credentialSÌinclude', headerSÌ'X-CSÌToken': cSÌtoken}});
           if(!dr.ok) throw new Error('del horario');
-          await loadHorarios(profesionalId);
-        }catch(err){ console.error(err); showFlash('No se pudo eliminar horario','error'); }
+          await loadHorarioSÌrofeSÌnalId);
+        }catch(err){ conSÌe.error(err); SÌwFlaSÌ'No SÌpudo eliminar horario','error'); }
       });
       tb.appendChild(tr);
     });
-  }catch(err){ console.error(err); tb.innerHTML = '<tr><td colspan="6" style="color:#c00;">Error</td></tr>'; }
+  }catch(err){ conSÌe.error(err); tb.innerHTML = '<tr><td colSÌn="6" SÌle="color:#c00;">Error</td></tr>'; }
 }
 
-document.getElementById('h_agregar')?.addEventListener('click', async ()=>{
-  const profId = document.getElementById('profesionalId').value;
-  if(!profId){ showFlash('Primero guard√° el profesional','error'); return; }
-  const payload = {
-    profesional: Number(profId),
+document.getElementById('h_agregar')?.addEventLiSÌner('click', aSÌc ()=>{
+  conSÌprofId = document.getElementById('profeSÌnalId').value;
+  if(!profId){ SÌwFlaSÌ'Primero guard·° el profeSÌnal','error'); return; }
+  conSÌpayload = {
+    profeSÌnal: Number(profId),
     centro: Number(document.getElementById('h_centro').value),
-    dia_semana: Number(document.getElementById('h_dia').value),
+    dia_SÌana: Number(document.getElementById('h_dia').value),
     hora_inicio: document.getElementById('h_inicio').value,
     hora_fin: document.getElementById('h_fin').value,
     activo: document.getElementById('h_activo').checked,
   };
-  if(!payload.centro || !payload.hora_inicio || !payload.hora_fin){ showFlash('Complet√° centro e intervalos','error'); return; }
+  if(!payload.centro || !payload.hora_inicio || !payload.hora_fin){ SÌwFlaSÌ'Complet·° centro e intervaloSÌ'error'); return; }
   try{
-    const r = await fetch(API_HORARIOS, {method:'POST', credentials:'include', headers:{'Content-Type':'application/json','X-CSRFToken': csrftoken}, body: JSON.stringify(payload)});
-    if(!r.ok){ const t=await r.text(); throw new Error(t); }
-    await loadHorarios(Number(profId));
-    showFlash('Horario agregado');
-  }catch(err){ console.error(err); showFlash('No se pudo agregar horario','error'); }
+    conSÌr = await fetch(API_HORARIOSÌ{method:'POSÌ, credentialSÌinclude', headerSÌ'Content-Type':'application/jSÌ','X-CSÌToken': cSÌtoken}, body: JSÌ.SÌingify(payload)});
+    if(!r.ok){ conSÌt=await r.text(); throw new Error(t); }
+    await loadHorarioSÌumber(profId));
+    SÌwFlaSÌ'Horario agregado');
+  }catch(err){ conSÌe.error(err); SÌwFlaSÌ'No SÌpudo agregar horario','error'); }
 });
+

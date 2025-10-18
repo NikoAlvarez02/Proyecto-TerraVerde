@@ -40,19 +40,15 @@ urlpatterns = [
     path("centros/", include(("apps.centers.urls", "centros"), namespace="centros")),
     path("historias/", include(("apps.medical_records.urls", "historias"), namespace="historias")),
     path("reportes/", include(("apps.reports.urls", "reportes"), namespace="reportes")),
+    path("satisfaccion/", include(("apps.feedback.urls", "satisfaccion"), namespace="satisfaccion")),
    
     # OpenAPI schema + UIs (drf-spectacular)
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
     path("api/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
-    path("", login_required(TemplateView.as_view(template_name="paginaprincipal.html")), name="home"),
+    path("", core_views.home_dashboard, name="home"),
     path("weasy/pdf/", core_views.weasy_pdf_test, name="weasy_pdf_test"),
     path("weasy/diagnostico/", core_views.weasy_diagnostico, name="weasy_diagnostico"),
-    # ... resto (login, logout, reset, etc.)
-
-    
-   
-    # Home (requiere login)
 
     # Auth
     path("login/",  LoginView.as_view(template_name="registration/login.html"), name="login"),

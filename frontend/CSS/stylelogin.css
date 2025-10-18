@@ -161,3 +161,11 @@ button:hover {
     color: #4caf50; /* Verde más claro al pasar el mouse */
     text-decoration: underline; /* Puedes añadir un subrayado al pasar el mouse si quieres */
 }
+
+/* Responsividad: optimizar paddings y tamaños en móviles */
+@media (max-width: 420px){
+  .login-container{ padding: 22px; }
+  .login-container h1{ font-size: 1.6em; }
+  .login-container h2{ font-size: 1.2em; }
+  button{ padding: 12px; font-size: 1em; }
+}

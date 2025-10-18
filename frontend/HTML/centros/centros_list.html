@@ -1,144 +1,115 @@
+{% extends "base.html" %}
 {% load static %}
-<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Centros</title>
-  <link rel="stylesheet" href="{% static 'CSS/stylespaciente.css' %}">
-</head>
-<body>
-  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
-    <h1 style="margin:0;">Centros</h1>
-    <div>
-      <a href="/admin/centers/center/add/" class="btn" style="margin-right:8px;">Abrir en Admin</a>
-      <button id="btnNuevoCentro" class="btn btn-guardar">Nuevo Centro</button>
-    </div>
-  </div>
-  <div id="flash" style="display:none;margin:10px 0;"></div>
-  <table>
-    <thead><tr><th>Código</th><th>Nombre</th><th>Dirección</th><th>Activo</th></tr></thead>
-    <tbody id="tbody"></tbody>
-  </table>
 
-  <!-- Modal crear centro -->
-  <div id="modalCentro" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);">
-    <div style="max-width:520px;width:95%;margin:48px auto;background:#fff;border-radius:12px;padding:16px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <h2 style="margin:0;">Nuevo Centro</h2>
-        <button id="btnCerrarCentro" class="btn">Cerrar</button>
+{% block title %}Centros | TerraVerde{% endblock %}
+{% block topbar_title %}Centros{% endblock %}
+{% block sidebar %}{% endblock %}
+
+{% block content %}
+  <div class="card" style="padding:20px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+      <h1 class="main-title" style="margin:0;">Centros</h1>
+      <div style="display:flex; gap:8px;">
+        <a href="/admin/centers/center/" class="btn">Abrir en Admin</a>
+        <button id="btnNuevoCentro" class="btn btn-guardar">Nuevo Centro</button>
       </div>
-      <form id="formCentro" style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+    </div>
+
+    <div style="display:flex; gap:8px; align-items:center; justify-content:flex-end; margin-top:10px;">
+      <input id="c_q" type="search" placeholder="Buscar código / nombre / dirección" style="padding:6px 10px; min-width:260px;">
+      <select id="c_activo" style="padding:6px 10px;">
+        <option value="">Todos</option>
+        <option value="true">Solo activos</option>
+        <option value="false">Solo inactivos</option>
+      </select>
+      <select id="c_orden" style="padding:6px 10px;">
+        <option value="nombre">Nombre A-Z</option>
+        <option value="-nombre">Nombre Z-A</option>
+        <option value="codigo">Código A-Z</option>
+        <option value="-codigo">Código Z-A</option>
+      </select>
+      <button id="c_buscar" class="btn">Filtrar</button>
+    </div>
+
+    <div class="tabla-wrap" style="margin-top:12px;">
+      <table class="tabla-listado" id="centros-table">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Nombre</th>
+            <th>Dirección</th>
+            <th>Activo</th>
+            <th style="width:1%; white-space:nowrap;"></th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          <tr><td colspan="5">Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="flash" style="display:none;margin-top:10px;"></div>
+  </div>
+
+  <!-- Modal Crear/Editar Centro -->
+  <div id="modalCentro" class="modal">
+    <div class="modal-card card">
+      <div style="display:flex;justify-content:space-between;align-items:center;" class="drag-handle">
+        <h2 id="modalTitle" class="main-title" style="margin:0;">Nuevo Centro</h2>
+        <button id="btnCerrarCentro" class="btn btn-secundario">Cerrar</button>
+      </div>
+      <form id="formCentro" class="grid-2" style="margin-top:12px;">
         {% csrf_token %}
-        <div style="grid-column:span 1;">
+        <input type="hidden" id="c_id">
+
+        <div>
           <label>Código</label>
           <input type="text" id="c_codigo" required>
         </div>
-        <div style="grid-column:span 1;">
+        <div>
           <label>Nombre</label>
           <input type="text" id="c_nombre" required>
         </div>
-        <div style="grid-column:span 2;">
+        <div class="col-span-2">
           <label>Dirección</label>
           <input type="text" id="c_direccion">
         </div>
-        <div style="grid-column:span 1;">
+        <div>
           <label>Teléfono</label>
           <input type="text" id="c_telefono">
         </div>
-        <div style="grid-column:span 1;">
+        <div>
           <label>Email</label>
           <input type="email" id="c_email">
         </div>
-        <div style="grid-column:span 2;display:flex;align-items:center;gap:6px;">
-          <input type="checkbox" id="c_activo" checked>
-          <label for="c_activo">Activo</label>
+        <div class="col-span-2">
+          <label style="display:flex; align-items:center; gap:8px;">
+            <input type="checkbox" id="c_activo_chk" checked> Activo
+          </label>
         </div>
-        <div style="grid-column:span 2;text-align:right;">
-          <button type="button" id="btnCancelarCentro" class="btn">Cancelar</button>
+
+        <div class="col-span-2" style="display:flex; gap:8px; justify-content:flex-end;">
+          <button type="button" id="btnCancelarCentro" class="btn btn-cancelar-edit">Cancelar</button>
           <button type="submit" class="btn btn-guardar">Guardar</button>
         </div>
       </form>
     </div>
   </div>
-  <script>
-    function getCookie(name){
-      const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
-      return m ? decodeURIComponent(m.pop()) : null;
-    }
-    const csrftoken = getCookie('csrftoken');
 
-    const tb = document.getElementById('tbody');
-    const flash = document.getElementById('flash');
-    function showFlash(msg, ok=true){
-      flash.style.display='block';
-      flash.style.padding='8px';
-      flash.style.borderRadius='8px';
-      flash.style.background = ok ? '#e6ffed' : '#ffe6e6';
-      flash.style.border = '1px solid ' + (ok ? '#89d79d' : '#e08b8b');
-      flash.textContent = msg;
-      setTimeout(()=>flash.style.display='none', 2200);
-    }
+  <!-- Confirmación Eliminación -->
+  <div id="modalConfirm" class="modal">
+    <div class="card" style="max-width:480px; width:95%; margin:40px auto; background:#fff; border-radius:12px; padding:16px;">
+      <h3 style="margin-top:0;">Confirmar eliminación</h3>
+      <p>¿Seguro que querés eliminar este centro?</p>
+      <div style="display:flex; gap:8px; justify-content:flex-end;">
+        <button id="btnNo" class="btn btn-regresar">Cancelar</button>
+        <button id="btnSi" class="btn btn-eliminar">Eliminar</button>
+      </div>
+    </div>
+  </div>
 
-    async function loadCentros(){
-      tb.innerHTML = '<tr><td colspan="4">Cargando...</td></tr>';
-      try{
-        const r = await fetch('/centros/api/centros/?page_size=200', {credentials:'include'});
-        if(!r.ok) throw new Error('GET ' + r.status);
-        const d = await r.json();
-        const list = Array.isArray(d) ? d : (d.results||[]);
-        if(!list.length){ tb.innerHTML = '<tr><td colspan="4" style="color:#666;text-align:center;">Sin registros</td></tr>'; return; }
-        tb.innerHTML='';
-        list.forEach(c=>{
-          const tr=document.createElement('tr');
-          tr.innerHTML = `<td>${c.codigo}</td><td>${c.nombre}</td><td>${c.direccion||''}</td><td>${c.activo?'Sí':'No'}</td>`;
-          tb.appendChild(tr);
-        });
-      }catch(e){
-        console.error(e);
-        tb.innerHTML = '<tr><td colspan="4" style="color:#c00;">Error cargando centros</td></tr>';
-      }
-    }
+  {% block extra_js %}
+  <script src="{% static 'JS/centros/spa.js' %}"></script>
+  {% endblock %}
+{% endblock %}
 
-    // Modal handlers
-    const modal = document.getElementById('modalCentro');
-    const btnNuevo = document.getElementById('btnNuevoCentro');
-    const btnCerrar = document.getElementById('btnCerrarCentro');
-    const btnCancelar = document.getElementById('btnCancelarCentro');
-    const form = document.getElementById('formCentro');
-
-    btnNuevo.addEventListener('click', ()=>{ modal.style.display='block'; });
-    btnCerrar.addEventListener('click', ()=>{ modal.style.display='none'; });
-    btnCancelar.addEventListener('click', ()=>{ modal.style.display='none'; });
-
-    form.addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      const payload = {
-        codigo: document.getElementById('c_codigo').value.trim(),
-        nombre: document.getElementById('c_nombre').value.trim(),
-        direccion: document.getElementById('c_direccion').value.trim(),
-        telefono: document.getElementById('c_telefono').value.trim(),
-        email: document.getElementById('c_email').value.trim(),
-        activo: document.getElementById('c_activo').checked,
-      };
-      if(!payload.codigo || !payload.nombre){ showFlash('Código y Nombre son obligatorios', false); return; }
-      try{
-        const r = await fetch('/centros/api/centros/', {
-          method:'POST',
-          headers:{ 'Content-Type':'application/json', 'X-CSRFToken': csrftoken },
-          credentials:'include',
-          body: JSON.stringify(payload)
-        });
-        if(r.status===400){ const err=await r.json(); throw new Error(JSON.stringify(err)); }
-        if(!r.ok) throw new Error('POST '+r.status);
-        showFlash('Centro creado');
-        modal.style.display='none';
-        await loadCentros();
-      }catch(e){ console.error(e); showFlash('No se pudo crear el centro', false); }
-    });
-
-    // Edición y eliminación simples: click en fila para editar, Supr para borrar (mejorable)
-
-    document.addEventListener('DOMContentLoaded', loadCentros);
-  </script>
-</body>
-</html>

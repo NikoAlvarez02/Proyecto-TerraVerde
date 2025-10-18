@@ -79,7 +79,7 @@ class PatientReportViewSet(viewsets.ViewSet):
                 obs_qs = obs_qs.filter(fecha_hora__date__gte=desde)
             if hasta:
                 obs_qs = obs_qs.filter(fecha_hora__date__lte=hasta)
-            # Resúmenes
+            # ResÃÂºmenes
             profs = (
                 obs_qs
                 .values('profesional__apellido', 'profesional__nombre')
@@ -117,7 +117,7 @@ class PatientReportViewSet(viewsets.ViewSet):
             }
             pdf_bytes = pdf.generate_patient_history_pdf(paciente, list(obs_qs), params.validated_data, summary)
             if not pdf_bytes:
-                return response.Response({'detail': 'No se pudo generar el PDF (bytes vacíos)'}, status=500)
+                return response.Response({'detail': 'No se pudo generar el PDF (bytes vacÃÂ­os)'}, status=500)
             # Asegurar MEDIA_ROOT y subcarpeta
             try:
                 os.makedirs(settings.MEDIA_ROOT, exist_ok=True)
@@ -152,7 +152,7 @@ class PatientReportViewSet(viewsets.ViewSet):
             }
             pdf_bytes = pdf.generate_epicrisis_pdf(paciente, resumen, params.validated_data)
             if not pdf_bytes:
-                return response.Response({'detail': 'No se pudo generar el PDF (bytes vacíos)'}, status=500)
+                return response.Response({'detail': 'No se pudo generar el PDF (bytes vacÃÂ­os)'}, status=500)
             try:
                 os.makedirs(settings.MEDIA_ROOT, exist_ok=True)
                 os.makedirs(os.path.join(settings.MEDIA_ROOT, 'reportes'), exist_ok=True)
@@ -192,7 +192,7 @@ class PatientReportViewSet(viewsets.ViewSet):
             profesional_display = profesional or request.user.get_username()
             pdf_bytes = pdf.generate_certificate_pdf(paciente, profesional_display, datos, request.data)
             if not pdf_bytes:
-                return response.Response({'detail': 'No se pudo generar el PDF (bytes vacíos)'}, status=500)
+                return response.Response({'detail': 'No se pudo generar el PDF (bytes vacÃÂ­os)'}, status=500)
             try:
                 os.makedirs(settings.MEDIA_ROOT, exist_ok=True)
                 os.makedirs(os.path.join(settings.MEDIA_ROOT, 'reportes'), exist_ok=True)
@@ -220,7 +220,7 @@ class StatisticsReportViewSet(viewsets.ViewSet):
         params = ReportParametersSerializer(data=request.data)
         params.is_valid(raise_exception=True)
         resumen = rdata.get_attendance_statistics(params.validated_data)
-        # Gráfico: barras por centro
+        # GrÃÂ¡fico: barras por centro
         charts = []
         try:
             labels = [it.get('centro__nombre') or 'N/A' for it in resumen.get('por_centro', [])]
@@ -233,7 +233,7 @@ class StatisticsReportViewSet(viewsets.ViewSet):
         try:
             pdf_bytes = pdf.generate_statistical_report_pdf('Atenciones por Centro', resumen, params.validated_data, charts)
             if not pdf_bytes:
-                return response.Response({'detail': 'No se pudo generar el PDF (bytes vacíos)'}, status=500)
+                return response.Response({'detail': 'No se pudo generar el PDF (bytes vacÃÂ­os)'}, status=500)
             try:
                 os.makedirs(settings.MEDIA_ROOT, exist_ok=True)
                 os.makedirs(os.path.join(settings.MEDIA_ROOT, 'reportes'), exist_ok=True)
@@ -263,7 +263,7 @@ class StatisticsReportViewSet(viewsets.ViewSet):
         try:
             pdf_bytes = pdf.generate_statistical_report_pdf('Productividad por Profesional', resumen, params.validated_data, charts)
             if not pdf_bytes:
-                return response.Response({'detail': 'No se pudo generar el PDF (bytes vacíos)'}, status=500)
+                return response.Response({'detail': 'No se pudo generar el PDF (bytes vacÃÂ­os)'}, status=500)
             try:
                 os.makedirs(settings.MEDIA_ROOT, exist_ok=True)
                 os.makedirs(os.path.join(settings.MEDIA_ROOT, 'reportes'), exist_ok=True)
@@ -276,26 +276,26 @@ class StatisticsReportViewSet(viewsets.ViewSet):
         except Exception as e:
             return response.Response({'detail': f'Error generando PDF: {e}'}, status=500)
 
-    @decorators.action(methods=['post'], detail=False, url_path='epidemiologico')
-    def epidemiologico(self, request):
+    @decorators.action(methods=['post'], detail=False, url_path='diagnosticos')
+    def diagnosticos(self, request):
         params = ReportParametersSerializer(data=request.data)
         params.is_valid(raise_exception=True)
-        resumen = rdata.get_epidemiological_data(params.validated_data)
+        resumen = rdata.get_diagnostic_distribution(params.validated_data)
         charts = []
         try:
             labels = [it.get('diagnostico_codigo') or 'N/A' for it in resumen.get('por_cie10', [])]
             values = [it.get('c', 0) for it in resumen.get('por_cie10', [])]
             from .utils import pdf_generator as _pg
-            ch = _pg.generate_chart_image('Epidemiológico', labels, values)
+            ch = _pg.generate_chart_image('Distribucion por Diagnosticos', labels, values)
             if ch: charts.append(ch)
         except Exception:
             pass
-        pdf_bytes = pdf.generate_statistical_report_pdf('Epidemiológico', resumen, params.validated_data, charts)
-        nombre = request.data.get('nombre_archivo') or f"Epidemiologico_{datetime.now():%Y-%m-%d}.pdf"
+        pdf_bytes = pdf.generate_statistical_report_pdf('Distribucion por Diagnosticos', resumen, params.validated_data, charts)
+        nombre = request.data.get('nombre_archivo') or f"Distribucion_Diagnosticos_{datetime.now():%Y-%m-%d}.pdf"
         gr = GeneratedReport(tipo='estadistico', parametros_json=_json_safe(params.validated_data), usuario_generador=request.user)
         gr.archivo_pdf.save(nombre, ContentFile(pdf_bytes)); gr.save()
         return response.Response(GeneratedReportSerializer(gr).data, status=201)
-
+    
 
 class AdministrativeReportViewSet(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated]
@@ -310,3 +310,5 @@ class AdministrativeReportViewSet(viewsets.ViewSet):
         gr = GeneratedReport(tipo='administrativo', parametros_json=_json_safe(params.validated_data), usuario_generador=request.user)
         gr.archivo_pdf.save(nombre, ContentFile(pdf_bytes)); gr.save()
         return response.Response(GeneratedReportSerializer(gr).data, status=201)
+
+
