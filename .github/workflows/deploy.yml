@@ -32,10 +32,10 @@ jobs:
             pip install -r requirements.txt
 
             echo "🗃️ Aplicando migraciones..."
-            python manage.py migrate --noinput
+            python3 manage.py migrate --noinput
 
             echo "📁 Recolectando archivos estáticos..."
-            python manage.py collectstatic --noinput
+            python3 manage.py collectstatic --noinput
 
             echo "🔄 Reiniciando Gunicorn..."
             systemctl restart gunicorn
