@@ -1,9 +1,36 @@
 /* ==============================
-   Base
+   Base + Paleta
 ============================== */
 * { box-sizing: border-box; }
 html, body { margin: 0; }
-body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: #e8f5e9; }
+
+:root{
+  /* Principal (verde) */
+  --p-700:#2e7d32;
+  --p-600:#2e7d32; /* alias para consistencia */
+  --p-500:#43a047;
+  --p-400:#66bb6a;
+  --p-50:#e8f5e9;
+
+  /* Secundarios suaves */
+  --blue-500:#4fa3f7;
+  --purple-500:#9c89e9;
+  --amber-400:#f6c343;
+  --amber-200:#ffecb3;
+
+  /* Neutros */
+  --ink-900:#263238;
+  --card:#ffffff;
+  --border:#e7ebef;
+  --bg-tint:#f4faf5;
+}
+
+body {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: var(--p-500);
+  min-height: 100vh;
+  color: var(--ink-900);
+}
 
 .hidden { display: none !important; }
 
@@ -12,7 +39,7 @@ body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-seri
 ============================== */
 .topbar{
   display:flex; align-items:center; gap:12px;
-  padding:16px 18px; background:#e8f5e9;
+  padding:16px 18px; background: rgba(255,255,255,.6);
   position:sticky; top:0; z-index:10;
   border-bottom:1px solid #e6e6e6;
 }
@@ -34,11 +61,11 @@ body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-seri
 ============================== */
 .main-wrap{ display:flex; gap:24px; padding:24px 18px; }
 .sidebar{
-  min-width: 230px; background:#fff;
-  border:1px solid #e7ebef; border-radius:14px; padding:16px;
+  min-width: 230px; background:var(--card);
+  border:1px solid var(--border); border-radius:14px; padding:16px;
   box-shadow:0 8px 24px rgba(0,0,0,.06); height: fit-content;
 }
-.sidebar h3{ margin-top:0; color:#03b5eb; }
+.sidebar h3{ margin-top:0; color:var(--blue-500); }
 .sidebar a{ display:block; padding:8px 10px; border-radius:8px; color:#247b96; text-decoration:none; }
 .sidebar a:hover{ background:#f3f5f7; }
 
@@ -48,18 +75,24 @@ body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-seri
 }
 
 .contenido-principal{
-  flex:1; background:#fff; border:1px solid #e7ebef; border-radius:16px; padding:28px;
+  flex:1; background:var(--card); border:1px solid var(--border); border-radius:16px; padding:28px;
   box-shadow:0 10px 28px rgba(0,0,0,.08);
 }
 .contenido-principal h1{ margin-top:0; font-size: clamp(24px, 3.2vw, 36px); }
 
+/* Tablas genéricas responsivas */
+.tabla-listado{ width:100%; border-collapse: collapse; }
+.tabla-listado th, .tabla-listado td{ border:1px solid #e6e6e6; padding:12px; text-align:left; font-size:14px; }
+.tabla-listado th{ background:#f2f2f2; color:var(--p-600); font-weight:800; }
+.tabla-wrap{ overflow:auto; -webkit-overflow-scrolling:touch; }
+
 /* ==============================
    Sección Turnos / Formularios
 ============================== */
-.main-title{ color:#388e3c; font-size:2em; margin:0 0 12px; text-align:center; }
+.main-title{ color:var(--p-600); font-size:2em; margin:0 0 12px; text-align:center; }
 
 .btn{ padding:12px 18px; border:none; border-radius:8px; cursor:pointer; font-weight:700; transition:filter .2s ease, background-color .2s ease; }
-.btn-guardar{ background:#4caf50; color:#fff; } .btn-guardar:hover{ background:#388e3c; }
+.btn-guardar{ background:var(--p-500); color:#fff; } .btn-guardar:hover{ background:var(--p-600); }
 .btn-cancelar-edit{ background:#f44336; color:#fff; } .btn-cancelar-edit:hover{ background:#d32f2f; }
 .btn-editar{ background:#2196f3; color:#fff; } .btn-editar:hover{ background:#1976d2; }
 .btn-eliminar{ background:#e91e63; color:#fff; } .btn-eliminar:hover{ background:#c2185b; }
@@ -67,7 +100,7 @@ body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-seri
 /* Tabla */
 #turnos-table{ width:100%; border-collapse:collapse; margin-top:16px; }
 #turnos-table th, #turnos-table td{ border:1px solid #e6e6e6; padding:12px; text-align:left; font-size:14px; }
-#turnos-table th{ background:#f2f2f2; color:#388e3c; font-weight:800; }
+#turnos-table th{ background:#f2f2f2; color:var(--p-600); font-weight:800; }
 
 /* Footer */
 .site-footer{ margin:24px 18px; padding:16px; text-align:center; background:#f1f1f1; border-radius:12px; }
@@ -112,5 +145,46 @@ html { scrollbar-gutter: stable both-edges; }
   padding:12px 16px; border-radius:10px; box-shadow:0 10px 28px rgba(0,0,0,.18);
   color:#333; font-weight:600; background:#fff;
 }
+
+/* ==============================
+   Modo oscuro opcional
+============================== */
+@media (prefers-color-scheme: dark){
+  body{ background:#1f3327; color:#e6ece8; }
+  .topbar{ background: rgba(255,255,255,0.08); border-bottom-color:#2b4a3a; }
+  .sidebar{ background:#22372b; border-color:#2b4a3a; }
+  .contenido-principal{ background:#22372b; border-color:#2b4a3a; }
+  .tabla-listado th{ background:#2a4334; }
+  .sidebar a:hover{ background:#243f30; }
+}
 .toast-ok{ background:#e6ffed; border:1px solid #89d79d; }
 .toast-error{ background:#ffe6e6; border:1px solid #e08b8b; }
+
+/* ==============================
+   Responsividad (tablet y móvil)
+============================== */
+@media (max-width: 1024px){
+  .main-wrap{ gap:16px; padding:16px 14px; }
+  .contenido-principal{ padding:22px; }
+  .btn{ padding:10px 14px; }
+}
+
+@media (max-width: 768px){
+  .main-wrap{ flex-direction: column; }
+  .contenido-principal{ padding:18px; }
+  .app-title{ font-size: 18px; text-align:left; }
+  .btn-logout{ padding:8px 12px; font-size:14px; }
+  .tabla-listado th, .tabla-listado td{ padding:10px; font-size:13px; }
+  /* Formularios de 2 columnas pasan a 1 */
+  .grid-2, [style*="grid-template-columns:1fr 1fr"]{ grid-template-columns:1fr !important; }
+  /* Sidebar como panel deslizante más ancho para táctil */
+  .sidebar{ width: 80vw; max-width: 320px; }
+}
+
+@media (max-width: 480px){
+  .topbar{ padding:12px; gap:8px; }
+  .menu-icon{ width:34px; height:34px; }
+  .contenido-principal{ padding:14px; border-radius:12px; }
+  .tabla-listado th, .tabla-listado td{ padding:8px; font-size:12.5px; }
+  .btn{ padding:10px 12px; font-size:14px; }
+}

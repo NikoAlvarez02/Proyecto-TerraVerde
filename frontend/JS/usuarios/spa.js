@@ -23,6 +23,11 @@ const btnSi = document.getElementById('btnSi');
 let editId = null;
 let deleteId = null;
 
+let u_next = null;
+let u_prev = null;
+let u_ordering = "username";
+let u_query = "";
+
 const API_BASE = '/usuarios/api/usuarios/';
 
 // ====== helpers UI ======
@@ -44,6 +49,14 @@ function openModalCreate() {
   document.getElementById('is_active').checked = true;
   document.getElementById('is_staff').checked = false;
   document.getElementById('is_superuser').checked = false;
+  // defaults de perfil
+  const pr = document.getElementById('perfil_rol'); if (pr) pr.value = 'recep';
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
+  set('pf_admin_usuarios', false);
+  set('pf_ver_pacientes', true);
+  set('pf_ver_calendario', true);
+  set('pf_generar_reportes', false);
+  set('pf_ver_estadisticas', false);
   modalForm.style.display = 'block';
 }
 
@@ -58,40 +71,42 @@ function openModalEdit(u) {
   document.getElementById('first_name').value = u.first_name ?? '';
   document.getElementById('last_name').value = u.last_name ?? '';
 
+  // perfil
+  try {
+    const pr = (u.perfil || {});
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
+    const prSel = document.getElementById('perfil_rol'); if (prSel) prSel.value = pr.rol || 'recep';
+    set('pf_admin_usuarios', pr.puede_admin_usuarios);
+    set('pf_ver_pacientes', pr.puede_ver_pacientes);
+    set('pf_ver_calendario', pr.puede_ver_calendario);
+    set('pf_generar_reportes', pr.puede_generar_reportes);
+    set('pf_ver_estadisticas', pr.puede_ver_estadisticas);
+  } catch(e) { console.warn('perfil parse', e); }
+
   document.getElementById('password').value = '';
   document.getElementById('password2').value = '';
 
   document.getElementById('is_active').checked = !!u.is_active;
   document.getElementById('is_staff').checked = !!u.is_staff;
   document.getElementById('is_superuser').checked = !!u.is_superuser;
-
   modalForm.style.display = 'block';
 }
 
-function closeModal() {
-  modalForm.style.display = 'none';
-}
-
-function openConfirm(id) {
-  deleteId = id;
-  modalConfirm.style.display = 'block';
-}
-
-function closeConfirm() {
-  deleteId = null;
-  modalConfirm.style.display = 'none';
-}
+function closeModal() { modalForm.style.display = 'none'; }
+function openConfirm(id) { deleteId = id; modalConfirm.style.display = 'block'; }
+function closeConfirm() { deleteId = null; modalConfirm.style.display = 'none'; }
 
 // ====== API ======
-async function apiList() {
-  const resp = await fetch(API_BASE, { credentials:'same-origin' });
+async function apiList(url=null) {
+  const listUrl = url || `${API_BASE}?page_size=20&ordering=${encodeURIComponent(u_ordering)}${u_query?`&search=${encodeURIComponent(u_query)}`:""}`;
+  const resp = await fetch(listUrl, { credentials:'same-origin' });
   if (!resp.ok) throw new Error('GET ' + resp.status);
-  return await resp.json();
+  const j = await resp.json(); console.log("usuarios list", j); return j;
 }
 async function apiGet(id) {
   const resp = await fetch(API_BASE + id + '/', { credentials:'same-origin' });
   if (!resp.ok) throw new Error('GET id ' + resp.status);
-  return await resp.json();
+  const j = await resp.json(); console.log("usuarios list", j); return j;
 }
 async function apiCreate(payload) {
   const resp = await fetch(API_BASE, {
@@ -102,7 +117,7 @@ async function apiCreate(payload) {
   });
   if (resp.status === 400) throw { type:'validation', detail: await resp.json() };
   if (!resp.ok) throw new Error('POST ' + resp.status);
-  return await resp.json();
+  const j = await resp.json(); console.log("usuarios list", j); return j;
 }
 async function apiUpdate(id, payload) {
   const resp = await fetch(API_BASE + id + '/', {
@@ -113,7 +128,7 @@ async function apiUpdate(id, payload) {
   });
   if (resp.status === 400) throw { type:'validation', detail: await resp.json() };
   if (!resp.ok) throw new Error('PUT ' + resp.status);
-  return await resp.json();
+  const j = await resp.json(); console.log("usuarios list", j); return j;
 }
 async function apiDelete(id) {
   const resp = await fetch(API_BASE + id + '/', {
@@ -125,11 +140,16 @@ async function apiDelete(id) {
 }
 
 // ====== render listado ======
-async function renderList() {
+async function renderList(url=null) {
   tbody.innerHTML = `<tr><td colspan="6">Cargando...</td></tr>`;
   try {
-    const list = await apiList();
-    // Si no sos staff, el backend te devolverá sólo TU usuario
+    const data = await apiList(url);
+    const list = Array.isArray(data) ? data : (data.results || []);
+    u_next = data.next || null; u_prev = data.previous || null;
+    const infoEl = document.getElementById('u_pageInfo'); if (infoEl) infoEl.textContent = `Total: ${data.count ?? list.length}`;
+    const prevBtn = document.getElementById('u_prev'); if (prevBtn) prevBtn.disabled = !u_prev;
+    const nextBtn = document.getElementById('u_next'); if (nextBtn) nextBtn.disabled = !u_next;
+
     if (!Array.isArray(list) || list.length === 0) {
       tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#666;">Sin usuarios.</td></tr>`;
       return;
@@ -170,13 +190,9 @@ async function renderList() {
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
 
-  // validación mínima
   const username = document.getElementById('username').value.trim();
   const email = document.getElementById('email').value.trim();
-  if (!username || !email) {
-    showFlash('Username y Email son obligatorios', 'error');
-    return;
-  }
+  if (!username || !email) { showFlash('Username y Email son obligatorios', 'error'); return; }
 
   const first_name = document.getElementById('first_name').value || '';
   const last_name  = document.getElementById('last_name').value || '';
@@ -187,30 +203,27 @@ form.addEventListener('submit', async (e) => {
   const password = document.getElementById('password').value;
   const password2 = document.getElementById('password2').value;
 
-  if (editId === null) { // crear
-    if (!password) {
-      showFlash('Password es obligatorio al crear', 'error');
-      return;
-    }
-    if (password !== password2) {
-      showFlash('Las contraseñas no coinciden', 'error');
-      return;
-    }
-  } else { // editar
+  if (editId === null) {
+    if (!password) { showFlash('Password es obligatorio al crear', 'error'); return; }
+    if (password !== password2) { showFlash('Las contraseñas no coinciden', 'error'); return; }
+  } else {
     if (password || password2) {
-      if (password !== password2) {
-        showFlash('Las contraseñas no coinciden', 'error');
-        return;
-      }
+      if (password !== password2) { showFlash('Las contraseñas no coinciden', 'error'); return; }
     }
   }
 
-  // payload base
   const payload = {
     username, email, first_name, last_name,
     is_active, is_staff, is_superuser,
+    perfil: {
+      rol: (document.getElementById('perfil_rol')?.value) || 'recep',
+      puede_admin_usuarios: document.getElementById('pf_admin_usuarios')?.checked || false,
+      puede_ver_pacientes: document.getElementById('pf_ver_pacientes')?.checked || false,
+      puede_ver_calendario: document.getElementById('pf_ver_calendario')?.checked || false,
+      puede_generar_reportes: document.getElementById('pf_generar_reportes')?.checked || false,
+      puede_ver_estadisticas: document.getElementById('pf_ver_estadisticas')?.checked || false,
+    }
   };
-  // incluir password sólo si corresponde
   if (password) payload.password = password;
 
   try {
@@ -254,5 +267,21 @@ btnSi.addEventListener('click', async () => {
   }
 });
 
+// Paginación
+try { const el=document.getElementById('u_prev'); if(el) el.addEventListener('click', async ()=>{ if(u_prev){ await renderList(u_prev); } }); } catch(e){}
+try { const el2=document.getElementById('u_next'); if(el2) el2.addEventListener('click', async ()=>{ if(u_next){ await renderList(u_next); } }); } catch(e){}
+
 // ====== init ======
-document.addEventListener('DOMContentLoaded', renderList);
+document.addEventListener('DOMContentLoaded', () => {
+  const q = document.getElementById('u_q');
+  const ord = document.getElementById('u_orden');
+  const btn = document.getElementById('u_buscar');
+  if(btn){ btn.addEventListener('click', async ()=>{ u_query=(q?.value||'').trim(); u_ordering=ord?.value||'username'; await renderList(); }); }
+  if(q){ q.addEventListener('keydown', async (e)=>{ if(e.key==='Enter'){ u_query=(q.value||'').trim(); await renderList(); } }); }
+  if(ord){ ord.addEventListener('change', async ()=>{ u_ordering=ord.value||'username'; await renderList(); }); }
+  renderList();
+});
+
+
+
+

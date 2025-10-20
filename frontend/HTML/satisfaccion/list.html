@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Satisfacción | TerraVerde{% endblock %}
+{% block topbar_title %}Satisfacción{% endblock %}
+
+{% block content %}
+<div class="main-wrap" style="display:flex; gap:24px;">
+  <section class="contenido-principal" style="flex:1;">
+    <div class="card" style="padding:20px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
+        <h1 class="main-title" style="margin:0;">Calificaciones de Pacientes</h1>
+      </div>
+
+      <form method="post" style="margin-top:12px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
+        {% csrf_token %}
+        <div>
+          <label>Paciente</label>
+          <select name="paciente" required>
+            <option value="">Seleccione…</option>
+            {% for p in pacientes %}
+              <option value="{{ p.id }}">{{ p.apellido }}, {{ p.nombre }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label>Profesional (opcional)</label>
+          <select name="profesional">
+            <option value="">—</option>
+            {% for pr in profesionales %}
+              <option value="{{ pr.id }}">{{ pr.apellido }}, {{ pr.nombre }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label>Puntaje</label>
+          <select name="puntaje" required>
+            <option value="">Seleccione…</option>
+            <option value="5">5 - Excelente</option>
+            <option value="4">4 - Muy bueno</option>
+            <option value="3">3 - Bueno</option>
+            <option value="2">2 - Regular</option>
+            <option value="1">1 - Malo</option>
+          </select>
+        </div>
+        <div style="grid-column:1 / -1;">
+          <label>Comentario (opcional)</label>
+          <input type="text" name="comentario" placeholder="Escribe un comentario" />
+        </div>
+        <div style="grid-column:1 / -1; display:flex; justify-content:flex-end; gap:8px;">
+          <button class="btn btn-guardar" type="submit">Guardar</button>
+        </div>
+      </form>
+
+      <div style="margin-top:18px; display:flex; align-items:center; gap:12px;">
+        <strong>Promedio general:</strong>
+        <span style="font-size:20px; color:#2e7d32;">{% if promedio %}{{ promedio|floatformat:1 }} / 5{% else %}N/D{% endif %}</span>
+      </div>
+
+      <div style="overflow:auto; margin-top:10px;">
+        <table class="tabla-listado">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Paciente</th>
+              <th>Profesional</th>
+              <th>Puntaje</th>
+              <th>Comentario</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in calificaciones %}
+            <tr>
+              <td>{{ c.fecha|date:"Y-m-d H:i" }}</td>
+              <td>{{ c.paciente.apellido }}, {{ c.paciente.nombre }}</td>
+              <td>{% if c.profesional %}{{ c.profesional.apellido }}, {{ c.profesional.nombre }}{% else %}-{% endif %}</td>
+              <td>{{ c.puntaje }} ⭐</td>
+              <td>{{ c.comentario|default:"-" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5">Sin calificaciones aún.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+

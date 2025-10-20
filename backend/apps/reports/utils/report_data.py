@@ -28,8 +28,12 @@ def get_professional_productivity(params: dict) -> dict:
     return {'productividad': list(por_prof)}
 
 
-def get_epidemiological_data(params: dict) -> dict:
+def get_diagnostic_distribution(params: dict) -> dict:
     qs = Observation.objects.all()
     por_cie = qs.values('diagnostico_codigo').annotate(c=Count('id')).order_by('-c')
     return {'por_cie10': list(por_cie)}
+
+# Compatibilidad temporal: alias antiguo
+def get_epidemiological_data(params: dict) -> dict:
+    return get_diagnostic_distribution(params)
 

@@ -14,6 +14,17 @@
         <button id="btnNuevo" class="btn btn-guardar">Nuevo Usuario</button>
       </div>
 
+      <div style="display:flex; gap:8px; align-items:center; justify-content:flex-end; margin-top:10px;">
+        <input id="u_q" type="search" placeholder="Buscar usuario / email" style="padding:6px 10px; min-width:240px;">
+        <select id="u_orden" style="padding:6px 10px;">
+          <option value="username">Usuario A-Z</option>
+          <option value="-username">Usuario Z-A</option>
+          <option value="email">Email A-Z</option>
+          <option value="-date_joined">Mas recientes</option>
+        </select>
+        <button id="u_buscar" class="btn">Filtrar</button>
+      </div>
+
       <div style="overflow:auto; margin-top:14px;">
         <table class="tabla-listado">
           <thead>
@@ -30,6 +41,12 @@
             <tr><td colspan="6">Cargando...</td></tr>
           </tbody>
         </table>
+      </div>
+
+      <div style="display:flex; gap:10px; align-items:center; justify-content:flex-end; margin-top:10px;">
+        <button id="u_prev" class="btn">Anterior</button>
+        <span id="u_pageInfo" style="color:#666;"></span>
+        <button id="u_next" class="btn">Siguiente</button>
       </div>
 
       <div id="flash" style="margin-top:12px; display:none;"></div>
@@ -87,6 +104,35 @@
         </div>
       </div>
 
+      <div class="col-span-2" style="grid-column:1 / -1; padding-top:8px; border-top:1px solid #eee;">
+        <h3 style="margin:6px 0;">Perfil y Permisos</h3>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div>
+          <label>Rol</label>
+          <select id="perfil_rol">
+            <option value="recep">Recepcionista</option>
+            <option value="prof">Profesional</option>
+            <option value="admin">Administrador</option>
+          </select>
+        </div>
+        <div>
+          <label><input type="checkbox" id="pf_admin_usuarios"> Puede administrar usuarios</label>
+        </div>
+        <div>
+          <label><input type="checkbox" id="pf_ver_pacientes" checked> Puede ver pacientes</label>
+        </div>
+        <div>
+          <label><input type="checkbox" id="pf_ver_calendario" checked> Puede ver calendario</label>
+        </div>
+        <div>
+          <label><input type="checkbox" id="pf_generar_reportes"> Puede generar reportes</label>
+        </div>
+        <div>
+          <label><input type="checkbox" id="pf_ver_estadisticas"> Puede ver estadisticas</label>
+        </div>
+      </div>
+
       <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px;">
         <button type="button" id="btnCancelar" class="btn btn-cancelar-edit">Cancelar</button>
         <button type="submit" class="btn btn-guardar">Guardar</button>
@@ -95,11 +141,11 @@
   </div>
 </div>
 
-<!-- Confirmación Eliminación -->
+<!-- Confirmacion Eliminacion -->
 <div id="modalConfirm" class="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.35);">
   <div class="card" style="max-width:480px; width:95%; margin:40px auto; background:#fff; border-radius:12px; padding:16px;">
-    <h3 style="margin-top:0;">Confirmar eliminación</h3>
-    <p>¿Seguro que querés eliminar este usuario?</p>
+    <h3 style="margin-top:0;">Confirmar eliminacion</h3>
+    <p>¿Seguro que queres eliminar este usuario?</p>
     <div style="display:flex; gap:8px; justify-content:flex-end;">
       <button id="btnNo" class="btn btn-regresar">Cancelar</button>
       <button id="btnSi" class="btn btn-eliminar">Eliminar</button>
@@ -107,5 +153,5 @@
   </div>
 </div>
 
-<script src="{% static 'JS/usuarios/spa.js' %}"></script>
+<script src="{% static 'JS/usuarios/spa.js' %}?v=3"></script>
 {% endblock %}

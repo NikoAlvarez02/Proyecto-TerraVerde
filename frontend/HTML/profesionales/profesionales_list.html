@@ -17,8 +17,8 @@
       <div style="display:flex; gap:8px; align-items:center; justify-content:flex-end; margin-top:8px;">
         <input id="pr_q" type="search" placeholder="Buscar DNI / nombre / especialidad" style="padding:6px 10px; min-width:260px;" />
         <select id="pr_orden" style="padding:6px 10px;">
-          <option value="apellido">Apellido A→Z</option>
-          <option value="-apellido">Apellido Z→A</option>
+          <option value="apellido">Apellido A-Z</option>
+          <option value="-apellido">Apellido Z-A</option>
         </select>
         <button id="pr_buscar" class="btn">Filtrar</button>
       </div>
@@ -32,11 +32,12 @@
               <th>DNI</th>
               <th>Especialidad</th>
               <th>Teléfono</th>
+              <th>Centros</th>
               <th style="width:1%; white-space:nowrap;"></th>
             </tr>
           </thead>
           <tbody id="profesionales-tbody">
-            <tr><td colspan="6">Cargando...</td></tr>
+            <tr><td colspan="7">Cargando...</td></tr>
           </tbody>
         </table>
       </div>
@@ -210,5 +211,5 @@ document.addEventListener('DOMContentLoaded', async () => {
   </div>
 </div>
 
-<script src="{% static 'JS/profesionales/spa.js' %}"></script>
+<script src="{% static 'JS/profesionales/spa2.js' %}"></script>
 {% endblock %}

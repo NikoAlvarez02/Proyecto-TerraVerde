@@ -29,6 +29,6 @@ urlpatterns = [
     path('api/pacientes/certificado/', PatientReportViewSet.as_view({'post': 'certificado'}), name='paciente-certificado'),
     path('api/estadisticas/atenciones/', StatisticsReportViewSet.as_view({'post': 'atenciones_por_centro'}), name='estadisticas-atenciones'),
     path('api/estadisticas/productividad/', StatisticsReportViewSet.as_view({'post': 'productividad_profesional'}), name='estadisticas-productividad'),
-    path('api/estadisticas/epidemiologico/', StatisticsReportViewSet.as_view({'post': 'epidemiologico'}), name='estadisticas-epidemiologico'),
+    path('api/estadisticas/diagnosticos/', StatisticsReportViewSet.as_view({'post': 'diagnosticos'}), name='estadisticas-diagnosticos'),
     path('api/administrativos/generar/', AdministrativeReportViewSet.as_view({'post': 'generar'}), name='administrativos-generar'),
 ]

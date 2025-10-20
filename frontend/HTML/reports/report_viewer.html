@@ -11,7 +11,7 @@
 {% block content %}
   <div class="rp-page">
     <div class="rp-actions">
-      <button class="btn btn-outline" onclick="history.back()">⟵ Volver</button>
+      <button class="btn btn-outline" onclick="history.back()">← Volver</button>
       <a class="btn btn-primary" href="{% url 'reportes:dashboard' %}">Ir al Panel de Reportes</a>
     </div>
 
@@ -46,7 +46,7 @@
         <select id="est_tipo">
           <option value="atenciones">Atenciones por Centro</option>
           <option value="productividad">Productividad por Profesional</option>
-          <option value="epidemiologico">Epidemiológico</option>
+          <option value="diagnosticos">Distribución por Diagnósticos</option>
         </select>
       </label>
       <label>Desde: <input id="est_desde" type="date"></label>
@@ -113,7 +113,7 @@
       let url = '';
       if (t === 'atenciones') url = '/reportes/api/estadisticas/atenciones/';
       if (t === 'productividad') url = '/reportes/api/estadisticas/productividad/';
-      if (t === 'epidemiologico') url = '/reportes/api/estadisticas/epidemiologico/';
+      if (t === 'diagnosticos') url = '/reportes/api/estadisticas/diagnosticos/';
       const res = await exportReportToPDF(url, body);
       const div = document.getElementById('resultado');
       if(res && (res.archivo_url || res.archivo_pdf)){
