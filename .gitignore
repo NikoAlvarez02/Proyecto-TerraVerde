@@ -26,3 +26,7 @@ media/
 backend/.env
 frontend/.env
 
+# Ignorar cachés de Python
+__pycache__/
+*.pyc
+
