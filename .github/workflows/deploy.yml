@@ -30,31 +30,34 @@ jobs:
             cd $PROJECT_ROOT || exit 1
             set -e 
 
-            echo "📦 Actualizando código..."
+            echo "🗑️ Limpiando y preparando el repositorio local..."
+            # 1. Descartar cualquier cambio local (incluyendo archivos rastreados como el .env)
+            # Esto resuelve el error "Your local changes would be overwritten"
+            git reset --hard HEAD
+            
+            # 2. Asegurarse de estar en la rama correcta y obtener la última versión
             git pull
+            
+            # 3. Limpiar archivos no rastreados (como directorios __pycache__ o logs)
+            git clean -fd
 
+            echo "🐍 Verificando entorno virtual..."
             # Paso 1: CREAR EL VENV SI NO EXISTE
             if [ ! -f "$VENV_ACTIVATE" ]; then
               echo "🐍 El entorno virtual (.venv) no existe. Creándolo..."
-              # Usamos 'python3' para garantizar que se usa la versión correcta al crear
               python3 -m venv .venv 
             fi
 
             echo "🐍 Activando entorno virtual..."
-            # Se corrige la ruta y se usa 'source'
             source $VENV_ACTIVATE
             
-            # NOTA: Los comandos 'pip' y 'python' ahora apuntan al VENV
-
             echo "🔧 Instalando dependencias..."
             pip install -r requirements.txt
 
             echo "🗃️ Aplicando migraciones..."
-            # Usamos 'python' (ya activado en el venv)
             python manage.py migrate --noinput
 
             echo "📁 Recolectando archivos estáticos..."
-            # Usamos 'python' (ya activado en el venv)
             python manage.py collectstatic --noinput
 
             echo "🔄 Reiniciando Gunicorn..."
