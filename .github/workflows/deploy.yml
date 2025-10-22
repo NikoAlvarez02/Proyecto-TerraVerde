@@ -3,7 +3,7 @@ name: Deploy to VPS
 on:
   push:
     branches:
-      - main  # o la rama que uses para desplegar
+      - main # o la rama que uses para desplegar
 
 jobs:
   deploy:
@@ -20,22 +20,42 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            cd /root/Proyecto-TerraVerde/backend || exit 1
+            # ----------------------------------------------------
+            # Rutas críticas
+            PROJECT_ROOT="/root/Proyecto-TerraVerde/backend"
+            VENV_ACTIVATE="$PROJECT_ROOT/.venv/bin/activate"
+            # ----------------------------------------------------
+            
+            # Navegar al directorio y detener el script ante cualquier error (CRÍTICO)
+            cd $PROJECT_ROOT || exit 1
+            set -e 
 
             echo "📦 Actualizando código..."
             git pull
 
+            # Paso 1: CREAR EL VENV SI NO EXISTE
+            if [ ! -f "$VENV_ACTIVATE" ]; then
+              echo "🐍 El entorno virtual (.venv) no existe. Creándolo..."
+              # Usamos 'python3' para garantizar que se usa la versión correcta al crear
+              python3 -m venv .venv 
+            fi
+
             echo "🐍 Activando entorno virtual..."
-            source venv/bin/activate
+            # Se corrige la ruta y se usa 'source'
+            source $VENV_ACTIVATE
+            
+            # NOTA: Los comandos 'pip' y 'python' ahora apuntan al VENV
 
             echo "🔧 Instalando dependencias..."
             pip install -r requirements.txt
 
             echo "🗃️ Aplicando migraciones..."
-            python3 manage.py migrate --noinput
+            # Usamos 'python' (ya activado en el venv)
+            python manage.py migrate --noinput
 
             echo "📁 Recolectando archivos estáticos..."
-            python3 manage.py collectstatic --noinput
+            # Usamos 'python' (ya activado en el venv)
+            python manage.py collectstatic --noinput
 
             echo "🔄 Reiniciando Gunicorn..."
             systemctl restart gunicorn
