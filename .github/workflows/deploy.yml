@@ -24,22 +24,33 @@ jobs:
             # Rutas críticas
             PROJECT_ROOT="/root/Proyecto-TerraVerde/backend"
             VENV_ACTIVATE="$PROJECT_ROOT/.venv/bin/activate"
+            # Directorio padre (para la carpeta 'backend')
+            PROJECT_PARENT_DIR=$(dirname "$PROJECT_ROOT") 
             # ----------------------------------------------------
             
-            # Navegar al directorio y detener el script ante cualquier error (CRÍTICO)
-            cd $PROJECT_ROOT || exit 1
+            # Navegar al directorio padre
+            cd $PROJECT_PARENT_DIR || exit 1
             set -e 
 
-            echo "🗑️ Limpiando y preparando el repositorio local..."
-            # 1. Descartar cualquier cambio local (incluyendo archivos rastreados como el .env)
-            # Esto resuelve el error "Your local changes would be overwritten"
-            git reset --hard HEAD
+            echo "🌐 Verificando y preparando el repositorio..."
+
+            # SI EL DIRECTORIO DEL PROYECTO EXISTE, forzamos la actualización
+            if [ -d "$PROJECT_ROOT" ]; then
+                echo "📦 Directorio existente. Forzando actualización."
+                cd $PROJECT_ROOT
+                git reset --hard HEAD
+                git pull
+                cd .. # Volver al directorio padre
+            # SI NO EXISTE, LO CLONAMOS LIMPIAMENTE
+            else
+                echo "✨ Directorio no encontrado. Clonando por primera vez."
+                # Asume que el directorio raíz de Git es el padre de 'backend'
+                git clone https://github.com/NikoAlvarez02/Proyecto-TerraVerde.git
+                cd Proyecto-TerraVerde/backend # Entrar al subdirectorio 'backend'
+            fi
             
-            # 2. Asegurarse de estar en la rama correcta y obtener la última versión
-            git pull
-            
-            # 3. Limpiar archivos no rastreados (como directorios __pycache__ o logs)
-            git clean -fd
+            # Navegar al directorio 'backend' para el resto de comandos
+            cd $PROJECT_ROOT || exit 1
 
             echo "🐍 Verificando entorno virtual..."
             # Paso 1: CREAR EL VENV SI NO EXISTE
@@ -55,6 +66,7 @@ jobs:
             pip install -r requirements.txt
 
             echo "🗃️ Aplicando migraciones..."
+            # Asume que ya tienes el .env con las credenciales correctas
             python manage.py migrate --noinput
 
             echo "📁 Recolectando archivos estáticos..."
