@@ -127,12 +127,23 @@ USE_TZ = True
 # ----------------------------
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [
-    ('ASSETS', FRONTEND_DIR / 'ASSETS'),
-    ('CSS', FRONTEND_DIR / 'CSS'),
-    ('JS', FRONTEND_DIR / 'JS'),
+    ('ASSETS', FRONTEND_DIR / 'ASSETS'),
+    ('CSS', FRONTEND_DIR / 'CSS'),
+    ('JS', FRONTEND_DIR / 'JS'),
 ]
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# **MODIFICACIÓN CLAVE:**
+# STATIC_ROOT se define SÓLO si la variable de entorno STATIC_ROOT_DEPLOY está presente
+STATIC_ROOT_DEPLOY = env('STATIC_ROOT_DEPLOY', default=None)
+
+if STATIC_ROOT_DEPLOY:
+    STATIC_ROOT = ROOT_DIR / STATIC_ROOT_DEPLOY
+else:
+    # Si no está definida (ej. en desarrollo), Django no intentará usarla.
+    # Se añade un PASS o una ruta nula para evitar errores de ImproperlyConfigured en local,
+    # aunque en producción se requiere. Para forzar un error en desarrollo si se llama, 
+    # se podría dejar en None o usar un entorno condicional, pero esto es más seguro.
+    pass
 
 # ----------------------------
 # Autenticación
