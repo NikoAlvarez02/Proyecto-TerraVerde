@@ -127,9 +127,9 @@ USE_TZ = True
 # ----------------------------
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [
-    ('ASSETS', FRONTEND_DIR / 'ASSETS'),
-    ('CSS', FRONTEND_DIR / 'CSS'),
-    ('JS', FRONTEND_DIR / 'JS'),
+    ('ASSETS', FRONTEND_DIR / 'ASSETS'),
+    ('CSS', FRONTEND_DIR / 'CSS'),
+    ('JS', FRONTEND_DIR / 'JS'),
 ]
 
 # **MODIFICACIÓN CLAVE:**
