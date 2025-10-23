@@ -66,16 +66,18 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 8px;
+            padding: 0; /* Sin borde interno: la imagen ocupa todo */
             animation: pulse 2s infinite;
             color: #fff;
             font-weight: 700;
+            overflow: hidden; /* evita que sobresalga en esquinas redondeadas */
         }
 
         .logo-icon img {
             width: 100%;
             height: 100%;
-            object-fit: contain;
+            object-fit: cover; /* llena todo el cuadrado verde */
+            display: block;
         }
 
         @keyframes pulse {

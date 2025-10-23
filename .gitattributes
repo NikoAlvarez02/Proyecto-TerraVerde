@@ -1,0 +1,5 @@
+*.png -text
+*.jpg -text
+*.jpeg -text
+*.gif -text
+*.svg -text
