@@ -22,18 +22,15 @@ jobs:
           script: |
             # ----------------------------------------------------
             # Rutas críticas
-            # Rutas críticas (¡CORREGIDAS!)
-            PROJECT_PARENT_DIR="/var/www/Proyecto-TerraVerde"
-            PROJECT_ROOT="$PROJECT_PARENT_DIR/backend"
+            PROJECT_ROOT="/root/Proyecto-TerraVerde/backend"
             VENV_ACTIVATE="$PROJECT_ROOT/.venv/bin/activate"
+            # Directorio padre (para la carpeta 'backend')
+            PROJECT_PARENT_DIR=$(dirname "$PROJECT_ROOT") 
             # ----------------------------------------------------
             
             # Navegar al directorio padre
             cd $PROJECT_PARENT_DIR || exit 1
             set -e 
-
-            # Indica a Git que confíe en el directorio, ya que el propietario es diferente del usuario de ejecución.
-            git config --global --add safe.directory $PROJECT_PARENT_DIR
 
             echo "🌐 Verificando y preparando el repositorio..."
 

@@ -30,3 +30,11 @@ frontend/.env
 __pycache__/
 *.pyc
 
+backend/.venv/
+backend/__pycache__/
+**/__pycache__/
+*.pyc
+.env
+backend/.env
+*.sqlite3
+backend/.env.txt
