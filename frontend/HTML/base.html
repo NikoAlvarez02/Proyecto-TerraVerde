@@ -17,28 +17,28 @@
             <img src="{% static 'ASSETS/logo.png' %}" alt="Menú" width="26" height="26">
         </button>
         <a href="{% url 'home' %}" class="menu-icon" aria-label="Inicio" title="Inicio" style="margin-left:6px; display:inline-flex; align-items:center; justify-content:center;">
-            <span style="font-size:18px;">🏠</span>
+            <span style="font-size:18px;" aria-hidden="true">🏠</span>
         </a>
         {% if request.user.is_authenticated and request.user.perfil and request.user.perfil.puede_ver_calendario %}
         <a href="{% url 'turnos:list' %}" class="menu-icon" aria-label="Turnos" title="Turnos" style="margin-left:6px; display:inline-flex; align-items:center; justify-content:center;">
-            <span style="font-size:18px;">📅</span>
+            <span style="font-size:18px;" aria-hidden="true">📅</span>
         </a>
         {% endif %}
         {% if request.user.is_authenticated and request.user.perfil and request.user.perfil.puede_ver_pacientes %}
         <a href="{% url 'pacientes:list' %}" class="menu-icon" aria-label="Pacientes" title="Pacientes" style="margin-left:6px; display:inline-flex; align-items:center; justify-content:center;">
-            <span style="font-size:18px;">👥</span>
+            <span style="font-size:18px;" aria-hidden="true">👤</span>
         </a>
         {% endif %}
         {% if request.user.is_authenticated and request.user.perfil %}
             {% if request.user.perfil.puede_generar_reportes or request.user.perfil.puede_ver_estadisticas %}
             <a href="{% url 'reportes:dashboard' %}" class="menu-icon" aria-label="Reportes" title="Reportes" style="margin-left:6px; display:inline-flex; align-items:center; justify-content:center;">
-                <span style="font-size:18px;">📊</span>
+                <span style="font-size:18px;" aria-hidden="true">📊</span>
             </a>
             {% endif %}
         {% endif %}
         {% if request.user.is_authenticated and request.user.perfil and request.user.perfil.puede_ver_estadisticas %}
         <a href="{% url 'satisfaccion:list' %}" class="menu-icon" aria-label="Satisfacción" title="Satisfacción" style="margin-left:6px; display:inline-flex; align-items:center; justify-content:center;">
-            <span style="font-size:18px;">⭐</span>
+            <span style="font-size:18px;" aria-hidden="true">😊</span>
         </a>
         {% endif %}
         <h2 class="app-title">{% block topbar_title %}Gestionar Sistema{% endblock %}</h2>
@@ -81,3 +81,4 @@
 
 </body>
 </html>
+
