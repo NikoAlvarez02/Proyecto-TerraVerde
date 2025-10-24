@@ -22,10 +22,10 @@ jobs:
           script: |
             # ----------------------------------------------------
             # Rutas críticas
-            PROJECT_ROOT="/root/Proyecto-TerraVerde/backend"
+            # Rutas críticas (¡CORREGIDAS!)
+            PROJECT_PARENT_DIR="/var/www/Proyecto-TerraVerde"
+            PROJECT_ROOT="$PROJECT_PARENT_DIR/backend"
             VENV_ACTIVATE="$PROJECT_ROOT/.venv/bin/activate"
-            # Directorio padre (para la carpeta 'backend')
-            PROJECT_PARENT_DIR=$(dirname "$PROJECT_ROOT") 
             # ----------------------------------------------------
             
             # Navegar al directorio padre
