@@ -32,6 +32,9 @@ jobs:
             cd $PROJECT_PARENT_DIR || exit 1
             set -e 
 
+            # Indica a Git que confíe en el directorio, ya que el propietario es diferente del usuario de ejecución.
+            git config --global --add safe.directory $PROJECT_PARENT_DIR
+
             echo "🌐 Verificando y preparando el repositorio..."
 
             # SI EL DIRECTORIO DEL PROYECTO EXISTE, forzamos la actualización
