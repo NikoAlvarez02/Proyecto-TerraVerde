@@ -71,3 +71,23 @@
 
 .hint{ color:#5b7b86; font-size:12px; }
 
+/* --- Responsive ajustes: tablets y móviles --- */
+@media (max-width: 1024px){
+  .card{ padding: 14px; }
+}
+
+@media (max-width: 768px){
+  .hc-page h1{ font-size: 1.25rem; }
+  .card{ padding: 12px; }
+  .hc-actions{ justify-content: stretch; gap: 8px; }
+  .hc-actions .btn{ width: 100%; }
+  /* Evitar desbordes horizontales en tablas */
+  .hc-table{ display:block; overflow-x:auto; white-space:nowrap; }
+  .hc-table thead, .hc-table tbody, .hc-table tr{ width:100%; }
+  .hc-table th, .hc-table td{ font-size: 13px; }
+}
+
+@media (max-width: 480px){
+  .row label{ font-size: 12px; }
+  .row input, .row select, .row textarea{ font-size: 13px; padding: 8px 10px; }
+}

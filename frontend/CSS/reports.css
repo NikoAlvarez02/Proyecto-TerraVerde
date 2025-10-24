@@ -22,3 +22,20 @@
 .rp-list a:hover{ text-decoration:underline; }
 .rp-result{ min-height: 40px; display:flex; align-items:center; }
 
+/* --- Responsive ajustes: tablets y móviles --- */
+@media (max-width: 1024px){
+  .card{ padding: 14px; }
+}
+
+@media (max-width: 768px){
+  .rp-actions{ gap: 8px; }
+  .rp-actions .btn{ width: 100%; }
+  /* Etiquetas apiladas para inputs/selects largos */
+  .card label{ display:flex; flex-direction:column; align-items:flex-start; gap:4px; }
+  /* Selects e inputs ocupan todo el ancho en móvil */
+  .card select, .card input{ width: 100% !important; max-width: 100%; }
+}
+
+@media (max-width: 480px){
+  .btn{ padding: 9px 12px; }
+}

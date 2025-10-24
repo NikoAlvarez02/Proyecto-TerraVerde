@@ -175,10 +175,17 @@ html { scrollbar-gutter: stable both-edges; }
   .app-title{ font-size: 18px; text-align:left; }
   .btn-logout{ padding:8px 12px; font-size:14px; }
   .tabla-listado th, .tabla-listado td{ padding:10px; font-size:13px; }
-  /* Formularios de 2 columnas pasan a 1 */
-  .grid-2, [style*="grid-template-columns:1fr 1fr"]{ grid-template-columns:1fr !important; }
+  /* Formularios y grillas pasan a 1 columna */
+  .grid-2,
+  [style*="grid-template-columns"]{ grid-template-columns:1fr !important; }
   /* Sidebar como panel deslizante más ancho para táctil */
   .sidebar{ width: 80vw; max-width: 320px; }
+  /* Barras de filtros en tarjetas se envuelven */
+  .card > * { flex-wrap: wrap; }
+  /* Etiquetas apiladas para inputs/selects largos */
+  .card label{ display:flex; flex-direction:column; align-items:flex-start; gap:4px; }
+  /* Inputs/selects usan todo el ancho si están en flex o grid */
+  .card input, .card select, .card textarea{ max-width: 100%; width: 100%; }
 }
 
 @media (max-width: 480px){

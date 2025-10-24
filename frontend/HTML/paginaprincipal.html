@@ -410,6 +410,84 @@
             font-size: 12px;
             color: #999;
         }
+
+        /* --- Responsive: ajustes móviles y tablets --- */
+        @media (max-width: 1024px) {
+            .container { padding: 12px; }
+            .header { padding: 18px 20px; gap: 12px; }
+            .logo h1 { font-size: 24px; }
+            .grid { gap: 18px; }
+            .card { padding: 22px; }
+            .stat-number { font-size: 30px; }
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 12px; }
+            .container { max-width: 100%; }
+
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 14px;
+            }
+            .header-left { flex-wrap: wrap; gap: 12px; }
+            .logo-icon { width: 40px; height: 40px; }
+            .logo h1 { font-size: 22px; }
+            .quick-links { gap: 6px; }
+
+            .user-info { width: 100%; justify-content: space-between; }
+            .logout-form button { padding: 8px 12px; }
+
+            .grid {
+                grid-template-columns: 1fr;
+                gap: 14px;
+                margin-bottom: 18px;
+            }
+            /* Forzar tarjetas a una columna cuando haya estilos inline de span */
+            .grid > .card { grid-column: auto !important; }
+
+            .card { padding: 18px; }
+            .card-title { font-size: 16px; }
+            .card-icon { width: 40px; height: 40px; font-size: 20px; }
+            .stat-number { font-size: 26px; margin: 10px 0; }
+            .stat-label { font-size: 13px; }
+
+            .session-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            .session-name { font-size: 13px; overflow-wrap: anywhere; }
+            .session-time { font-size: 13px; }
+
+            .btn { padding: 10px 16px; }
+            .btn-primary { width: 100%; }
+
+            .chart-container { height: 160px; gap: 8px; }
+
+            /* Notificación fija: evitar que tape contenido en móvil */
+            .notification {
+                left: 12px;
+                right: 12px;
+                top: auto;
+                bottom: 12px;
+                padding: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body { padding: 8px; }
+            .header { padding: 14px; }
+            .logo h1 { font-size: 20px; }
+            .card { padding: 14px; }
+            .stat-number { font-size: 24px; }
+            .chart-container { height: 140px; }
+        }
+
+        /* Desactivar efecto hover agresivo en dispositivos sin hover */
+        @media (hover: none) {
+            .card:hover { transform: none; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); }
+        }
     </style>
 </head>
 <body>
