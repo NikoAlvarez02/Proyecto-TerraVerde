@@ -20,68 +20,61 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
+           ======CMD======
             # ----------------------------------------------------
-            # 1. CORRECCIÓN DE RUTAS: Usar la ruta absoluta /var/www/
-            # Se evita el error 'cd: No such file or directory' al usar rutas absolutas
+            # Rutas críticas
             PROJECT_PARENT_DIR="/var/www/Proyecto-TerraVerde"
             PROJECT_ROOT="$PROJECT_PARENT_DIR/backend"
             VENV_ACTIVATE="$PROJECT_ROOT/.venv/bin/activate"
+            PYTHON_BIN="$PROJECT_ROOT/.venv/bin/python" # <--- NUEVA VARIABLE DE RUTA
             # ----------------------------------------------------
-            
-            # Navegar al directorio padre (donde reside el repo git)
+            # Navegar al directorio padre
             cd $PROJECT_PARENT_DIR || exit 1
             set -e 
-
+            
             # 2. CORRECCIÓN DE SEGURIDAD: Añadir excepción de Git
-            # Esto resuelve el error 'fatal: detected dubious ownership'
             echo "🔐 Configurando excepción de directorio de Git..."
-            # Se usa 'sudo' para asegurar que el comando se ejecuta con permisos de root
-            # y se aplica al usuario que ejecuta la acción SSH.
             sudo git config --system --add safe.directory $PROJECT_PARENT_DIR
 
             echo "🌐 Verificando y preparando el repositorio..."
-
+            
             # SI EL DIRECTORIO DEL PROYECTO EXISTE, forzamos la actualización
             if [ -d "$PROJECT_ROOT" ]; then
                 echo "📦 Directorio existente. Forzando actualización."
-                git reset --hard HEAD # Se ejecuta en $PROJECT_PARENT_DIR
+                git reset --hard HEAD
                 git pull
-            # SI NO EXISTE, LO CLONAMOS LIMPIAMENTE
             else
                 echo "🚨 Directorio 'backend' no encontrado. Clonando..."
-                # Nota: Si el clonado falla, es posible que se necesite 'sudo'
                 git clone https://github.com/NikoAlvarez02/Proyecto-TerraVerde.git
             fi
-            
+
             # Navegar al directorio 'backend' para el resto de comandos
             cd $PROJECT_ROOT || exit 1
-
+            
+            # NO USAMOS 'source $VENV_ACTIVATE' porque usaremos la ruta absoluta.
+            # Solo verificamos si el VENV existe y se crea/instala si es necesario.
+            
             echo "🐍 Verificando entorno virtual..."
-            # Paso 1: CREAR EL VENV SI NO EXISTE
             if [ ! -f "$VENV_ACTIVATE" ]; then
               echo "🐍 El entorno virtual (.venv) no existe. Creándolo..."
               python3 -m venv .venv 
             fi
 
-            echo "🐍 Activando entorno virtual..."
-            source $VENV_ACTIVATE
+            echo "🔧 Instalando dependencias (usando VENV python bin)..."
+            $PYTHON_BIN -m pip install -r requirements.txt
             
-            echo "🔧 Instalando dependencias..."
-            pip install -r requirements.txt
-
-            echo "🗃️ Aplicando migraciones..."
-            python manage.py migrate --noinput
-
-            echo "📁 Recolectando archivos estáticos..."
-            # 3. CORRECCIÓN DE PERMISOS PARA COLLECTSTATIC
-            # Se usa 'sudo -u www-data' para garantizar que los archivos estáticos
-            # recolectados tengan el propietario correcto (www-data), evitando futuros 403s.
-            sudo -u www-data python manage.py collectstatic --noinput
-
+            echo "🗃️ Aplicando migraciones (usando VENV python bin)..."
+            $PYTHON_BIN manage.py migrate --noinput
+            
+            echo "📁 Recolectando archivos estáticos (¡CORREGIDO! usando VENV python bin y www-data)..."
+            # Ejecutamos el binario de python del VENV con el usuario www-data
+            sudo -u www-data $PYTHON_BIN manage.py collectstatic --noinput
+            
             echo "🔄 Reiniciando Gunicorn..."
             systemctl restart gunicorn
-
+            
             echo "✅ Reinicio de Gunicorn completo"
-
+            
             echo "🧱 Reiniciando Nginx..."
             systemctl reload nginx || echo "Nginx no recargado (no es crítico)"
+            ======END======
