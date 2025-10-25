@@ -21,32 +21,36 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             # ----------------------------------------------------
-            # Rutas críticas
-            PROJECT_ROOT="/root/Proyecto-TerraVerde/backend"
+            # 1. CORRECCIÓN DE RUTAS: Usar la ruta absoluta /var/www/
+            # Se evita el error 'cd: No such file or directory' al usar rutas absolutas
+            PROJECT_PARENT_DIR="/var/www/Proyecto-TerraVerde"
+            PROJECT_ROOT="$PROJECT_PARENT_DIR/backend"
             VENV_ACTIVATE="$PROJECT_ROOT/.venv/bin/activate"
-            # Directorio padre (para la carpeta 'backend')
-            PROJECT_PARENT_DIR=$(dirname "$PROJECT_ROOT") 
             # ----------------------------------------------------
             
-            # Navegar al directorio padre
+            # Navegar al directorio padre (donde reside el repo git)
             cd $PROJECT_PARENT_DIR || exit 1
             set -e 
+
+            # 2. CORRECCIÓN DE SEGURIDAD: Añadir excepción de Git
+            # Esto resuelve el error 'fatal: detected dubious ownership'
+            echo "🔐 Configurando excepción de directorio de Git..."
+            # Se usa 'sudo' para asegurar que el comando se ejecuta con permisos de root
+            # y se aplica al usuario que ejecuta la acción SSH.
+            sudo git config --system --add safe.directory $PROJECT_PARENT_DIR
 
             echo "🌐 Verificando y preparando el repositorio..."
 
             # SI EL DIRECTORIO DEL PROYECTO EXISTE, forzamos la actualización
             if [ -d "$PROJECT_ROOT" ]; then
                 echo "📦 Directorio existente. Forzando actualización."
-                cd $PROJECT_ROOT
-                git reset --hard HEAD
+                git reset --hard HEAD # Se ejecuta en $PROJECT_PARENT_DIR
                 git pull
-                cd .. # Volver al directorio padre
             # SI NO EXISTE, LO CLONAMOS LIMPIAMENTE
             else
-                echo "✨ Directorio no encontrado. Clonando por primera vez."
-                # Asume que el directorio raíz de Git es el padre de 'backend'
+                echo "🚨 Directorio 'backend' no encontrado. Clonando..."
+                # Nota: Si el clonado falla, es posible que se necesite 'sudo'
                 git clone https://github.com/NikoAlvarez02/Proyecto-TerraVerde.git
-                cd Proyecto-TerraVerde/backend # Entrar al subdirectorio 'backend'
             fi
             
             # Navegar al directorio 'backend' para el resto de comandos
@@ -66,16 +70,18 @@ jobs:
             pip install -r requirements.txt
 
             echo "🗃️ Aplicando migraciones..."
-            # Asume que ya tienes el .env con las credenciales correctas
             python manage.py migrate --noinput
 
             echo "📁 Recolectando archivos estáticos..."
-            python manage.py collectstatic --noinput
+            # 3. CORRECCIÓN DE PERMISOS PARA COLLECTSTATIC
+            # Se usa 'sudo -u www-data' para garantizar que los archivos estáticos
+            # recolectados tengan el propietario correcto (www-data), evitando futuros 403s.
+            sudo -u www-data python manage.py collectstatic --noinput
 
             echo "🔄 Reiniciando Gunicorn..."
             systemctl restart gunicorn
 
             echo "✅ Reinicio de Gunicorn completo"
 
-            echo "🧱 (Opcional) Reiniciando Nginx..."
+            echo "🧱 Reiniciando Nginx..."
             systemctl reload nginx || echo "Nginx no recargado (no es crítico)"
