@@ -1,5 +1,25 @@
-*.png -text
-*.jpg -text
-*.jpeg -text
-*.gif -text
-*.svg -text
+*               text=auto eol=lf
+# Archivos de código (fuerzan LF)
+*.py            text eol=lf
+*.sh            text eol=lf
+*.html          text eol=lf
+*.css           text eol=lf
+*.js            text eol=lf
+*.json          text eol=lf
+*.yaml          text eol=lf
+*.yml           text eol=lf
+
+# Scripts Windows (permiten CRLF)
+*.bat           text eol=crlf
+*.cmd           text eol=crlf
+*.ps1           text eol=crlf
+
+# Binarios: nunca tocar
+*.png           binary
+*.jpg           binary
+*.jpeg          binary
+*.gif           binary
+*.pdf           binary
+*.woff          binary
+*.woff2         binary
+*.ttf           binary
