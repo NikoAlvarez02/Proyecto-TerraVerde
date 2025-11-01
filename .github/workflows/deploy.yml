@@ -3,7 +3,8 @@ name: Deploy to VPS
 on:
   push:
     branches:
-      - main # o la rama que uses para desplegar
+      - main
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -11,7 +12,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1.0.3
@@ -20,60 +21,38 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-           ======CMD======
-            # ----------------------------------------------------
-            # Rutas críticas
+            set -euo pipefail
+
             PROJECT_PARENT_DIR="/var/www/Proyecto-TerraVerde"
             PROJECT_ROOT="$PROJECT_PARENT_DIR/backend"
-            VENV_ACTIVATE="$PROJECT_ROOT/.venv/bin/activate"
-            PYTHON_BIN="$PROJECT_ROOT/.venv/bin/python" # <--- NUEVA VARIABLE DE RUTA
-            # ----------------------------------------------------
-            # Navegar al directorio padre
-            cd $PROJECT_PARENT_DIR || exit 1
-            set -e 
-            
-            # 2. CORRECCIÓN DE SEGURIDAD: Añadir excepción de Git
-            echo "🔐 Configurando excepción de directorio de Git..."
-            sudo git config --system --add safe.directory $PROJECT_PARENT_DIR
+            VENV_DIR="$PROJECT_ROOT/.venv"
+            PYTHON_BIN="$VENV_DIR/bin/python"
 
-            echo "🌐 Verificando y preparando el repositorio..."
-            
-            # SI EL DIRECTORIO DEL PROYECTO EXISTE, forzamos la actualización
-            if [ -d "$PROJECT_ROOT" ]; then
-                echo "📦 Directorio existente. Forzando actualización."
-                git reset --hard HEAD
-                git pull
+            echo "➡️ Preparando repositorio"
+            mkdir -p "$PROJECT_PARENT_DIR"
+            cd "$PROJECT_PARENT_DIR"
+            sudo git config --system --add safe.directory "$PROJECT_PARENT_DIR"
+            if [ -d .git ]; then
+              git fetch --all --prune
+              git reset --hard origin/main
             else
-                echo "🚨 Directorio 'backend' no encontrado. Clonando..."
-                git clone https://github.com/NikoAlvarez02/Proyecto-TerraVerde.git
+              git clone https://github.com/NikoAlvarez02/Proyecto-TerraVerde.git .
             fi
 
-            # Navegar al directorio 'backend' para el resto de comandos
-            cd $PROJECT_ROOT || exit 1
-            
-            # NO USAMOS 'source $VENV_ACTIVATE' porque usaremos la ruta absoluta.
-            # Solo verificamos si el VENV existe y se crea/instala si es necesario.
-            
-            echo "🐍 Verificando entorno virtual..."
-            if [ ! -f "$VENV_ACTIVATE" ]; then
-              echo "🐍 El entorno virtual (.venv) no existe. Creándolo..."
-              python3 -m venv .venv 
+            echo "🐍 Preparando entorno"
+            cd "$PROJECT_ROOT"
+            if [ ! -x "$PYTHON_BIN" ]; then
+              python3 -m venv "$VENV_DIR"
             fi
+            "$PYTHON_BIN" -m pip install -r requirements.txt
 
-            echo "🔧 Instalando dependencias (usando VENV python bin)..."
-            $PYTHON_BIN -m pip install -r requirements.txt
-            
-            echo "🗃️ Aplicando migraciones (usando VENV python bin)..."
-            $PYTHON_BIN manage.py migrate --noinput
-            
-            echo "📁 Recolectando archivos estáticos (¡CORREGIDO! usando VENV python bin y www-data)..."
-            # Ejecutamos el binario de python del VENV con el usuario www-data
-            sudo -u www-data $PYTHON_BIN manage.py collectstatic --noinput
-            
-            echo "🔄 Reiniciando Gunicorn..."
-            systemctl restart gunicorn
-            
-            echo "✅ Reinicio de Gunicorn completo"
-            
-            echo "🧱 Reiniciando Nginx..."
-            systemctl reload nginx || echo "Nginx no recargado (no es crítico)"
+            echo "🗃️ Migrando DB"
+            "$PYTHON_BIN" manage.py migrate --noinput
+
+            echo "📦 Collectstatic"
+            sudo -u www-data "$PYTHON_BIN" manage.py collectstatic --noinput
+
+            echo "🔄 Reiniciando servicios"
+            sudo systemctl restart gunicorn
+            sudo systemctl reload nginx || echo "Nginx no recargado (no es crítico)"
+
