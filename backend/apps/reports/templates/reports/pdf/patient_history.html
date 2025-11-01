@@ -1,8 +1,9 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>HISTORIA CLÕNICA</title>
+    <title>HISTORIA CL√çNICA</title>
     <style>
         @page { margin: 2cm; }
         * { margin:0; padding:0; box-sizing:border-box; }
@@ -33,7 +34,7 @@
                     {% if logo_b64 %}
                         <img src="data:image/png;base64,{{ logo_b64 }}" alt="TERRAVERDE">
                     {% else %}
-                        <img src="frontend/ASSETS/terraverde.png" alt="TERRAVERDE">
+                        <img src="{% static 'ASSETS/terraverde.png' %}" alt="TERRAVERDE">
                     {% endif %}
                 </div>
                 <div class="title-section">
@@ -45,25 +46,19 @@
                 <div><strong>Fecha:</strong> {{ generado|date:"d/m/Y H:i" }}</div>
             </div>
         </div>
-
-        <div class="document-title">
-            <strong>HISTORIA CLÕNICA</strong>
-        </div>
-
+        <div class="document-title"><strong>HISTORIA CL√çNICA</strong></div>
         <div class="patient-info">
             <div class="info-grid">
                 <div><span class="info-label">Paciente:</span> {{ paciente }}</div>
                 <div><span class="info-label">Per√≠odo:</span> {{ params.desde|default:"-" }} a {{ params.hasta|default:"-" }}</div>
             </div>
         </div>
-
         <div class="section">
             <div class="section-title">Resumen</div>
             <div class="item"><strong>Profesionales:</strong> {{ sum_prof|length }}</div>
-            <div class="item"><strong>DiagnÛsticos ˙nicos:</strong> {{ sum_diag|length }}</div>
+            <div class="item"><strong>Diagn√≥sticos √∫nicos:</strong> {{ sum_diag|length }}</div>
             <div class="item"><strong>Estudios listados:</strong> {{ sum_estudios|length }}</div>
         </div>
-
         <div class="section">
             <div class="section-title">Observaciones</div>
             {% for o in observaciones %}
@@ -75,5 +70,3 @@
     </div>
 </body>
 </html>
-
-
