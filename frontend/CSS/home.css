@@ -99,6 +99,7 @@
             transition: all .2s ease;
         }
         .qlink:hover { background:#f3f7f4; transform: translateY(-1px); }
+        .qlink svg{ width:16px; height:16px; margin-right:6px; vertical-align:-2px; fill: currentColor; }
 
         .user-info {
             display: flex;
@@ -200,7 +201,9 @@
             align-items: center;
             justify-content: center;
             font-size: 22px;
+            color:#fff;
         }
+        .card-icon svg{ width:22px; height:22px; fill: currentColor; }
 
         .icon-purple { background: var(--purple-500); color: white; }
         .icon-pink { background: linear-gradient(135deg, var(--p-600) 0%, var(--p-400) 100%); color: white; }
