@@ -1,4 +1,4 @@
-from django.contrib import admin
+﻿from django.contrib import admin
 from django.contrib.auth.models import User
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .models import Perfil, AuditoriaLog
@@ -26,24 +26,24 @@ class CustomUserAdmin(BaseUserAdmin):
     get_rol.short_description = 'Rol'
 
 
-# Registrar el modelo Perfil por separado también
+# Registrar el modelo Perfil por separado tambiÃ©n
 @admin.register(Perfil)
 class PerfilAdmin(admin.ModelAdmin):
     list_display = ('user', 'rol', 'puede_ver_estadisticas', 'puede_generar_reportes', 'puede_ver_auditoria')
     list_filter = ('rol','puede_ver_estadisticas','puede_generar_reportes','puede_ver_auditoria')
     search_fields = ('user__username', 'user__email', 'user__first_name', 'user__last_name')
     fieldsets = (
-        (None, {'fields': ('user','rol')}),
+        (None, {'fields': ('user','rol','foto')}),
         ('Seguridad', {'fields': ('email_recuperacion',)}),
-        ('Administración', {'fields': ('puede_admin_usuarios','puede_admin_especialidades','puede_admin_centros','puede_admin_roles'), 'classes': ('collapse',)}),
+        ('AdministraciÃ³n', {'fields': ('puede_admin_usuarios','puede_admin_especialidades','puede_admin_centros','puede_admin_roles'), 'classes': ('collapse',)}),
         ('Pacientes', {'fields': ('puede_crear_pacientes','puede_ver_pacientes','puede_editar_pacientes','puede_eliminar_pacientes'), 'classes': ('collapse',)}),
-        ('Historia Clínica', {'fields': ('puede_crear_historias','puede_ver_historias','puede_editar_historias','puede_ver_historias_otros'), 'classes': ('collapse',)}),
+        ('Historia ClÃ­nica', {'fields': ('puede_crear_historias','puede_ver_historias','puede_editar_historias','puede_ver_historias_otros'), 'classes': ('collapse',)}),
         ('Turnos', {'fields': ('puede_crear_turnos','puede_ver_calendario','puede_gestionar_turnos','puede_cancelar_turnos'), 'classes': ('collapse',)}),
-        ('Reportes y Auditoría', {'fields': ('puede_generar_reportes','puede_ver_estadisticas','puede_exportar_datos','puede_ver_auditoria')}),
+        ('Reportes y AuditorÃ­a', {'fields': ('puede_generar_reportes','puede_ver_estadisticas','puede_exportar_datos','puede_ver_auditoria')}),
     )
 
 
-# Re-registrar User con la configuración personalizada
+# Re-registrar User con la configuraciÃ³n personalizada
 admin.site.unregister(User)
 admin.site.register(User, CustomUserAdmin)
 
