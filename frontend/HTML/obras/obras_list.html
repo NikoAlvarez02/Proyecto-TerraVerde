@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Obras Sociales | TerraVerde{% endblock %}
+{% block topbar_title %}Obras Sociales{% endblock %}
+{% block sidebar %}{% endblock %}
+
+{% block content %}
+  <div class="card" style="padding:20px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+      <h1 class="main-title" style="margin:0;">Obras Sociales</h1>
+      <div style="display:flex; gap:8px;">
+        <button id="btnNuevaObra" class="btn btn-guardar">Nueva Obra Social</button>
+        <button id="btnImportar" class="btn">Importar desde SNRS</button>
+        <input type="file" id="o_file" accept=".csv" style="display:none;" />
+        <button id="btnImportarCSV" class="btn btn-secundario">Importar CSV</button>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:8px; align-items:center; justify-content:flex-end; margin-top:10px;">
+      <input id="o_q" type="search" placeholder="Buscar nombre / código" style="padding:6px 10px; min-width:260px;">
+      <select id="o_activo" style="padding:6px 10px;">
+        <option value="">Todos</option>
+        <option value="true">Solo activas</option>
+        <option value="false">Solo inactivas</option>
+      </select>
+      <select id="o_orden" style="padding:6px 10px;">
+        <option value="nombre">Nombre A-Z</option>
+        <option value="-nombre">Nombre Z-A</option>
+        <option value="codigo">Código A-Z</option>
+        <option value="-codigo">Código Z-A</option>
+      </select>
+      <button id="o_buscar" class="btn">Filtrar</button>
+    </div>
+
+    <div class="tabla-wrap" style="margin-top:12px;">
+      <table class="tabla-listado" id="obras-table">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Nombre</th>
+            <th>Activo</th>
+            <th style="width:1%; white-space:nowrap;"></th>
+          </tr>
+        </thead>
+        <tbody id="o_tbody">
+          <tr><td colspan="4">Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="flash" style="display:none;margin-top:10px;"></div>
+  </div>
+
+  <!-- Modal Crear/Editar Obra Social -->
+  <div id="modalObra" class="modal">
+    <div class="card" style="max-width:600px; width:95%; background:#fff; border-radius:12px; padding:16px; margin:0;">
+      <div style="display:flex;justify-content:space-between;align-items:center;" class="drag-handle">
+        <h2 id="o_modalTitle" class="main-title" style="margin:0;">Nueva Obra Social</h2>
+        <button id="o_cerrar" class="btn btn-secundario">Cerrar</button>
+      </div>
+      <form id="o_form" class="form-modal" style="margin-top:12px;">
+        {% csrf_token %}
+        <input type="hidden" id="o_id">
+
+        <div class="form-grid">
+          <div>
+            <label>Nombre</label>
+            <input type="text" id="o_nombre" required>
+          </div>
+          <div>
+            <label>Código</label>
+            <input type="text" id="o_codigo">
+          </div>
+          <div>
+            <label style="display:flex; align-items:center; gap:8px;">
+              <input type="checkbox" id="o_activo_chk" checked> Activa
+            </label>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px;">
+          <button type="button" id="o_cancelar" class="btn btn-cancelar-edit">Cancelar</button>
+          <button type="submit" class="btn btn-guardar">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Confirmación Eliminación -->
+  <div id="o_modalConfirm" class="modal">
+    <div class="card" style="max-width:480px; width:95%; background:#fff; border-radius:12px; padding:16px; margin:0;">
+      <h3 style="margin-top:0;">Confirmar eliminación</h3>
+      <p>¿Seguro que querés eliminar esta obra social?</p>
+      <div style="display:flex; gap:8px; justify-content:flex-end;">
+        <button id="o_no" class="btn btn-regresar">Cancelar</button>
+        <button id="o_si" class="btn btn-eliminar">Eliminar</button>
+      </div>
+    </div>
+  </div>
+
+  {% block extra_js %}
+  <script src="{% static 'JS/obras/spa.js' %}"></script>
+  {% endblock %}
+{% endblock %}

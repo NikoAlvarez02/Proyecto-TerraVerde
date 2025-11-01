@@ -15,11 +15,22 @@
       </div>
 
       <div style="display:flex; gap:8px; align-items:center; justify-content:flex-end; margin-top:8px; flex-wrap:wrap;">
+        <label class="sr-only" for="t_q">Buscar</label>
         <input id="t_q" type="search" placeholder="Buscar paciente/profesional/motivo" style="padding:6px 10px; min-width:240px;" />
+
+        <label class="sr-only" for="t_pac">Paciente</label>
         <select id="t_pac" style="padding:6px 10px; min-width:180px;"><option value="">Paciente (todos)</option></select>
+
+        <label class="sr-only" for="t_prof">Profesional</label>
         <select id="t_prof" style="padding:6px 10px; min-width:180px;"><option value="">Profesional (todos)</option></select>
+
+        <label class="sr-only" for="t_desde">Desde</label>
         <input id="t_desde" type="date" style="padding:6px 10px;" />
+
+        <label class="sr-only" for="t_hasta">Hasta</label>
         <input id="t_hasta" type="date" style="padding:6px 10px;" />
+
+        <label class="sr-only" for="t_estado">Estado</label>
         <select id="t_estado" style="padding:6px 10px;">
           <option value="">Todos</option>
           <option value="pendiente">Pendiente</option>
@@ -28,6 +39,8 @@
           <option value="atendido">Atendido</option>
           <option value="ausente">Ausente</option>
         </select>
+
+        <label class="sr-only" for="t_orden">Orden</label>
         <select id="t_orden" style="padding:6px 10px;">
           <option value="-fecha_hora">Más recientes</option>
           <option value="fecha_hora">Más antiguos</option>
@@ -78,45 +91,47 @@
       <button id="btnCerrarModal" class="btn btn-secundario">Cerrar</button>
     </div>
 
-    <form id="formTurno" style="margin-top:12px;">
+    <form id="formTurno" class="form-modal" style="margin-top:12px;">
       {% csrf_token %}
       <input type="hidden" id="turnoId">
 
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+      <div class="form-grid">
         <div>
-          <label>Fecha</label>
+          <label for="fecha">Fecha</label>
           <input type="date" id="fecha" name="fecha" required>
         </div>
         <div>
-          <label>Hora</label>
-          <input type="time" id="hora" name="hora" required>
+          <label for="hora">Hora</label>
+          <input type="time" id="hora" name="hora" required min="08:00" max="20:00">
         </div>
         <div>
-          <label>Paciente</label>
+          <label for="paciente">Paciente</label>
           <select id="paciente" name="paciente" required>
             <option value="">Cargando...</option>
           </select>
         </div>
         <div>
-          <label>Profesional</label>
+          <label for="profesional">Profesional</label>
           <select id="profesional" name="profesional" required>
             <option value="">Cargando...</option>
           </select>
         </div>
         <div>
-          <label>Estado</label>
+          <label for="estado">Estado</label>
           <select id="estado" name="estado" required>
             <option value="pendiente">Pendiente</option>
             <option value="confirmado">Confirmado</option>
+            <option value="atendido">Atendido</option>
+            <option value="ausente">Ausente</option>
             <option value="cancelado">Cancelado</option>
           </select>
         </div>
         <div style="grid-column:1 / -1;">
-          <label>Motivo</label>
+          <label for="motivo">Motivo</label>
           <input type="text" id="motivo" name="motivo" placeholder="Opcional">
         </div>
         <div style="grid-column:1 / -1;">
-          <label>Observaciones</label>
+          <label for="observaciones">Observaciones</label>
           <textarea id="observaciones" name="observaciones" rows="3" placeholder="Opcional"></textarea>
         </div>
       </div>
@@ -141,8 +156,14 @@
   </div>
 </div>
 
-<!-- Toast global -->
-<div id="toast" style="display:none;"></div>
-
-<script src="{% static 'JS/turnos/spa.js' %}"></script>
+<script src="{% static 'JS/turnos/spa.js' %}?v=12"></script>
 {% endblock %}
+
+
+
+
+
+
+
+
+

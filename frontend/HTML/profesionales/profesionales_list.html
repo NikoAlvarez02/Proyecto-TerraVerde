@@ -16,6 +16,7 @@
 
       <div style="display:flex; gap:8px; align-items:center; justify-content:flex-end; margin-top:8px;">
         <input id="pr_q" type="search" placeholder="Buscar DNI / nombre / especialidad" style="padding:6px 10px; min-width:260px;" />
+        <select id="pr_esp" style="padding:6px 10px; min-width:200px;"><option value="">Especialidad (todas)</option></select>
         <select id="pr_orden" style="padding:6px 10px;">
           <option value="apellido">Apellido A-Z</option>
           <option value="-apellido">Apellido Z-A</option>
@@ -54,18 +55,18 @@
 </div>
 
 <!-- Modal Crear/Editar -->
-<div id="modalForm" class="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.35);">
-  <div class="card" style="max-width:720px; width:95%; margin:40px auto; background:#fff; border-radius:12px; padding:16px;">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
+<div id="modalForm" class="modal">
+  <div class="card" style="max-width:720px; width:95%; background:#fff; border-radius:12px; padding:16px; margin:0;">
+    <div class="drag-handle" style="display:flex; justify-content:space-between; align-items:center;">
       <h2 id="modalTitle" class="main-title" style="margin:0;">Nuevo Profesional</h2>
       <button id="btnCerrarModal" class="btn btn-secundario">Cerrar</button>
     </div>
 
-    <form id="formProfesional" style="margin-top:12px;">
+    <form id="formProfesional" class="form-modal" style="margin-top:12px;">
       {% csrf_token %}
       <input type="hidden" id="profesionalId">
 
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+      <div class="form-grid">
         <div>
           <label>Apellido</label>
           <input type="text" id="apellido" name="apellido" required>
@@ -84,7 +85,7 @@
         </div>
         <div>
           <label>Especialidad</label>
-          <input type="text" id="especialidad" name="especialidad">
+          <select id="especialidad" name="especialidad"></select>
         </div>
         <div>
           <label>Teléfono</label>
@@ -200,8 +201,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 </script>
 
 <!-- Confirmación Eliminación -->
-<div id="modalConfirm" class="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.35);">
-  <div class="card" style="max-width:480px; width:95%; margin:40px auto; background:#fff; border-radius:12px; padding:16px;">
+<div id="modalConfirm" class="modal">
+  <div class="card" style="max-width:480px; width:95%; background:#fff; border-radius:12px; padding:16px; margin:0;">
     <h3 style="margin-top:0;">Confirmar eliminación</h3>
     <p>¿Seguro que querés eliminar este profesional?</p>
     <div style="display:flex; gap:8px; justify-content:flex-end;">

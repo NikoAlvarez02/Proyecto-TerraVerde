@@ -1,6 +1,6 @@
 # apps/profesionales/admin.py
 from django.contrib import admin
-from .models import Profesional
+from .models import Profesional, Especialidad
 
 @admin.register(Profesional)
 class ProfesionalAdmin(admin.ModelAdmin):
@@ -27,3 +27,10 @@ class ProfesionalAdmin(admin.ModelAdmin):
         if obj:
             return self.readonly_fields + ('dni',)
         return self.readonly_fields
+
+
+@admin.register(Especialidad)
+class EspecialidadAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'activo')
+    list_filter = ('activo',)
+    search_fields = ('nombre',)

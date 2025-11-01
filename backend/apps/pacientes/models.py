@@ -23,7 +23,13 @@ class Paciente(models.Model):
     telefono = models.CharField(max_length=20, blank=True)
     email = models.EmailField(blank=True, null=True)
     direccion = models.CharField(max_length=100, blank=True)
-    obra_social = models.CharField(max_length=50, blank=True)
+    obra_social = models.ForeignKey('obras.ObraSocial', on_delete=models.SET_NULL, null=True, blank=True, related_name='pacientes')
+    plan = models.ForeignKey('obras.PlanObraSocial', on_delete=models.SET_NULL, null=True, blank=True, related_name='pacientes')
+
+    # Columna legacy que quedó de una migración inicial (CharField NOT NULL)
+    # La mantenemos solo a nivel de modelo para completar '' en INSERT y evitar
+    # errores de integridad en entornos donde la columna persiste.
+    obra_social_legacy = models.CharField(max_length=50, blank=True, default='', db_column='obra_social', editable=False)
 
     centro = models.ForeignKey('centers.Center', on_delete=models.PROTECT, related_name='pacientes', null=True, blank=True)
     contacto_emergencia_nombre = models.CharField(max_length=100, blank=True)
@@ -37,6 +43,9 @@ class Paciente(models.Model):
     activo = models.BooleanField(default=True)
     fecha_registro = models.DateTimeField(auto_now_add=True)
     fecha_baja = models.DateTimeField(blank=True, null=True)
+    profesionales_asignados = models.ManyToManyField(
+        'profesionales.Profesional', related_name='pacientes_asignados', blank=True
+    )
 
     class Meta:
         ordering = ["apellido", "nombre"]

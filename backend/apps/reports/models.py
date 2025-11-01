@@ -31,6 +31,12 @@ class GeneratedReport(models.Model):
     def __str__(self):
         return f"{self.tipo} - {self.fecha_generacion:%Y-%m-%d %H:%M}"
 
+    def save(self, *args, **kwargs):
+        # Asegura que nunca se intente guardar NULL en parametros_json
+        if self.parametros_json is None:
+            self.parametros_json = {}
+        return super().save(*args, **kwargs)
+
 
 class ScheduledReport(models.Model):
     FRECUENCIAS = (

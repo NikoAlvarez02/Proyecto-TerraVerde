@@ -20,3 +20,20 @@ class Center(models.Model):
     def __str__(self):
         return f"{self.nombre} ({self.codigo})"
 
+
+class Holiday(models.Model):
+    fecha = models.DateField(unique=True)
+    nombre = models.CharField(max_length=120)
+    laborable = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['fecha']
+        verbose_name = 'Feriado'
+        verbose_name_plural = 'Feriados'
+        indexes = [
+            models.Index(fields=['fecha']),
+        ]
+
+    def __str__(self):
+        return f"{self.fecha} - {self.nombre}{' (laborable)' if self.laborable else ''}"
+

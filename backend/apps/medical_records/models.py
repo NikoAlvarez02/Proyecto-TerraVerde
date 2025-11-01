@@ -7,6 +7,7 @@ class Observation(models.Model):
     profesional = models.ForeignKey('profesionales.Profesional', on_delete=models.PROTECT, related_name='observaciones')
     centro = models.ForeignKey('centers.Center', on_delete=models.PROTECT, related_name='observaciones')
     fecha_hora = models.DateTimeField()
+    turno = models.ForeignKey('turnos.Turno', null=True, blank=True, on_delete=models.SET_NULL, related_name='observacion')
 
     motivo = models.CharField(max_length=255)
     anamnesis = models.TextField(blank=True)
@@ -30,6 +31,7 @@ class Observation(models.Model):
             models.Index(fields=['diagnostico_codigo']),
             models.Index(fields=['profesional']),
             models.Index(fields=['centro']),
+            models.Index(fields=['turno']),
         ]
 
     def __str__(self):

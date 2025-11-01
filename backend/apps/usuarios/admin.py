@@ -34,6 +34,7 @@ class PerfilAdmin(admin.ModelAdmin):
     search_fields = ('user__username', 'user__email', 'user__first_name', 'user__last_name')
     fieldsets = (
         (None, {'fields': ('user','rol')}),
+        ('Seguridad', {'fields': ('email_recuperacion',)}),
         ('Administración', {'fields': ('puede_admin_usuarios','puede_admin_especialidades','puede_admin_centros','puede_admin_roles'), 'classes': ('collapse',)}),
         ('Pacientes', {'fields': ('puede_crear_pacientes','puede_ver_pacientes','puede_editar_pacientes','puede_eliminar_pacientes'), 'classes': ('collapse',)}),
         ('Historia Clínica', {'fields': ('puede_crear_historias','puede_ver_historias','puede_editar_historias','puede_ver_historias_otros'), 'classes': ('collapse',)}),

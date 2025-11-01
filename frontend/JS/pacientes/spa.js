@@ -11,6 +11,7 @@ const flash = document.getElementById('flash');
 const inputQ = document.getElementById('q');
 const selectOrden = document.getElementById('orden');
 const btnBuscar = document.getElementById('btnBuscar');
+const selectOS = document.getElementById('os_filter');
 let nextUrl = null;
 let prevUrl = null;
 let totalCount = 0;
@@ -18,6 +19,7 @@ let currentPage = 1;
 let pageSize = 10;
 let currentOrdering = '-fecha_registro';
 let currentQuery = '';
+let currentOS = '';
 
 const modalForm = document.getElementById('modalForm');
 const modalTitle = document.getElementById('modalTitle');
@@ -33,24 +35,46 @@ const btnSi = document.getElementById('btnSi');
 let editId = null;      // null = crear, número = editar
 let deleteId = null;
 
+const API_OBRAS = '/obras/api/obras-sociales/';
+const API_PLANES = '/obras/api/planes/';
+
 // ---------- helpers UI ----------
 function showFlash(msg, type = 'ok') {
-  // type: 'ok' | 'error'
-  flash.style.display = 'block';
-  flash.style.padding = '8px';
-  flash.style.borderRadius = '8px';
-  flash.style.background = type === 'ok' ? '#e6ffed' : '#ffe6e6';
-  flash.style.border = '1px solid ' + (type === 'ok' ? '#89d79d' : '#e08b8b');
-  flash.style.color = '#333';
-  flash.textContent = msg;
-  setTimeout(() => (flash.style.display = 'none'), 2500);
+  const toast = document.getElementById('toast');
+  const pageFlash = document.getElementById('flash');
+  const modalOpen = modalForm?.classList.contains('is-open') || modalConfirm?.classList.contains('is-open');
+  if (modalOpen && toast) {
+    toast.className = type === 'ok' ? 'toast-ok' : 'toast-error';
+    toast.textContent = msg;
+    toast.style.display = 'block';
+    clearTimeout(showFlash._t);
+    showFlash._t = setTimeout(() => (toast.style.display = 'none'), 3500);
+    return;
+  }
+  if (typeof window.showToast === 'function') { window.showToast(msg, type === 'ok' ? 'ok' : 'error'); return; }
+  if (pageFlash) {
+    pageFlash.style.display = 'block';
+    pageFlash.style.padding = '8px';
+    pageFlash.style.borderRadius = '8px';
+    pageFlash.style.background = type === 'ok' ? '#e6ffed' : '#ffe6e6';
+    pageFlash.style.border = '1px solid ' + (type === 'ok' ? '#89d79d' : '#e08b8b');
+    pageFlash.style.color = '#333';
+    pageFlash.textContent = msg;
+    clearTimeout(showFlash._p);
+    showFlash._p = setTimeout(() => (pageFlash.style.display = 'none'), 2500);
+  }
 }
 
 function openModalCreate() {
   editId = null;
   modalTitle.textContent = 'Registrar Paciente';
   form.reset();
-  modalForm.style.display = 'block';
+  resetModalPosition();
+  modalForm.classList.add('is-open');
+  modalForm.style.display = 'flex';
+  document.body.classList.add('modal-open');
+  // Llevar foco al primer campo y scrollear al tope
+  setTimeout(() => { document.getElementById('apellido')?.focus(); modalForm.scrollTop = 0; }, 0);
 }
 
 function openModalEdit(p) {
@@ -69,7 +93,7 @@ function openModalEdit(p) {
   document.getElementById('email').value = p.email ?? '';
   document.getElementById('genero').value = p.genero ?? '';
   document.getElementById('grupo_sanguineo').value = p.grupo_sanguineo ?? '';
-  document.getElementById('alergias').value = p.alergias ?? '';
+  
   document.getElementById('antecedentes').value = p.antecedentes ?? '';
   document.getElementById('contacto_emergencia_nombre').value = p.contacto_emergencia_nombre ?? '';
   document.getElementById('contacto_emergencia_telefono').value = p.contacto_emergencia_telefono ?? '';
@@ -82,22 +106,33 @@ function openModalEdit(p) {
   document.getElementById('rep_edad').value = p.rep_edad ?? '';
   document.getElementById('rep_telefono').value = p.rep_telefono ?? '';
   document.getElementById('rep_nacionalidad').value = p.rep_nacionalidad ?? '';
+  // obras sociales y plan
+  try { const os = document.getElementById('obra_social'); if (os) os.innerHTML = os.innerHTML; if (os) os.value = p.obra_social || ''; } catch (e) {}
+  try { const pl = document.getElementById('plan'); if (pl) pl.value = p.plan || ''; } catch (e) {}
 
-  modalForm.style.display = 'block';
+  resetModalPosition();
+  modalForm.classList.add('is-open');
+  modalForm.style.display = 'flex';
+  document.body.classList.add('modal-open');
+  setTimeout(() => { document.getElementById('apellido')?.focus(); modalForm.scrollTop = 0; }, 0);
 }
 
 function closeModal() {
+  modalForm.classList.remove('is-open');
   modalForm.style.display = 'none';
+  document.body.classList.remove('modal-open');
 }
 
 function openConfirm(id) {
   deleteId = id;
-  modalConfirm.style.display = 'block';
+  modalConfirm.classList.add('is-open');
+  document.body.classList.add('modal-open');
 }
 
 function closeConfirm() {
   deleteId = null;
-  modalConfirm.style.display = 'none';
+  modalConfirm.classList.remove('is-open');
+  document.body.classList.remove('modal-open');
 }
 
 // ---------- API base ----------
@@ -108,6 +143,7 @@ function buildQuery(){
   params.set('page_size', String(pageSize));
   if(currentOrdering) params.set('ordering', currentOrdering);
   if(currentQuery) params.set('search', currentQuery);
+  if(currentOS) params.set('obra_social', currentOS);
   return params.toString();
 }
 
@@ -137,6 +173,7 @@ async function apiCreate(payload) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'Accept': 'application/json',
       'X-CSRFToken': csrftoken,
     },
     credentials: 'same-origin',
@@ -146,7 +183,11 @@ async function apiCreate(payload) {
     const err = await resp.json();
     throw { type: 'validation', detail: err };
   }
-  if (!resp.ok) throw new Error('POST ' + resp.status);
+  if (!resp.ok) {
+    let text = '';
+    try { text = await resp.text(); } catch(_) {}
+    throw { type: 'http', status: resp.status, body: text };
+  }
   return await resp.json();
 }
 
@@ -155,6 +196,7 @@ async function apiUpdate(id, payload) {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
+      'Accept': 'application/json',
       'X-CSRFToken': csrftoken,
     },
     credentials: 'same-origin',
@@ -164,7 +206,11 @@ async function apiUpdate(id, payload) {
     const err = await resp.json();
     throw { type: 'validation', detail: err };
   }
-  if (!resp.ok) throw new Error('PUT ' + resp.status);
+  if (!resp.ok) {
+    let text = '';
+    try { text = await resp.text(); } catch(_) {}
+    throw { type: 'http', status: resp.status, body: text };
+  }
   return await resp.json();
 }
 
@@ -175,6 +221,62 @@ async function apiDelete(id) {
     credentials: 'same-origin',
   });
   if (!resp.ok) throw new Error('DELETE ' + resp.status);
+}
+
+// ---------- drag del modal ----------
+function resetModalPosition(){
+  const card = document.querySelector('#modalForm .card');
+  if(!card) return;
+  card.style.position='relative';
+  card.style.left='';
+  card.style.top='';
+  card.style.margin='0 auto';
+  card.classList.remove('dragging');
+}
+
+function makeModalDraggable(){
+  const overlay = document.getElementById('modalForm');
+  const card = document.querySelector('#modalForm .card');
+  const handle = document.querySelector('#modalForm .drag-handle');
+  if(!overlay || !card || !handle) return;
+
+  let isDown=false; let offsetX=0, offsetY=0;
+  const pointer = (e)=> e.touches ? e.touches[0] : e;
+
+  function onDown(e){
+    const p = pointer(e);
+    const rect = card.getBoundingClientRect();
+    card.style.position='absolute';
+    card.style.margin='0';
+    card.style.left = rect.left + 'px';
+    card.style.top  = rect.top  + 'px';
+    isDown=true; offsetX=p.clientX-rect.left; offsetY=p.clientY-rect.top;
+    card.classList.add('dragging'); overlay.classList.add('dragging');
+    e.preventDefault();
+  }
+  function onMove(e){
+    if(!isDown) return; const p = pointer(e);
+    let nx=p.clientX-offsetX, ny=p.clientY-offsetY;
+    const pad=8, vw=window.innerWidth, vh=window.innerHeight, cw=card.offsetWidth, ch=card.offsetHeight;
+    // X dentro de la pantalla, permitiendo algo de negativo si es más ancho
+    const minX=Math.min(pad, vw - cw - pad), maxX=Math.max(pad, vw - cw - pad);
+    // Y libre: poder subir por encima del viewport (hasta ocultar casi todo)
+    const minY = -ch + pad;         // arriba libre
+    const maxY = vh - pad;          // abajo casi al borde
+    nx=Math.min(Math.max(nx, minX), maxX);
+    ny=Math.min(Math.max(ny, minY), maxY);
+    card.style.left=nx+'px'; card.style.top=ny+'px'; e.preventDefault();
+  }
+  function onUp(){ isDown=false; card.classList.remove('dragging'); overlay.classList.remove('dragging'); }
+
+  handle.addEventListener('mousedown', onDown);
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onUp);
+  handle.addEventListener('touchstart', onDown, {passive:false});
+  window.addEventListener('touchmove', onMove, {passive:false});
+  window.addEventListener('touchend', onUp);
+  // Doble clic en el encabezado centra nuevamente el modal
+  handle.addEventListener('dblclick', resetModalPosition);
 }
 
 // ---------- render ----------
@@ -210,6 +312,7 @@ async function renderList() {
         <td>${p.dni ?? ''}</td>
         <td>${p.telefono ?? ''}</td>
         <td>${p.centro_nombre || (p.centro ?? '')}</td>
+        <td>${p.obra_social_nombre || ''}</td>
         <td style="white-space:nowrap; display:flex; gap:6px;">
           <button class="btn btn-editar" data-edit="${p.id}">Editar</button>
           <button class="btn btn-eliminar" data-del="${p.id}">Eliminar</button>
@@ -238,6 +341,10 @@ async function renderList() {
 // ---------- form submit ----------
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
+  if (typeof form.checkValidity === 'function' && !form.checkValidity()) {
+    form.reportValidity?.();
+    return;
+  }
 
   // validación básica
   const apellido = document.getElementById('apellido').value.trim();
@@ -245,19 +352,29 @@ form.addEventListener('submit', async (e) => {
   const dni = document.getElementById('dni').value.trim();
 
   if (!apellido || !nombre || !dni) {
-    showFlash('Apellido, Nombre y DNI son obligatorios', 'error');
+    showFlash('Apellido, Nombre y DNI son obligatorios', 'warning');
     return;
   }
 
+  // normalizar fecha: soportar dd/mm/yyyy -> yyyy-mm-dd
+  const rawDate = document.getElementById('fecha_nacimiento').value || '';
+  function normalizeDate(v){
+    if(!v) return null;
+    const m = v.match(/^\s*(\d{2})\/(\d{2})\/(\d{4})\s*$/);
+    if(m){ const d=m[1], mo=m[2], y=m[3]; return `${y}-${mo.padStart(2,'0')}-${d.padStart(2,'0')}`; }
+    return v; // assume yyyy-mm-dd
+  }
   const payload = {
     apellido,
     nombre,
     dni,
-    fecha_nacimiento: document.getElementById('fecha_nacimiento').value || null,
+    fecha_nacimiento: normalizeDate(rawDate),
     telefono: document.getElementById('telefono').value || '',
     direccion: document.getElementById('direccion').value || '',
     email: document.getElementById('email').value || '',
     centro: document.getElementById('centro')?.value ? Number(document.getElementById('centro').value) : null,
+    obra_social: document.getElementById('obra_social')?.value ? Number(document.getElementById('obra_social').value) : null,
+    plan: document.getElementById('plan')?.value ? Number(document.getElementById('plan').value) : null,
     genero: document.getElementById('genero').value || '',
     grupo_sanguineo: document.getElementById('grupo_sanguineo').value || '',
     alergias: document.getElementById('alergias').value || '',
@@ -274,6 +391,21 @@ form.addEventListener('submit', async (e) => {
   };
 
   try {
+    if (!confirm('¿Desea confirmar estos datos?')) { return; }
+    // Evitar DNI duplicado al crear
+    if (editId === null && dni) {
+      try {
+        const r = await fetch(`/pacientes/api/pacientes/?page_size=1&search=${encodeURIComponent(dni)}`, {credentials:'include'});
+        if (r.ok) {
+          const d = await r.json();
+          const list = Array.isArray(d) ? d : (d.results || []);
+          if (list.some(p => String(p.dni) === dni)) {
+            showFlash('Error de validación: dni: Ya existe un paciente con este DNI', 'error');
+            return;
+          }
+        }
+      } catch(_) {}
+    }
     if (editId === null) {
       await apiCreate(payload);
       showFlash('Paciente creado correctamente');
@@ -286,10 +418,17 @@ form.addEventListener('submit', async (e) => {
   } catch (err) {
     console.error(err);
     if (err.type === 'validation' && err.detail) {
-      // Mostrar primeros errores de DRF
-      const firstField = Object.keys(err.detail)[0];
-      const msg = Array.isArray(err.detail[firstField]) ? err.detail[firstField][0] : JSON.stringify(err.detail);
-      showFlash(`Error de validación: ${firstField}: ${msg}`, 'error');
+      // Mostrar todos los errores de DRF en una sola línea
+      try{
+        const parts = Object.entries(err.detail).map(([k,v]) => `${k}: ${Array.isArray(v)?v.join(', '):String(v)}`);
+        showFlash(`Error de validación: ${parts.join(' | ')}`, 'error');
+      }catch(_){
+        const firstField = Object.keys(err.detail)[0];
+        const msg = Array.isArray(err.detail[firstField]) ? err.detail[firstField][0] : JSON.stringify(err.detail);
+        showFlash(`Error de validación: ${firstField}: ${msg}`, 'error');
+      }
+    } else if (err.type === 'http') {
+      showFlash(`Error HTTP ${err.status}: ${err.body?.slice(0,140) || 'sin detalle'}`, 'error');
     } else {
       showFlash('No se pudo guardar el paciente', 'error');
     }
@@ -316,13 +455,31 @@ btnSi.addEventListener('click', async () => {
 });
 
 // ---------- init ----------
-document.addEventListener('DOMContentLoaded', renderList);
+document.addEventListener('DOMContentLoaded', () => {
+  renderList();
+  makeModalDraggable();
+  // Cerrar por ESC y al clickear fuera de la tarjeta
+  document.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Escape') {
+      if (modalConfirm.classList.contains('is-open')) closeConfirm();
+      else if (modalForm.classList.contains('is-open')) closeModal();
+    }
+  });
+  [modalForm, modalConfirm].forEach(overlay => {
+    overlay?.addEventListener('click', (e) => {
+      if (e.target === overlay) {
+        overlay.id === 'modalConfirm' ? closeConfirm() : closeModal();
+      }
+    });
+  });
+});
 
 // Controles de filtros y paginación
 if(btnBuscar){
   btnBuscar.addEventListener('click', async ()=>{
     currentQuery = (inputQ?.value || '').trim();
     currentOrdering = selectOrden?.value || '-fecha_registro';
+    currentOS = (selectOS?.value || '').trim();
     await renderList();
   });
 }
@@ -359,4 +516,35 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }).catch(()=>{});
   }
+
+  // cargar obras sociales y planes
+  const selObra = document.getElementById('obra_social');
+  const selPlan = document.getElementById('plan');
+  const selOSFilter = document.getElementById('os_filter');
+  if (selObra) {
+    fetch('/obras/api/obras-sociales/?page_size=500&ordering=nombre', {credentials:'include'})
+      .then(r=>r.ok?r.json():null)
+      .then(d=>{
+        const list = Array.isArray(d)?d:(d?.results||[]);
+        selObra.innerHTML = '<option value="">(sin obra social)</option>';
+        list.forEach(o=>{ const opt=document.createElement('option'); opt.value=o.id; opt.textContent=o.nombre; selObra.appendChild(opt); });
+        if (selOSFilter) {
+          selOSFilter.innerHTML = '<option value="">Obra Social (todas)</option>';
+          list.forEach(o=>{ const opt=document.createElement('option'); opt.value=o.id; opt.textContent=o.nombre; selOSFilter.appendChild(opt); });
+        }
+      }).catch(()=>{});
+    selObra.addEventListener('change', ()=>{
+      if(!selPlan) return;
+      selPlan.innerHTML = '<option value="">(sin plan)</option>';
+      const oid = selObra.value;
+      if(!oid) return;
+      fetch(`/obras/api/planes/?obra_social=${encodeURIComponent(oid)}&page_size=500&ordering=nombre`, {credentials:'include'})
+        .then(r=>r.ok?r.json():null)
+        .then(d=>{
+          const list = Array.isArray(d)?d:(d?.results||[]);
+          list.forEach(p=>{ const opt=document.createElement('option'); opt.value=p.id; opt.textContent=p.nombre; selPlan.appendChild(opt); });
+        }).catch(()=>{});
+    });
+  }
 });
+

@@ -169,3 +169,21 @@ button:hover {
   .login-container h2{ font-size: 1.2em; }
   button{ padding: 12px; font-size: 1em; }
 }
+
+/* Ocultar iconos nativos de revelar/borrar en Edge/IE para evitar duplicados */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+
+/* Evitar decoraciones nativas que puedan solaparse en navegadores WebKit */
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="password"]::-webkit-textfield-decoration-container {
+  display: none;
+}
+
+/* Reducir la probabilidad de decoraciones nativas */
+input[type="password"] {
+  appearance: none;
+  -webkit-appearance: none;
+}
