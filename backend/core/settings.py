@@ -17,7 +17,13 @@ environ.Env.read_env(BASE_DIR / '.env')
 
 SECRET_KEY = env('SECRET_KEY')
 DEBUG = env('DEBUG', default=True)
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
+ALLOWED_HOSTS = [
+    '72.60.251.9',
+    'localhost',
+    '127.0.0.1',
+    'espacioterraverde.com.ar',
+    'www.espacioterraverde.com.ar',
+]
 
 ADMIN_SITE_HEADER = "🌱 TerraVerde Admin"
 ADMIN_SITE_TITLE = "TerraVerde"
@@ -44,7 +50,11 @@ INSTALLED_APPS = [
     'apps.medical_records',
     'apps.reports',
     'apps.feedback',
+    'apps.obras',
 ]
+
+# Tipo de PK por defecto para nuevos modelos
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
@@ -53,6 +63,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "core.middleware.NoStoreCacheMiddleware",
     # Registrar auditoría después de que el usuario esté resuelto
     "apps.usuarios.middleware.AuditMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
@@ -162,12 +173,17 @@ CORS_ALLOW_CREDENTIALS = True
 SESSION_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SAMESITE = "Lax"
+CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
 
 # ----------------------------
 # Media (uploads)
 # ----------------------------
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Horario de atención por defecto (puede ajustarse por env)
+BUSINESS_HOUR_START = int(env('BUSINESS_HOUR_START', default=8))
+BUSINESS_HOUR_END = int(env('BUSINESS_HOUR_END', default=20))
 
 # ----------------------------
 # Django REST Framework (UNIFICADO)
@@ -212,6 +228,12 @@ REST_FRAMEWORK = {
 }
 
 # ----------------------------
+# Turnos
+# ----------------------------
+# Intervalo de atención en minutos para cálculo de solapamientos
+TURNOS_INTERVALO_MIN = env.int('TURNOS_INTERVALO_MIN', default=30)
+
+# ----------------------------
 # drf-spectacular (OpenAPI)
 # ----------------------------
 SPECTACULAR_SETTINGS = {
@@ -246,3 +268,5 @@ SIMPLE_JWT = {
 }
 
 
+# Obras sociales (fuente pública opcional)
+OBRAS_SNRS_URL = env('OBRAS_SNRS_URL', default='https://sisa.msal.gov.ar/sisa/services/rest/obraSocial/get')

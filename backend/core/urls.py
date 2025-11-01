@@ -4,8 +4,8 @@ from django.urls import path, include, reverse_lazy
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth.views import (
-    LoginView, LogoutView,
-    PasswordResetView, PasswordResetDoneView,
+    LogoutView,
+    PasswordResetDoneView,
     PasswordResetConfirmView, PasswordResetCompleteView,
 )
 from django.contrib.auth.decorators import login_required
@@ -17,6 +17,7 @@ from drf_spectacular.views import (
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from . import views as core_views
+from apps.usuarios.views import SecurePasswordResetView
 
 # Personalizar títulos del admin
 admin.site.site_header = "Administración TerraVerde"
@@ -39,11 +40,14 @@ urlpatterns = [
     path("usuarios/", include(("apps.usuarios.urls", "usuarios"), namespace="usuarios")),
     path("centros/", include(("apps.centers.urls", "centros"), namespace="centros")),
     path("historias/", include(("apps.medical_records.urls", "historias"), namespace="historias")),
+    path("obras/", include(("apps.obras.urls", "obras"), namespace="obras")),
+    path("geo/", include(("apps.geo.urls", "geo"), namespace="geo")),
     path("reportes/", include(("apps.reports.urls", "reportes"), namespace="reportes")),
     path("satisfaccion/", include(("apps.feedback.urls", "satisfaccion"), namespace="satisfaccion")),
    
     # OpenAPI schema + UIs (drf-spectacular)
-    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    # Servir docs usando schema.json fijo para evitar OSError en Windows
+    path("api/schema/", core_views.serve_schema_json, name="schema"),
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
     path("api/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
     path("", core_views.home_dashboard, name="home"),
@@ -51,7 +55,7 @@ urlpatterns = [
     path("weasy/diagnostico/", core_views.weasy_diagnostico, name="weasy_diagnostico"),
 
     # Auth
-    path("login/",  LoginView.as_view(template_name="registration/login.html"), name="login"),
+    path("login/",  core_views.SessionLoginView.as_view(template_name="registration/login.html"), name="login"),
     path("logout/", LogoutView.as_view(), name="logout"),
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
@@ -59,7 +63,7 @@ urlpatterns = [
     # Password reset
     path(
         "password-reset/",
-        PasswordResetView.as_view(
+        SecurePasswordResetView.as_view(
             template_name="registration/password_reset_form.html",
             email_template_name="password_reset_email.txt",
             html_email_template_name="password_reset_email.html",

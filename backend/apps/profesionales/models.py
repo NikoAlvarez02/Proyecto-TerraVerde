@@ -1,11 +1,22 @@
 from django.db import models
 
+
+class Especialidad(models.Model):
+    nombre = models.CharField(max_length=100, unique=True)
+    activo = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["nombre"]
+
+    def __str__(self):
+        return self.nombre
+
 class Profesional(models.Model):
     dni = models.CharField("DNI", max_length=10, unique=True)
     nombre = models.CharField(max_length=50)
     apellido = models.CharField(max_length=50)
     matricula = models.CharField(max_length=20)
-    especialidad = models.CharField(max_length=50, blank=True)  # luego lo migramos a FK Especialidad
+    especialidad = models.ForeignKey(Especialidad, on_delete=models.SET_NULL, null=True, blank=True, related_name='profesionales')
     email = models.EmailField()
     telefono = models.CharField(max_length=20, blank=True)
     direccion = models.CharField(max_length=100, blank=True)

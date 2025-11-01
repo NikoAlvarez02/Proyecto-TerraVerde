@@ -1,4 +1,4 @@
-from django.contrib.auth import get_user_model
+﻿from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from .models import Perfil
 
@@ -9,7 +9,7 @@ class PerfilNestedSerializer(serializers.ModelSerializer):
     class Meta:
         model = Perfil
         fields = [
-            'rol',
+            'rol', 'profesional',
             'puede_admin_usuarios','puede_admin_especialidades','puede_admin_centros','puede_admin_roles',
             'puede_crear_pacientes','puede_ver_pacientes','puede_editar_pacientes','puede_eliminar_pacientes',
             'puede_crear_historias','puede_ver_historias','puede_editar_historias','puede_ver_historias_otros',
@@ -27,19 +27,9 @@ class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            "id",
-            "username",
-            "first_name",
-            "last_name",
-            "email",
-            "is_active",
-            "is_staff",
-            "is_superuser",
-            "last_login",
-            "date_joined",
-            "password",
-            "full_name",
-            "perfil",
+            "id", "username", "first_name", "last_name", "email",
+            "is_active", "is_staff", "is_superuser", "last_login", "date_joined",
+            "password", "full_name", "perfil",
         ]
         read_only_fields = ["last_login", "date_joined"]
 
@@ -65,8 +55,13 @@ class UsuarioSerializer(serializers.ModelSerializer):
                     perfil.asignar_permisos_por_rol()
                 except Exception:
                     pass
+            if 'profesional' in perfil_data:
+                try:
+                    perfil.profesional_id = perfil_data.get('profesional') or None
+                except Exception:
+                    pass
             for k, v in perfil_data.items():
-                if k == 'rol':
+                if k in ('rol', 'profesional'):
                     continue
                 if hasattr(perfil, k) and isinstance(v, bool):
                     setattr(perfil, k, v)
@@ -90,11 +85,15 @@ class UsuarioSerializer(serializers.ModelSerializer):
                     perfil.asignar_permisos_por_rol()
                 except Exception:
                     pass
+            if 'profesional' in perfil_data:
+                try:
+                    perfil.profesional_id = perfil_data.get('profesional') or None
+                except Exception:
+                    pass
             for k, v in perfil_data.items():
-                if k == 'rol':
+                if k in ('rol', 'profesional'):
                     continue
                 if hasattr(perfil, k) and isinstance(v, bool):
                     setattr(perfil, k, v)
             perfil.save()
         return instance
-

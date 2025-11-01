@@ -102,7 +102,8 @@ def generate_patient_history_pdf(paciente, observaciones, params: dict, summary:
         'sum_estudios': (summary or {}).get('estudios', []),
         'logo_b64': _load_logo_base64(),
     }
-    pdfb = _weasy_pdf_from_template('reports/pdf/patient_history.html', ctx, params)
+    # Usar nueva plantilla UTF-8 con sello
+    pdfb = _weasy_pdf_from_template('reports/pdf/patient_history_v2.html', ctx, params)
     if pdfb:
         return pdfb
     # Fallback simple
@@ -264,7 +265,8 @@ def generate_epicrisis_pdf(paciente, resumen: dict, params: dict) -> bytes:
         'params': params,
         'logo_b64': _load_logo_base64(),
     }
-    pdfb = _weasy_pdf_from_template('reports/pdf/epicrisis.html', ctx, params)
+    # Plantilla nueva con sello y UTF-8
+    pdfb = _weasy_pdf_from_template('reports/pdf/epicrisis_v2.html', ctx, params)
     if pdfb:
         return pdfb
     # Fallback simple
@@ -282,7 +284,8 @@ def generate_certificate_pdf(paciente, profesional, datos: dict, params: dict) -
         'params': params,
         'logo_b64': _load_logo_base64(),
     }
-    pdfb = _weasy_pdf_from_template('reports/pdf/certificate.html', ctx, params)
+    # Plantilla nueva con sello y UTF-8
+    pdfb = _weasy_pdf_from_template('reports/pdf/certificate_v2.html', ctx, params)
     if pdfb:
         return pdfb
     # Fallback simple

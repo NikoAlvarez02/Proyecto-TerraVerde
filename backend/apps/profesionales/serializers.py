@@ -1,10 +1,20 @@
 from rest_framework import serializers
-from .models import Profesional, ProfesionalHorario
+from rest_framework.validators import UniqueValidator
+from .models import Profesional, ProfesionalHorario, Especialidad
 from apps.centers.models import Center
 
 class ProfesionalSerializer(serializers.ModelSerializer):
     centros = serializers.PrimaryKeyRelatedField(many=True, queryset=Center.objects.all())
     centros_nombres = serializers.SerializerMethodField(read_only=True)
+    especialidad_nombre = serializers.CharField(source='especialidad.nombre', read_only=True)
+    email = serializers.EmailField(
+        validators=[
+            UniqueValidator(
+                queryset=Profesional.objects.all(),
+                message='Ya existe un profesional con ese correo institucional'
+            )
+        ]
+    )
     class Meta:
         model = Profesional
         fields = "__all__"
@@ -29,3 +39,9 @@ class ProfesionalHorarioSerializer(serializers.ModelSerializer):
 
     def get_dia_display(self, obj):
         return obj.get_dia_semana_display()
+
+
+class EspecialidadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Especialidad
+        fields = ['id', 'nombre', 'activo']

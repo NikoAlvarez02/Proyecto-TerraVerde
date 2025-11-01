@@ -15,6 +15,21 @@ const form = document.getElementById('formProfesional');
 const btnNuevo = document.getElementById('btnNuevo');
 const btnCancelar = document.getElementById('btnCancelar');
 const btnCerrarModal = document.getElementById('btnCerrarModal');
+const selEspecialidad = document.getElementById('especialidad');
+
+// Cargar especialidades para el select del modal
+async function loadEspecialidades(){
+  const sel = document.getElementById('especialidad');
+  if(!sel) return;
+  sel.innerHTML = '<option value="">(sin especialidad)</option>';
+  try{
+    const r = await fetch('/profesionales/api/especialidades/?page_size=500&ordering=nombre', {credentials:'include'});
+    if(!r.ok) return;
+    const d = await r.json();
+    const list = Array.isArray(d) ? d : (d.results || []);
+    list.forEach(e=>{ const opt=document.createElement('option'); opt.value=e.id; opt.textContent=e.nombre; sel.appendChild(opt); });
+  }catch(err){ console.error('loadEspecialidades', err); }
+}
 
 const modalConfirm = document.getElementById('modalConfirm');
 const btnNo = document.getElementById('btnNo');
@@ -30,9 +45,21 @@ let pr_ordering = 'apellido';
 let pr_query = '';
 let pr_next = null;
 let pr_prev = null;
+let pr_especialidad = '';
 
 // ====== helpers UI ======
 function showFlash(msg, type = 'ok') {
+  const toast = document.getElementById('toast');
+  const modalOpen = modalForm?.classList.contains('is-open') || modalConfirm?.classList.contains('is-open');
+  if (modalOpen && toast) {
+    toast.className = type === 'ok' ? 'toast-ok' : 'toast-error';
+    toast.textContent = msg;
+    toast.style.display = 'block';
+    clearTimeout(showFlash._t);
+    showFlash._t = setTimeout(() => (toast.style.display = 'none'), 3500);
+    return;
+  }
+  if (typeof window.showToast === 'function') { window.showToast(msg, type === 'ok' ? 'ok' : 'error'); return; }
   flash.style.display = 'block';
   flash.style.padding = '8px';
   flash.style.borderRadius = '8px';
@@ -40,18 +67,23 @@ function showFlash(msg, type = 'ok') {
   flash.style.border = '1px solid ' + (type === 'ok' ? '#89d79d' : '#e08b8b');
   flash.style.color = '#333';
   flash.textContent = msg;
-  setTimeout(() => (flash.style.display = 'none'), 2500);
+  clearTimeout(showFlash._p);
+  showFlash._p = setTimeout(() => (flash.style.display = 'none'), 2500);
 }
 
-function openModalCreate() {
+async function openModalCreate() {
   editId = null;
   modalTitle.textContent = 'Nuevo Profesional';
   form.reset();
   document.getElementById('activo').checked = true;
-  modalForm.style.display = 'block';
+  try { await loadEspecialidades(); } catch (e) { console.error(e); }
+  resetModalPosition();
+  modalForm.classList.add('is-open');
+  document.body.classList.add('modal-open');
+  setTimeout(() => { document.getElementById('apellido')?.focus(); modalForm.scrollTop = 0; }, 0);
 }
 
-function openModalEdit(p) {
+async function openModalEdit(p) {
   editId = p.id;
   modalTitle.textContent = 'Editar Profesional';
   form.reset();
@@ -61,34 +93,62 @@ function openModalEdit(p) {
   document.getElementById('nombre').value = p.nombre ?? '';
   document.getElementById('dni').value = p.dni ?? '';
   document.getElementById('matricula').value = p.matricula ?? '';
-  document.getElementById('especialidad').value = p.especialidad ?? '';
+  try { await loadEspecialidades(); } catch (e) { console.error(e); }
+  if (selEspecialidad) selEspecialidad.value = p.especialidad || '';
   document.getElementById('telefono').value = p.telefono ?? '';
   document.getElementById('email').value = p.email ?? '';
   document.getElementById('direccion').value = p.direccion ?? '';
   document.getElementById('activo').checked = !!p.activo;
 
-  modalForm.style.display = 'block';
+  resetModalPosition();
+  modalForm.classList.add('is-open');
+  document.body.classList.add('modal-open');
+  setTimeout(() => { document.getElementById('apellido')?.focus(); modalForm.scrollTop = 0; }, 0);
 
   try { loadHorarios(p.id); } catch (e) { console.error(e); }
 }
 
 function closeModal() {
-  modalForm.style.display = 'none';
+  modalForm.classList.remove('is-open');
+  document.body.classList.remove('modal-open');
 }
 
-function openConfirm(id) {
-  deleteId = id;
-  modalConfirm.style.display = 'block';
-}
+function openConfirm(id) { deleteId = id; modalConfirm.classList.add('is-open'); document.body.classList.add('modal-open'); }
 
-function closeConfirm() {
-  deleteId = null;
-  modalConfirm.style.display = 'none';
+function closeConfirm() { deleteId = null; modalConfirm.classList.remove('is-open'); document.body.classList.remove('modal-open'); }
+
+// drag support (igual que pacientes/turnos)
+function resetModalPosition(){
+  const card = document.querySelector('#modalForm .card');
+  if(!card) return;
+  card.style.position='relative'; card.style.left=''; card.style.top=''; card.style.margin='0 auto'; card.classList.remove('dragging');
+}
+function makeModalDraggable(){
+  const overlay = document.getElementById('modalForm');
+  const card = document.querySelector('#modalForm .card');
+  const handle = document.querySelector('#modalForm .drag-handle');
+  if(!overlay || !card || !handle) return;
+  let isDown=false, offsetX=0, offsetY=0; const pointer = (e)=> e.touches?e.touches[0]:e;
+  function onDown(e){ const p=pointer(e); const r=card.getBoundingClientRect(); card.style.position='absolute'; card.style.margin='0'; card.style.left=r.left+'px'; card.style.top=r.top+'px'; isDown=true; offsetX=p.clientX-r.left; offsetY=p.clientY-r.top; card.classList.add('dragging'); overlay.classList.add('dragging'); e.preventDefault(); }
+  function onMove(e){
+    if(!isDown) return; const p=pointer(e);
+    let nx=p.clientX-offsetX, ny=p.clientY-offsetY;
+    const pad=8, vw=window.innerWidth, vh=window.innerHeight, cw=card.offsetWidth, ch=card.offsetHeight;
+    const minX=Math.min(pad, vw - cw - pad), maxX=Math.max(pad, vw - cw - pad);
+    const minY=-ch + pad, maxY=vh - pad;
+    nx=Math.min(Math.max(nx, minX), maxX);
+    ny=Math.min(Math.max(ny, minY), maxY);
+    card.style.left=nx+'px'; card.style.top=ny+'px'; e.preventDefault();
+  }
+  function onUp(){ isDown=false; card.classList.remove('dragging'); overlay.classList.remove('dragging'); }
+  handle.addEventListener('mousedown', onDown); window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onUp);
+  handle.addEventListener('touchstart', onDown, {passive:false}); window.addEventListener('touchmove', onMove, {passive:false}); window.addEventListener('touchend', onUp);
 }
 
 // ====== API ======
 async function apiList(url=null) {
-  const listUrl = url || `${API_BASE}?page_size=${pr_pageSize}&ordering=${encodeURIComponent(pr_ordering)}${pr_query?`&search=${encodeURIComponent(pr_query)}`:''}`;
+  const base = url || `${API_BASE}?page_size=${pr_pageSize}&ordering=${encodeURIComponent(pr_ordering)}${pr_query?`&search=${encodeURIComponent(pr_query)}`:''}`;
+  const listUrl = pr_especialidad ? base + `&especialidad=${encodeURIComponent(pr_especialidad)}` : base;
   const resp = await fetch(listUrl, { credentials:'include' });
   if (!resp.ok) throw new Error('GET ' + resp.status);
   return await resp.json();
@@ -101,7 +161,7 @@ async function apiGet(id) {
 async function apiCreate(payload) {
   const resp = await fetch(API_BASE, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRFToken': csrftoken },
     credentials: 'same-origin',
     body: JSON.stringify(payload),
   });
@@ -112,7 +172,7 @@ async function apiCreate(payload) {
 async function apiUpdate(id, payload) {
   const resp = await fetch(API_BASE + id + '/', {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRFToken': csrftoken },
     credentials: 'same-origin',
     body: JSON.stringify(payload),
   });
@@ -147,7 +207,7 @@ async function renderList() {
         <td>${p.apellido ?? ''}</td>
         <td>${p.nombre ?? ''}</td>
         <td>${p.dni ?? ''}</td>
-        <td>${p.especialidad ?? ''}</td>
+        <td>${p.especialidad_nombre || ''}</td>
         <td>${p.telefono ?? ''}</td>
         <td>${(p.centros_nombres || []).join(', ')}</td>
         <td style="white-space:nowrap; display:flex; gap:6px;">
@@ -192,7 +252,7 @@ form.addEventListener('submit', async (e) => {
     nombre,
     dni,
     matricula: document.getElementById('matricula').value || '',
-    especialidad: document.getElementById('especialidad').value || '',
+    especialidad: selEspecialidad?.value ? Number(selEspecialidad.value) : null,
     telefono: document.getElementById('telefono').value || '',
     email: document.getElementById('email').value || '',
     direccion: document.getElementById('direccion').value || '',
@@ -201,6 +261,7 @@ form.addEventListener('submit', async (e) => {
   };
 
   try {
+    if (!confirm('¿Desea confirmar estos datos?')) { return; }
     if (editId === null) {
       await apiCreate(payload);
       showFlash('Profesional creado');
@@ -246,15 +307,29 @@ document.addEventListener('DOMContentLoaded', () => {
   const pr_inputQ = document.getElementById('pr_q');
   const pr_selectOrden = document.getElementById('pr_orden');
   const pr_btnBuscar = document.getElementById('pr_buscar');
+  const pr_selEsp = document.getElementById('pr_esp');
   const pr_btnPrev = document.getElementById('pr_prev');
   const pr_btnNext = document.getElementById('pr_next');
   const pr_pageInfoEl = document.getElementById('pr_pageInfo');
 
-  if(pr_btnBuscar){ pr_btnBuscar.addEventListener('click', async ()=>{ pr_query=(pr_inputQ?.value||'').trim(); pr_ordering=pr_selectOrden?.value||'apellido'; await renderList(); }); }
+  if(pr_btnBuscar){ pr_btnBuscar.addEventListener('click', async ()=>{ pr_query=(pr_inputQ?.value||'').trim(); pr_ordering=pr_selectOrden?.value||'apellido'; pr_especialidad = pr_selEsp?.value || ''; await renderList(); }); }
   if(pr_btnPrev){ pr_btnPrev.addEventListener('click', async ()=>{ if(pr_prev){ const d=await apiList(pr_prev); pr_next=d.next; pr_prev=d.previous; await renderList(); } }); }
   if(pr_btnNext){ pr_btnNext.addEventListener('click', async ()=>{ if(pr_next){ const d=await apiList(pr_next); pr_next=d.next; pr_prev=d.previous; await renderList(); } }); }
 
+  // cargar opciones de filtro de especialidad
+  (async ()=>{
+    try{
+      if(!pr_selEsp) return;
+      const r = await fetch('/profesionales/api/especialidades/?page_size=500&ordering=nombre', {credentials:'include'});
+      if(r.ok){ const d = await r.json(); const list = Array.isArray(d)?d:(d.results||[]); pr_selEsp.innerHTML='<option value="">Especialidad (todas)</option>'; list.forEach(e=>{ const opt=document.createElement('option'); opt.value=e.id; opt.textContent=e.nombre; pr_selEsp.appendChild(opt); }); }
+    }catch(err){ console.error('cargar filtro especialidades', err); }
+  })();
+
   renderList();
+  makeModalDraggable();
+  // cerrar por ESC y click en overlay
+  document.addEventListener('keydown', (ev)=>{ if(ev.key==='Escape'){ if(modalConfirm.classList.contains('is-open')) closeConfirm(); else if(modalForm.classList.contains('is-open')) closeModal(); }});
+  [modalForm, modalConfirm].forEach(ov=>{ ov?.addEventListener('click', (e)=>{ if(e.target===ov){ ov.id==='modalConfirm' ? closeConfirm() : closeModal(); } }); });
 
   // preparar select de centros en modal (para horarios)
   (async ()=>{

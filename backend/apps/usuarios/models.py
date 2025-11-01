@@ -41,6 +41,15 @@ class Perfil(models.Model):
     puede_exportar_datos = models.BooleanField(default=False)
     puede_ver_auditoria = models.BooleanField(default=False)
 
+    # Vínculo opcional al registro de Profesional correspondiente
+    profesional = models.ForeignKey(
+        'profesionales.Profesional', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='perfiles'
+    )
+
+    # Seguridad: email alternativo de recuperación
+    email_recuperacion = models.EmailField("Email de recuperación", null=True, blank=True)
+
     def __str__(self):
         return f"{self.user.username} ({self.get_rol_display()})"
 
@@ -72,11 +81,14 @@ class Perfil(models.Model):
             self.puede_editar_historias = True
             self.puede_crear_turnos = True
             self.puede_ver_calendario = True
+            self.puede_cancelar_turnos = True
             self.puede_generar_reportes = True
         elif r == 'recep':
             self.puede_crear_pacientes = True
             self.puede_ver_pacientes = True
+            self.puede_editar_pacientes = True
             self.puede_crear_turnos = True
+            self.puede_cancelar_turnos = True
             self.puede_ver_calendario = True
 
 
@@ -106,3 +118,44 @@ class AuditoriaLog(models.Model):
     def __str__(self):
         u = self.usuario.username if self.usuario else 'anon'
         return f"{self.fecha:%Y-%m-%d %H:%M} {u} {self.accion} {self.modelo}:{self.objeto_id}"
+
+
+class LoginThrottle(models.Model):
+    """Registra intentos fallidos por (username, ip) con cooldown opcional."""
+
+    username = models.CharField(max_length=150, db_index=True)
+    ip = models.GenericIPAddressField(null=True, blank=True, db_index=True)
+    count = models.PositiveIntegerField(default=0)
+    first_attempt = models.DateTimeField(default=timezone.now)
+    last_attempt = models.DateTimeField(default=timezone.now)
+    locked_until = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["username", "ip"]),
+            models.Index(fields=["locked_until"]),
+        ]
+
+    def register_fail(self, window_seconds=600, threshold=5, cooldown_seconds=900):
+        now = timezone.now()
+        # Reset ventana si pasó el tiempo
+        if (now - self.first_attempt).total_seconds() > window_seconds:
+            self.count = 0
+            self.first_attempt = now
+        self.count += 1
+        self.last_attempt = now
+        # Bloquear si alcanza umbral
+        if self.count >= threshold:
+            self.locked_until = now + timezone.timedelta(seconds=cooldown_seconds)
+        self.save()
+
+    def is_locked(self):
+        if not self.locked_until:
+            return False
+        return timezone.now() < self.locked_until
+
+    def remaining_seconds(self):
+        if not self.locked_until:
+            return 0
+        delta = (self.locked_until - timezone.now()).total_seconds()
+        return int(delta) if delta > 0 else 0

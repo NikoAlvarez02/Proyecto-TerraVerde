@@ -16,6 +16,7 @@
 
         <div style="display:flex; gap:8px; align-items:center; justify-content:flex-end; margin-top:10px;">
           <input id="q" type="search" placeholder="Buscar DNI / nombre / apellido" style="padding:6px 10px; min-width:260px;">
+          <select id="os_filter" style="padding:6px 10px; min-width:200px;"><option value="">Obra Social (todas)</option></select>
           <select id="orden" style="padding:6px 10px;">
             <option value="-fecha_registro">Más recientes</option>
             <option value="apellido">Apellido A-Z</option>
@@ -32,6 +33,8 @@
               <th>Nombre</th>
               <th>DNI</th>
               <th>Teléfono</th>
+              <th>Centro</th>
+              <th>Obra Social</th>
               <th style="width:1%; white-space:nowrap;"></th>
             </tr>
           </thead>
@@ -47,18 +50,18 @@
 </div>
 
 <!-- Modal Crear/Editar -->
-<div id="modalForm" class="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.35);">
-  <div class="card" style="max-width:720px; width:95%; margin:40px auto; background:#fff; border-radius:12px; padding:16px;">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
+<div id="modalForm" class="modal" style="display:none;">
+  <div class="card" style="max-width:720px; width:95%; background:#fff; border-radius:12px; padding:16px; margin:0;">
+    <div class="drag-handle" style="display:flex; justify-content:space-between; align-items:center;">
       <h2 id="modalTitle" class="main-title" style="margin:0;">Registrar Paciente</h2>
       <button id="btnCerrarModal" class="btn btn-secundario">Cerrar</button>
     </div>
 
-    <form id="formPaciente" style="margin-top:12px;">
+    <form id="formPaciente" class="form-modal formulario-paciente" style="margin-top:12px;">
       {% csrf_token %}
       <input type="hidden" id="pacienteId">
 
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+      <div class="form-grid">
         <div>
           <label>Apellido</label>
           <input type="text" id="apellido" name="apellido" required>
@@ -73,7 +76,7 @@
         </div>
         <div>
           <label>Fecha Nacimiento</label>
-          <input type="date" id="fecha_nacimiento" name="fecha_nacimiento">
+          <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" required>
         </div>
         <div>
           <label>Teléfono</label>
@@ -86,6 +89,10 @@
         <div>
           <label>Nacionalidad</label>
           <input type="text" id="nacionalidad" name="nacionalidad">
+        </div>
+        <div>
+          <label>Obra Social</label>
+          <select id="obra_social" name="obra_social"></select>
         </div>
         <div>
           <label>
@@ -115,6 +122,10 @@
           <input type="text" id="rep_nacionalidad" name="rep_nacionalidad">
         </div>
         <div>
+          <label>Plan</label>
+          <select id="plan" name="plan"></select>
+        </div>
+        <div>
           <label>Email</label>
           <input type="email" id="email" name="email">
         </div>
@@ -142,10 +153,6 @@
           </select>
         </div>
         <div style="grid-column:1/-1;">
-          <label>Alergias</label>
-          <textarea id="alergias" rows="2"></textarea>
-        </div>
-        <div style="grid-column:1/-1;">
           <label>Antecedentes</label>
           <textarea id="antecedentes" rows="2"></textarea>
         </div>
@@ -168,8 +175,8 @@
 </div>
 
 <!-- Confirmación Eliminación -->
-<div id="modalConfirm" class="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.35);">
-  <div class="card" style="max-width:480px; width:95%; margin:40px auto; background:#fff; border-radius:12px; padding:16px;">
+<div id="modalConfirm" class="modal" style="display:none;">
+  <div class="card" style="max-width:480px;">
     <h3 style="margin-top:0;">Confirmar eliminación</h3>
     <p>¿Seguro que querés eliminar este paciente?</p>
     <div style="display:flex; gap:8px; justify-content:flex-end;">
@@ -181,4 +188,3 @@
 
 <script src="{% static 'JS/pacientes/spa.js' %}"></script>
 {% endblock %}
-

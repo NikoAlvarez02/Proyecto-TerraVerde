@@ -1,40 +1,35 @@
 # Python / Django
 __pycache__/
+**/__pycache__/
 *.py[cod]
+*.pyc
 *.log
+
+# DB files
 *.sqlite3
 db.sqlite3
 
-# Entornos
+# Virtual environments
 .venv/
-env/
 venv/
+env/
+backend/.venv/
 
-# Django build
+# Django build artifacts
 staticfiles/
 media/
 *.pdf
 
-# IDE / SO
+# IDE / OS
 .vscode/
 .idea/
 .DS_Store
 
-# Entornos y secretos
-*.env
+# Environment files
 .env
+.env.*
+!.env.example
 backend/.env
 frontend/.env
-
-# Ignorar cachés de Python
-__pycache__/
-*.pyc
-
-backend/.venv/
-backend/__pycache__/
-**/__pycache__/
-*.pyc
-.env
-backend/.env
-*.sqlite3
 backend/.env.txt
+

@@ -77,7 +77,37 @@
         }
     </script>
 
+    <script src="{% static 'JS/csrf_fetch.js' %}"></script>
     {% block extra_js %}{% endblock %}
+
+    <!-- Toast global reutilizable en todas las vistas -->
+    <div id="toast" style="display:none;"></div>
+    <script>
+      window.showToast = function(msg, type, durationMs){
+        try{
+          var el = document.getElementById('toast');
+          if(!el){ alert(msg); return; }
+          var cls = (type === 'error') ? 'toast-error'
+                   : (type === 'warning') ? 'toast-warning'
+                   : (type === 'info') ? 'toast-info'
+                   : 'toast-ok';
+          el.className = cls;
+          el.textContent = msg;
+          el.style.display = 'block';
+          clearTimeout(window.__toast_t);
+          var t = typeof durationMs === 'number' ? durationMs : 3500;
+          window.__toast_t = setTimeout(function(){ el.style.display='none'; }, t);
+        }catch(e){ try{ alert(msg); }catch(_){} }
+      };
+      // Redefinir alert para usar toast por consistencia visual
+      (function(){
+        var _alert = window.alert;
+        window.alert = function(msg){
+          if (typeof window.showToast === 'function') { window.showToast(msg, 'error'); }
+          else { _alert(msg); }
+        };
+      })();
+    </script>
 
 </body>
 </html>
