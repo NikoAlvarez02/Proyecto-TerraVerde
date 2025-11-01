@@ -1,3 +1,4 @@
+
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
@@ -725,3 +726,685 @@
 </html>
 
 
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="{% static 'ASSETS/terraverde.ico' %}">
+    <title>TerraVerde - Centro Psicopedagógico</title>
+</head>
+<style>
+    {
+            --p-700:#2e7d32; --p-600:#2e7d32; --p-500:#43a047; --p-400:#66bb6a; --p-50:#e8f5e9;
+            --blue-500:#4fa3f7; --purple-500:#9c89e9; --amber-200:#ffecb3; --ink-900:#263238;
+            --card:#ffffff; --border:#e7ebef;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #43a047;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px 35px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideDown 0.6s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header-left { display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
+
+        .logo { display:flex; align-items:center; gap: 15px; }
+
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--p-700);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0; /* Sin borde interno: la imagen ocupa todo */
+            animation: pulse 2s infinite;
+            color: #fff;
+            font-weight: 700;
+            overflow: hidden; /* evita que sobresalga en esquinas redondeadas */
+        }
+
+        .logo-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* llena todo el cuadrado verde */
+            display: block;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .logo h1 {
+            font-size: 28px;
+            background: linear-gradient(135deg, var(--p-600) 0%, var(--p-500) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .quick-links { display:flex; gap:8px; flex-wrap:wrap; }
+        .qlink {
+            padding: 6px 10px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.8);
+            color: var(--p-600);
+            font-weight: 600;
+            text-decoration: none;
+            border: 1px solid var(--border);
+            transition: all .2s ease;
+        }
+        .qlink:hover { background:#f3f7f4; transform: translateY(-1px); }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--p-500) 0%, var(--p-400) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .avatar:hover {
+            transform: scale(1.1);
+        }
+
+        .logout-form button {
+            padding: 8px 14px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            background: #efefef;
+            color: #333;
+            transition: all 0.2s ease;
+        }
+
+        .logout-form button:hover {
+            background: #e2e2e2;
+            transform: translateY(-1px);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            animation: fadeIn 0.6s ease forwards;
+            opacity: 0;
+        }
+
+        .card:nth-child(1) { animation-delay: 0.1s; }
+        .card:nth-child(2) { animation-delay: 0.2s; }
+        .card:nth-child(3) { animation-delay: 0.3s; }
+        .card:nth-child(4) { animation-delay: 0.4s; }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .card-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        .icon-purple { background: var(--purple-500); color: white; }
+        .icon-pink { background: linear-gradient(135deg, var(--p-600) 0%, var(--p-400) 100%); color: white; }
+        .icon-blue { background: var(--blue-500); color: white; }
+        .icon-green { background: linear-gradient(135deg, var(--p-500) 0%, var(--p-400) 100%); color: white; }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            background: linear-gradient(135deg, var(--p-600) 0%, var(--p-500) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 15px 0;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--p-600) 0%, var(--p-400) 100%);
+            border-radius: 10px;
+            animation: fillProgress 1.5s ease;
+        }
+
+        @keyframes fillProgress {
+            from { width: 0; }
+        }
+
+        .session-list {
+            list-style: none;
+        }
+
+        .session-item {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .session-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .session-time { font-weight: 600; color: var(--p-600); }
+
+        .session-name {
+            color: #333;
+            font-size: 14px;
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+            display: inline-block;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2e7d32 0%, #43a047 100%);
+            color: white;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .chart-container {
+            margin-top: 20px;
+            height: 200px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            gap: 10px;
+        }
+
+        .chart-bar {
+            flex: 1;
+            background: linear-gradient(to top, var(--p-600), var(--p-400));
+            border-radius: 8px 8px 0 0;
+            position: relative;
+            animation: growBar 1s ease;
+        }
+
+        @keyframes growBar {
+            from { height: 0; }
+        }
+
+        .chart-label {
+            position: absolute;
+            bottom: -25px;
+            width: 100%;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            display: none;
+            animation: slideInRight 0.5s ease;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .notification.show {
+            display: block;
+        }
+
+        .activity-feed {
+            margin-top: 20px;
+        }
+
+        .activity-item {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: flex-start;
+        }
+
+        .activity-dot { width:12px; height:12px; border-radius:50%; background: linear-gradient(135deg, var(--blue-500), var(--p-500)); margin-top:5px; flex-shrink:0; }
+
+        @media (prefers-color-scheme: dark){
+            body{ background:#1f3327; color:#e6ece8; }
+            .header{ background: rgba(255,255,255,0.08); }
+            .card{ background: rgba(255,255,255,0.10); border:1px solid rgba(255,255,255,0.14); }
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .activity-time {
+            font-size: 12px;
+            color: #999;
+        }
+
+        /* --- Responsive: ajustes móviles y tablets --- */
+        @media (max-width: 1024px) {
+            .container { padding: 12px; }
+            .header { padding: 18px 20px; gap: 12px; }
+            .logo h1 { font-size: 24px; }
+            .grid { gap: 18px; }
+            .card { padding: 22px; }
+            .stat-number { font-size: 30px; }
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 12px; }
+            .container { max-width: 100%; }
+
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 14px;
+            }
+            .header-left { flex-wrap: wrap; gap: 12px; }
+            .logo-icon { width: 40px; height: 40px; }
+            .logo h1 { font-size: 22px; }
+            .quick-links { gap: 6px; }
+
+            .user-info { width: 100%; justify-content: space-between; }
+            .logout-form button { padding: 8px 12px; }
+
+            .grid {
+                grid-template-columns: 1fr;
+                gap: 14px;
+                margin-bottom: 18px;
+            }
+            /* Forzar tarjetas a una columna cuando haya estilos inline de span */
+            .grid > .card { grid-column: auto !important; }
+
+            .card { padding: 18px; }
+            .card-title { font-size: 16px; }
+            .card-icon { width: 40px; height: 40px; font-size: 20px; }
+            .stat-number { font-size: 26px; margin: 10px 0; }
+            .stat-label { font-size: 13px; }
+
+            .session-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            .session-name { font-size: 13px; overflow-wrap: anywhere; }
+            .session-time { font-size: 13px; }
+
+            .btn { padding: 10px 16px; }
+            .btn-primary { width: 100%; }
+
+            .chart-container { height: 160px; gap: 8px; }
+
+            /* Notificación fija: evitar que tape contenido en móvil */
+            .notification {
+                left: 12px;
+                right: 12px;
+                top: auto;
+                bottom: 12px;
+                padding: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body { padding: 8px; }
+            .header { padding: 14px; }
+            .logo h1 { font-size: 20px; }
+            .card { padding: 14px; }
+            .stat-number { font-size: 24px; }
+            .chart-container { height: 140px; }
+        }
+
+        /* Desactivar efecto hover agresivo en dispositivos sin hover */
+        @media (hover: none) {
+            .card:hover { transform: none; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); }
+        }
+</style>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <img src="{% static 'ASSETS/logo_trifusion.png' %}" alt="TerraVerde">
+                    </div>
+                    <h1>TerraVerde</h1>
+                </div>
+                <div class="quick-links">
+                    {% if request.user.is_authenticated and request.user.perfil and request.user.perfil.puede_ver_calendario %}
+                    <a class="qlink" href="{% url 'turnos:list' %}">Turnos</a>
+                    {% endif %}
+                    {% if request.user.is_authenticated and request.user.perfil and request.user.perfil.puede_ver_pacientes %}
+                    <a class="qlink" href="{% url 'pacientes:list' %}">Pacientes</a>
+                    {% endif %}
+                    <a class="qlink" href="{% url 'profesionales:list' %}">Profesionales</a>
+                    {% if request.user.is_authenticated and request.user.perfil and request.user.perfil.puede_ver_historias %}
+                    <a class="qlink" href="{% url 'historias:historia' %}">Historias</a>
+                    {% endif %}
+                    {% if request.user.is_authenticated and request.user.perfil %}
+                        {% if request.user.perfil.puede_generar_reportes or request.user.perfil.puede_ver_estadisticas %}
+                        <a class="qlink" href="{% url 'reportes:dashboard' %}">Reportes</a>
+                        {% endif %}
+                    {% endif %}
+                    {% if request.user.is_authenticated and request.user.perfil and request.user.perfil.puede_ver_estadisticas %}
+                    <a class="qlink" href="{% url 'satisfaccion:list' %}">Satisfacción</a>
+                    {% endif %}
+                    {% if request.user.is_authenticated and request.user.perfil and request.user.perfil.rol == 'admin' %}
+                    <a class="qlink" href="{% url 'admin_mod' %}">Admin</a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="user-info">
+                <span style="color: #666;">Bienvenido, <strong>{{ request.user.first_name|default:request.user.username }}</strong></span>
+                <div class="avatar">{{ request.user.first_name|default:request.user.username|slice:":1"|upper }}</div>
+                <form method="post" action="{% url 'logout' %}" class="logout-form">
+                    {% csrf_token %}
+                    <button type="submit">Cerrar sesión</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Pacientes Activos</span>
+                    <div class="card-icon icon-purple">👥</div>
+                </div>
+                <div class="stat-number">{{ pacientes_activos }}</div>
+                <div class="stat-label">Activos en sistema</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 100%;"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Sesiones Hoy</span>
+                    <div class="card-icon icon-pink">📅</div>
+                </div>
+                <div class="stat-number">{{ sesiones_hoy_total }}</div>
+                <div class="stat-label">{{ sesiones_hoy_completadas }} completadas, {{ sesiones_hoy_pendientes }} pendientes</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ sesiones_hoy_pct }}%;"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Tasa de Progreso</span>
+                    <div class="card-icon icon-blue">📊</div>
+                </div>
+                <div class="stat-number">{{ tasa_progreso }}%</div>
+                <div class="stat-label">Promedio general</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ tasa_progreso }}%;"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Satisfacción</span>
+                    <div class="card-icon icon-green">⭐</div>
+                </div>
+                <div class="stat-number">{% if satisfaccion %}{{ satisfaccion }}{% else %}N/D{% endif %}</div>
+                <div class="stat-label">De 5.0 estrellas</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ satisfaccion_pct }}%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card" style="grid-column: span 2;">
+                <div class="card-header">
+                    <span class="card-title">Próximas Sesiones</span>
+                    <span class="status-badge status-active">Hoy</span>
+                </div>
+                <ul class="session-list">
+                    {% for t in proximas_sesiones %}
+                    <li class="session-item">
+                        <div>
+                            <div class="session-time">{{ t.fecha_hora|date:"H:i" }}</div>
+                            <div class="session-name">{{ t.motivo|default:"Sesión" }} - {{ t.paciente.apellido }}, {{ t.paciente.nombre }}</div>
+                        </div>
+                        <span class="status-badge {% if t.estado == 'pendiente' %}status-pending{% else %}status-active{% endif %}">{{ t.get_estado_display }}</span>
+                    </li>
+                    {% empty %}
+                    <li class="session-item">
+                        <div class="session-name">Sin próximas sesiones hoy</div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                <a href="{% url 'turnos:list' %}" class="btn btn-primary">Ver Calendario Completo</a>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Actividad Reciente</span>
+                </div>
+                <div class="activity-feed">
+                    <div class="activity-item">
+                        <div class="activity-dot"></div>
+                        <div class="activity-content">
+                            <div class="activity-title">Nuevo paciente registrado</div>
+                            <div class="activity-time">Hace 2 horas</div>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-dot"></div>
+                        <div class="activity-content">
+                            <div class="activity-title">Informe completado</div>
+                            <div class="activity-time">Hace 5 horas</div>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-dot"></div>
+                        <div class="activity-content">
+                            <div class="activity-title">Sesión reagendada</div>
+                            <div class="activity-time">Hace 1 día</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Estadísticas Semanales</span>
+            </div>
+            <div class="chart-container">
+                {% for d in weekly %}
+                <div class="chart-bar" style="height: {{ d.pct }}%;">
+                    <span class="chart-label">{{ d.label }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification" {% if show_notification %}data-show="1"{% endif %}>
+        <strong>🔔 Próxima sesión</strong>
+        <p style="margin-top: 8px; color: #666;">{% if notif_text %}{{ notif_text }}{% else %}Sin próximas notificaciones{% endif %}</p>
+    </div>
+
+    <script>
+        // Mostrar notificación real si el backend lo indica
+        (function(){
+            const n = document.getElementById('notification');
+            if (n && n.dataset.show === '1') {
+                n.classList.add('show');
+                setTimeout(() => n.classList.remove('show'), 6000);
+            }
+        })();
+
+        // Animación suave al hacer hover
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px) scale(1.02)';
+            });
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>
