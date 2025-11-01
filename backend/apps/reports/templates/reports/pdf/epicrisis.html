@@ -1,53 +1,37 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Informe Médico - TERRAVERDE</title>
+    <title>Informe Médico - TerraVerde</title>
     <style>
         @page { margin: 2cm; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Arial', sans-serif; line-height: 1.6; color: #2c3e50; background: white; }
-        .page { max-width: 21cm; margin: 0 auto; background: white; padding: 2cm; }
-        .header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 20px; border-bottom: 3px solid #2d5f4f; margin-bottom: 30px; }
-        .logo-section { display: flex; align-items: center; gap: 15px; }
-        .logo { width: 70px; height: 70px; border-radius: 10px; display: flex; align-items: center; justify-content: center; border: 3px solid #2d5f4f; overflow: hidden; }
-        .logo img { width: 100%; height: 100%; object-fit: contain; }
-        .title-section h1 { color: #2d5f4f; font-size: 22px; font-weight: bold; margin-bottom: 3px; }
-        .title-section h2 { color: #5a8c73; font-size: 16px; font-weight: normal; }
-        .header-right { text-align: right; color: #666; font-size: 12px; }
-        .document-title { background: linear-gradient(135deg, #2d5f4f 0%, #5a8c73 100%); color: white; padding: 15px 25px; margin-bottom: 25px; border-radius: 8px; }
-        .document-title h3 { font-size: 20px; font-weight: bold; }
-        .patient-info { background: #f8f9fa; border-left: 4px solid #5a8c73; padding: 20px; margin-bottom: 25px; border-radius: 5px; }
-        .patient-info h4 { color: #2d5f4f; font-size: 16px; margin-bottom: 15px; font-weight: bold; }
-        .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-        .info-item { font-size: 13px; }
-        .info-label { font-weight: bold; color: #2d5f4f; }
-        .section { margin-bottom: 25px; }
-        .section-title { color: #2d5f4f; font-size: 16px; font-weight: bold; margin-bottom: 12px; padding-bottom: 5px; border-bottom: 2px solid #e0e0e0; }
-        .section-content { font-size: 13px; text-align: justify; line-height: 1.7; color: #444; }
-        .list-item { margin-bottom: 8px; padding-left: 20px; position: relative; }
-        .list-item:before { content: "▸"; color: #5a8c73; position: absolute; left: 0; font-weight: bold; }
-        .highlight-box { background: #e8f5e9; border-left: 4px solid #5a8c73; padding: 15px; margin: 15px 0; border-radius: 5px; }
-        .signature-section { margin-top: 50px; padding-top: 30px; border-top: 1px solid #ddd; }
-        .signature-box { text-align: center; margin-top: 60px; }
-        .signature-line { width: 300px; border-top: 2px solid #2d5f4f; margin: 0 auto 10px; }
-        .signature-info { color: #2d5f4f; font-weight: bold; }
-        .signature-detail { color: #666; font-size: 12px; }
-        .footer { margin-top: 40px; padding-top: 20px; border-top: 3px solid #2d5f4f; text-align: center; font-size: 11px; color: #666; }
-        @media print { body { background: white; } .page { margin: 0; padding: 1cm; } }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family: Arial, sans-serif; color:#2c3e50; line-height:1.6; }
+        .page { max-width:21cm; margin:0 auto; padding:2cm; }
+        .header { display:flex; align-items:center; justify-content:space-between; padding-bottom:20px; border-bottom:3px solid #2d5f4f; margin-bottom:30px; }
+        .logo-section { display:flex; align-items:center; gap:15px; }
+        .logo { width:70px; height:70px; border-radius:10px; border:3px solid #2d5f4f; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+        .logo img { width:100%; height:100%; object-fit:contain; }
+        .title-section h1 { color:#2d5f4f; font-size:22px; font-weight:bold; }
+        .title-section h2 { color:#5a8c73; font-size:16px; }
+        .header-right { text-align:right; color:#666; font-size:12px; }
+        .document-title { background:linear-gradient(135deg,#2d5f4f 0%,#5a8c73 100%); color:#fff; padding:12px 20px; border-radius:8px; margin-bottom:20px; }
+        .patient-info { background:#f8f9fa; border-left:4px solid #5a8c73; padding:16px; border-radius:6px; margin-bottom:20px; }
+        .section { margin:20px 0; }
+        .section-title { color:#2d5f4f; font-weight:bold; font-size:16px; margin-bottom:8px; border-bottom:2px solid #e0e0e0; padding-bottom:4px; }
+        .kv { font-size:13px; margin:6px 0; }
     </style>
 </head>
 <body>
     <div class="page">
-        <!-- Header -->
         <div class="header">
             <div class="logo-section">
                 <div class="logo">
                     {% if logo_b64 %}
                         <img src="data:image/png;base64,{{ logo_b64 }}" alt="TERRAVERDE" />
                     {% else %}
-                        <img src="frontend/ASSETS/terraverde.png" alt="TERRAVERDE" />
+                        <img src="{% static 'ASSETS/terraverde.png' %}" alt="TERRAVERDE" />
                     {% endif %}
                 </div>
                 <div class="title-section">
@@ -56,112 +40,26 @@
                 </div>
             </div>
             <div class="header-right">
-                <div><strong>Fecha:</strong> {{ generado|date:"d/m/Y" }}</div>
-                <div><strong>Nº Informe:</strong> {{ params.numero_informe|default:generado|date:"YmdHis" }}</div>
+                <div><strong>Fecha:</strong> {{ generado|date:"d/m/Y H:i" }}</div>
             </div>
         </div>
 
-        <!-- Document Title -->
         <div class="document-title">
-            <h3>INFORME MÉDICO INTEGRAL</h3>
+            <strong>EPICRISIS</strong>
         </div>
 
-        <!-- Patient Information -->
-        <div class="patient-info">
-            <h4>DATOS DEL PACIENTE</h4>
-            <div class="info-grid">
-                <div class="info-item">
-                    <span class="info-label">Nombre:</span>
-                    {{ params.paciente_nombre|default:resumen.nombre|default:paciente }}
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Edad:</span>
-                    {{ params.paciente_edad|default:resumen.edad|default:"-" }}
-                </div>
-                <div class="info-item">
-                    <span class="info-label">DNI:</span>
-                    {{ params.paciente_dni|default:resumen.dni|default:"-" }}
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Fecha de nacimiento:</span>
-                    {{ params.paciente_fecha_nacimiento|default:resumen.fecha_nacimiento|default:"-" }}
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Obra Social:</span>
-                    {{ params.paciente_obra_social|default:resumen.obra_social|default:"-" }}
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Nº Historia Clínica:</span>
-                    {{ params.paciente_nro_historia|default:resumen.nro_historia|default:"-" }}
-                </div>
-            </div>
-        </div>
-
-        {% if params.motivo or resumen.motivo %}
         <div class="section">
-            <div class="section-title">MOTIVO DE CONSULTA</div>
-            <div class="section-content">{{ params.motivo|default:resumen.motivo }}</div>
+            <div class="section-title">Paciente</div>
+            <div class="kv">{{ paciente }}</div>
         </div>
-        {% endif %}
 
-        {% if params.antecedentes or resumen.antecedentes %}
         <div class="section">
-            <div class="section-title">ANTECEDENTES RELEVANTES</div>
-            <div class="section-content">
-                {% for item in params.antecedentes|default:resumen.antecedentes %}
-                    <div class="list-item">{{ item }}</div>
-                {% empty %}
-                    <div>-</div>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-
-        {% if params.hallazgos or resumen.hallazgos %}
-        <div class="highlight-box">
-            <strong>HALLAZGOS PRINCIPALES:</strong>
-            {{ params.hallazgos|default:resumen.hallazgos }}
-        </div>
-        {% endif %}
-
-        {% if params.impresion_diagnostica or resumen.impresion_diagnostica %}
-        <div class="section">
-            <div class="section-title">IMPRESIÓN DIAGNÓSTICA</div>
-            <div class="section-content">
-                {% for it in params.impresion_diagnostica|default:resumen.impresion_diagnostica %}
-                    <div class="list-item">{{ it }}</div>
-                {% empty %}
-                    <div>-</div>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-
-        {% if params.plan or resumen.plan %}
-        <div class="section">
-            <div class="section-title">PLAN TERAPÉUTICO Y RECOMENDACIONES</div>
-            <div class="section-content">
-                {% for it in params.plan|default:resumen.plan %}
-                    <div class="list-item">{{ it }}</div>
-                {% empty %}
-                    <div>-</div>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-
-        <div class="signature-section">
-            <div class="signature-box">
-                <div class="signature-line"></div>
-                <div class="signature-info">{{ params.firma_nombre|default:"" }}</div>
-                <div class="signature-detail">{{ params.firma_especialidad|default:"" }}</div>
-                <div class="signature-detail">{{ params.firma_matricula|default:"" }}</div>
-            </div>
-        </div>
-
-        <div class="footer">
-            <div><strong>TERRAVERDE - Espacio de Desarrollo Integral</strong></div>
-            <div>Este documento es confidencial y de uso exclusivo del paciente</div>
+            <div class="section-title">Resumen</div>
+            {% for k, v in resumen.items %}
+                <div class="kv"><strong>{{ k }}:</strong> {{ v }}</div>
+            {% empty %}
+                <div class="kv">Sin información</div>
+            {% endfor %}
         </div>
     </div>
 </body>

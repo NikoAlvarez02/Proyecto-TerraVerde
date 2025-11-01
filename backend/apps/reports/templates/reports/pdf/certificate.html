@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -32,7 +33,7 @@
                     {% if logo_b64 %}
                         <img src="data:image/png;base64,{{ logo_b64 }}" alt="TERRAVERDE">
                     {% else %}
-                        <img src="frontend/ASSETS/terraverde.png" alt="TERRAVERDE">
+                        <img src="{% static 'ASSETS/terraverde.png' %}" alt="TERRAVERDE">
                     {% endif %}
                 </div>
                 <div class="title-section">
@@ -44,23 +45,17 @@
                 <div><strong>Fecha:</strong> {{ generado|date:"d/m/Y" }}</div>
             </div>
         </div>
-
-        <div class="document-title">
-            <strong>CERTIFICADO MÉDICO</strong>
-        </div>
-
+        <div class="document-title"><strong>CERTIFICADO MÉDICO</strong></div>
         <div class="section">
             <div class="section-title">Paciente</div>
             <div>{{ paciente }}</div>
         </div>
-
         <div class="section">
             <div class="section-title">Detalle</div>
             <div>Diagnóstico: {{ datos.diagnostico }}</div>
             <div>Reposo (días): {{ datos.reposo_dias }}</div>
             <div>Observaciones: {{ datos.observaciones }}</div>
         </div>
-
         <div class="signature-section">
             <div class="signature-line"></div>
             <div class="signature-info">{{ profesional|default:"" }}</div>

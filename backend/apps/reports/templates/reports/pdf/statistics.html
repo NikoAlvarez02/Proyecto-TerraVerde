@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -41,9 +42,9 @@
           <div class="logo">
             {% if logo_b64 %}
             <img src="data:image/png;base64,{{ logo_b64 }}" alt="TERRAVERDE" />
-            {% else %}
-            <img src="frontend/ASSETS/terraverde.png" alt="TERRAVERDE" />
-            {% endif %}
+          {% else %}
+          <img src="{% static 'ASSETS/terraverde.png' %}" alt="TERRAVERDE" />
+          {% endif %}
           </div>
           <div class="title-section">
             <h1>TERRAVERDE</h1>
@@ -58,7 +59,7 @@
       {% if logo_b64 %}
       <img class="stamp" src="data:image/png;base64,{{ logo_b64 }}" alt="sello" />
       {% else %}
-      <img class="stamp" src="frontend/ASSETS/terraverde.png" alt="sello" />
+      <img class="stamp" src="{% static 'ASSETS/terraverde.png' %}" alt="sello" />
       {% endif %}
 
       <div class="document-title">
@@ -174,4 +175,3 @@
     </div>
   </body>
 </html>
-
