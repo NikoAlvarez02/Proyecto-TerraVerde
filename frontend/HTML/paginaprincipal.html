@@ -241,15 +241,11 @@
             margin-top: 15px;
         }
 
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--p-600) 0%, var(--p-400) 100%);
-            border-radius: 10px;
-            animation: fillProgress 1.5s ease;
-        }
+         param($m) $inner = $m.Groups[2].Value; $inner = $inner -replace "animation:\s*fillProgress[^;]*;",""; $inner = $inner + "`n            transform-origin: left;`n            transform: scaleX(0);`n            animation: fillProgress 1.0s ease forwards;"; return $m.Groups[1].Value + $inner + "}`n" 
 
         @keyframes fillProgress {
-            from { width: 0; }
+            to { transform: scaleX(1); }
+        }
         }
 
         .session-list {
@@ -328,6 +324,13 @@
             justify-content: space-around;
             gap: 10px;
         }
+        /* Calendario */
+        .calendar-grid{ display:grid; grid-template-columns: repeat(7, 1fr); gap:8px; }
+        .calendar-grid .cal-head{ font-weight:700; color:#6b7a85; text-align:center; padding-bottom:6px; }
+        .calendar-grid .cal-empty{ height:38px; }
+        .calendar-grid .cal-day{ display:flex; align-items:center; justify-content:center; height:38px; border:1px solid var(--border); border-radius:10px; color:#2b3a40; text-decoration:none; background:#fff; transition: all .12s ease; }
+        .calendar-grid .cal-day:hover{ background:#f1f7f3; transform: translateY(-1px); box-shadow:0 6px 14px rgba(0,0,0,.06); }
+        .calendar-grid .cal-day.is-today{ border-color:#a8d5b5; background:#f2f8f3; font-weight:700; }
 
         .chart-bar {
             flex: 1;
@@ -565,7 +568,7 @@
                     <div class="card-icon icon-blue">📊</div>
                 </div>
                 <div class="stat-number">{{ tasa_progreso }}%</div>
-                <div class="stat-label">Promedio general</div>
+                <div class="stat-label">Progreso diario</div>
                 <div class="progress-bar">
                     <div class="progress-fill" style="width: {{ tasa_progreso }}%;"></div>
                 </div>
@@ -587,11 +590,10 @@
         <div class="grid">
             <div class="card" style="grid-column: span 2;">
                 <div class="card-header">
-                    <span class="card-title">Próximas Sesiones</span>
-                    <span class="status-badge status-active">Hoy</span>
+                    <span class="card-title">Turnos Programados Hoy</span>
                 </div>
                 <ul class="session-list">
-                    {% for t in proximas_sesiones %}
+                    {% for t in turnos_hoy %}
                     <li class="session-item">
                         <div>
                             <div class="session-time">{{ t.fecha_hora|date:"H:i" }}</div>
@@ -601,11 +603,10 @@
                     </li>
                     {% empty %}
                     <li class="session-item">
-                        <div class="session-name">Sin próximas sesiones hoy</div>
+                        <div class="session-name">Sin turnos programados para hoy</div>
                     </li>
                     {% endfor %}
                 </ul>
-                <a href="{% url 'turnos:list' %}" class="btn btn-primary">Ver Calendario Completo</a>
             </div>
 
             <div class="card">
@@ -639,16 +640,16 @@
         </div>
 
         <div class="card">
-            <div class="card-header">
-                <span class="card-title">Estadísticas Semanales</span>
-            </div>
-            <div class="chart-container">
-                {% for d in weekly %}
-                <div class="chart-bar" style="height: {{ d.pct }}%;">
-                    <span class="chart-label">{{ d.label }}</span>
+            <div class="card-header" style="justify-content:space-between;">
+                <span class="card-title">Calendario</span>
+                <div>
+                    <button id="cal_prev" class="btn" style="padding:6px 10px;">◀</button>
+                    <button id="cal_today" class="btn" style="padding:6px 10px;">Hoy</button>
+                    <button id="cal_next" class="btn" style="padding:6px 10px;">▶</button>
                 </div>
-                {% endfor %}
             </div>
+            <div id="cal_header" style="font-weight:700; color:#333; margin-bottom:8px;"></div>
+            <div id="calendar" class="calendar-grid"></div>
         </div>
     </div>
 
@@ -677,6 +678,50 @@
             });
         });
     </script>
+    <script>
+        // Calendario mensual simple con enlaces a Turnos por fecha
+        (function(){
+            const grid = document.getElementById('calendar');
+            const hdr = document.getElementById('cal_header');
+            const btnPrev = document.getElementById('cal_prev');
+            const btnNext = document.getElementById('cal_next');
+            const btnToday = document.getElementById('cal_today');
+            if(!grid || !hdr) return;
+            let current = new Date();
+            current.setDate(1);
+            const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+            function fmt(d){ const y=d.getFullYear(); const m=String(d.getMonth()+1).padStart(2,'0'); const day=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
+            function render(){
+                const y=current.getFullYear(); const m=current.getMonth();
+                hdr.textContent = monthNames[m] + ' ' + y;
+                grid.innerHTML = '';
+                // Encabezados semana
+                const dn = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+                dn.forEach(n=>{ const h=document.createElement('div'); h.className='cal-head'; h.textContent=n; grid.appendChild(h); });
+                const first = new Date(y,m,1);
+                const startDow = (first.getDay()+6)%7; // 0=Lun
+                const daysInMonth = new Date(y, m+1, 0).getDate();
+                // celdas vacías antes
+                for(let i=0;i<startDow;i++){ const e=document.createElement('div'); e.className='cal-empty'; grid.appendChild(e); }
+                // días
+                const today = new Date(); today.setHours(0,0,0,0);
+                for(let d=1; d<=daysInMonth; d++){
+                    const date = new Date(y,m,d);
+                    const cell = document.createElement('a');
+                    cell.className = 'cal-day';
+                    cell.href = `/turnos/?fecha=${fmt(date)}`;
+                    cell.textContent = String(d);
+                    if(date.getTime()===today.getTime()) cell.classList.add('is-today');
+                    grid.appendChild(cell);
+                }
+            }
+            btnPrev && btnPrev.addEventListener('click', ()=>{ current.setMonth(current.getMonth()-1); render(); });
+            btnNext && btnNext.addEventListener('click', ()=>{ current.setMonth(current.getMonth()+1); render(); });
+            btnToday && btnToday.addEventListener('click', ()=>{ current=new Date(); current.setDate(1); render(); });
+            render();
+        })();
+    </script>
 </body>
 </html>
+
 

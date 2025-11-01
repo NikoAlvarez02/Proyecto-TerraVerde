@@ -18,10 +18,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Validación mínima y dejar que Django maneje el login
   if (loginForm && usernameInput && passwordInput) {
+    const submitBtn = loginForm.querySelector('button[type="submit"]');
     loginForm.addEventListener('submit', (e) => {
+      // Si el botón está deshabilitado (bloqueo por intentos), impedir envío
+      if (submitBtn && submitBtn.hasAttribute('disabled')) {
+        e.preventDefault();
+        if (typeof window.showToast === 'function') window.showToast('Acceso bloqueado por múltiples intentos fallidos.', 'error');
+        else alert('Acceso bloqueado por múltiples intentos fallidos.');
+        return;
+      }
       if (!usernameInput.value.trim() || !passwordInput.value.trim()) {
         e.preventDefault();
-        alert('Completá usuario y contraseña.');
+        if (typeof window.showToast === 'function') window.showToast('Completá usuario y contraseña.', 'warning');
+        else alert('Completá usuario y contraseña.');
       }
       // si ambos tienen valor, no hacemos preventDefault -> Django procesa
     });

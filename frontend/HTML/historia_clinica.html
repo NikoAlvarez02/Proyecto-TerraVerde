@@ -89,7 +89,9 @@
           <input id="proximo_control" type="date">
         </div>
         <div class="hc-actions full">
+          <input type="hidden" id="obs_id" value="" />
           <button id="btnGuardar" class="btn btn-primary">Guardar Observación</button>
+          <button id="btnEliminarObs" class="btn btn-outline" style="display:none">Eliminar Observación</button>
           <span id="msg" class="hint" style="display:none">Guardado</span>
         </div>
       </div>
@@ -172,13 +174,35 @@
     const data = await apiGet('/historias/api/observaciones/?'+q.toString());
     const items = data.results || data;
     tablaObs.innerHTML = items.map(o=>`
-      <tr>
+      <tr data-id="${o.id}">
         <td>${new Date(o.fecha_hora).toLocaleString()}</td>
         <td>${profMap.get(o.profesional) || o.profesional}</td>
         <td>${o.motivo||''}</td>
         <td>${o.diagnostico_texto||''}</td>
       </tr>
     `).join('');
+    Array.from(tablaObs.querySelectorAll('tr[data-id]')).forEach(tr=>{
+      tr.addEventListener('click', async ()=>{
+        try{
+          const id = tr.getAttribute('data-id');
+          const o = await apiGet('/historias/api/observaciones/' + id + '/');
+          document.getElementById('obs_id').value = o.id;
+          document.getElementById('fecha_hora').value = (new Date(o.fecha_hora)).toISOString().slice(0,16);
+          selProf.value = o.profesional;
+          selCentro.value = o.centro;
+          document.getElementById('motivo').value = o.motivo || '';
+          document.getElementById('anamnesis').value = o.anamnesis || '';
+          document.getElementById('examen_fisico').value = o.examen_fisico || '';
+          document.getElementById('diagnostico_codigo').value = o.diagnostico_codigo || '';
+          document.getElementById('diagnostico_texto').value = o.diagnostico_texto || '';
+          document.getElementById('estudios_solicitados').value = o.estudios_solicitados || '';
+          document.getElementById('tratamiento').value = o.tratamiento || '';
+          document.getElementById('indicaciones').value = o.indicaciones || '';
+          document.getElementById('proximo_control').value = (o.proximo_control||'');
+          document.getElementById('btnEliminarObs').style.display = 'inline-block';
+        }catch(e){ console.error(e); }
+      });
+    });
   }
 
   document.getElementById('btnFiltrar').onclick = listarObs;
@@ -200,17 +224,41 @@
       indicaciones: document.getElementById('indicaciones').value,
       proximo_control: document.getElementById('proximo_control').value || null,
     };
-    if(!body.paciente){ alert('Seleccioná un paciente'); return; }
-    if(!body.profesional){ alert('Seleccioná un profesional'); return; }
-    if(!body.centro){ alert('Seleccioná un centro'); return; }
+    if(!body.paciente){ window.showToast('Seleccioná un paciente', 'warning'); return; }
+    if(!body.profesional){ window.showToast('Seleccioná un profesional', 'warning'); return; }
+    if(!body.centro){ window.showToast('Seleccioná un centro', 'warning'); return; }
     try{
-      await apiPost('/historias/api/observaciones/', body);
+      if(!confirm('¿Desea confirmar estos datos?')) return;
+      const id = (document.getElementById('obs_id').value || '').trim();
+      if(id){
+        const csrftoken = getCookie('csrftoken');
+        const r = await fetch('/historias/api/observaciones/' + id + '/', { method:'PUT', headers:{'Content-Type':'application/json','X-CSRFToken': csrftoken}, credentials:'include', body: JSON.stringify(body)});
+        if(!r.ok) throw new Error(await r.text());
+      } else {
+        await apiPost('/historias/api/observaciones/', body);
+      }
       document.getElementById('msg').style.display='inline';
       setTimeout(()=>document.getElementById('msg').style.display='none', 1500);
+      document.getElementById('btnEliminarObs').style.display = id ? 'inline-block' : 'none';
       listarObs();
     }catch(e){
-      alert('Error al guardar: ' + e.message);
+      window.showToast('Error al guardar: ' + e.message, 'error', 5000);
     }
+  };
+
+  document.getElementById('btnEliminarObs').onclick = async ()=>{
+    const id = (document.getElementById('obs_id').value || '').trim();
+    if(!id) return;
+    if(!confirm('¿Está seguro de eliminar esta observación?')) return;
+    try{
+      const csrftoken = getCookie('csrftoken');
+      const r = await fetch('/historias/api/observaciones/' + id + '/', { method:'DELETE', headers:{'X-CSRFToken': csrftoken}, credentials:'include' });
+      if(!r.ok) throw new Error(await r.text());
+      document.getElementById('obs_id').value = '';
+      document.getElementById('btnEliminarObs').style.display = 'none';
+      document.getElementById('btnNueva').click();
+      listarObs();
+    }catch(e){ window.showToast('Error al eliminar: ' + e.message, 'error', 5000); }
   };
 
   document.getElementById('btnNueva').onclick = ()=>{
@@ -228,7 +276,7 @@
 
   document.getElementById('btnPDF').onclick = async ()=>{
     const pid = selPac.value ? parseInt(selPac.value) : null;
-    if(!pid){ alert('Seleccioná un paciente'); return; }
+    if(!pid){ window.showToast('Seleccioná un paciente', 'warning'); return; }
     const params = { paciente: pid, desde: document.getElementById('fdesde').value || undefined, hasta: document.getElementById('fhasta').value || undefined, orientacion:'portrait', tamano_pagina:'A4' };
     const res = await exportReportToPDF('/reportes/api/pacientes/', params);
     if(res && (res.archivo_pdf || res.archivo_url)){
