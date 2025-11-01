@@ -1,4 +1,4 @@
-﻿from django.db import models
+from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 
@@ -47,10 +47,10 @@ class Perfil(models.Model):
         on_delete=models.SET_NULL, related_name='perfiles'
     )
 
-    # Seguridad: email alternativo de recuperaciÃ³n
-    \n    # Foto/Avatar opcional del usuario\n    foto = models.ImageField(upload_to='usuarios/avatars/', null=True, blank=True)
-
-    def __str__(self):
+    # Seguridad: email alternativo de recuperación
+    email_recuperacion = models.EmailField("Email de recuperación", null=True, blank=True)
+    # Foto/Avatar opcional del usuario
+    foto = models.ImageField(upload_to="usuarios/avatars/", null=True, blank=True)
         return f"{self.user.username} ({self.get_rol_display()})"
 
     def asignar_permisos_por_rol(self):
