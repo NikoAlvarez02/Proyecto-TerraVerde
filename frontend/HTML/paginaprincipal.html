@@ -1,240 +1,200 @@
-
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="{% static 'ASSETS/terraverde.ico' %}">
-    <title>TerraVerde - Centro PsicopedagÃ³gico</title>
-    <link rel="stylesheet" href="{% static 'CSS/home.css' %}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="{% static 'ASSETS/terraverde.ico' %}">
+  <title>TerraVerde - Centro Psicopedagógico</title>
+  <link rel="stylesheet" href="{% static 'CSS/home.css' %}">
+</head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="header-left">
-                <div class="logo">
-                    <div class="logo-icon">
-                        <img src="{% static 'ASSETS/logo_trifusion.png' %}" alt="TerraVerde">
-                    </div>
-                    <h1>TerraVerde</h1>
-                </div>
-                <div class="quick-links">
-                    {% if request.user.is_authenticated and request.user.perfil and request.user.perfil.puede_ver_calendario %}
-                    <a class="qlink" href="{% url 'turnos:list' %}">Turnos</a>
-                    {% endif %}
-                    {% if request.user.is_authenticated and request.user.perfil and request.user.perfil.puede_ver_pacientes %}
-                    <a class="qlink" href="{% url 'pacientes:list' %}">Pacientes</a>
-                    {% endif %}
-                    <a class="qlink" href="{% url 'profesionales:list' %}">Profesionales</a>
-                    {% if request.user.is_authenticated and request.user.perfil and request.user.perfil.puede_ver_historias %}
-                    <a class="qlink" href="{% url 'historias:historia' %}">Historias</a>
-                    {% endif %}
-                    {% if request.user.is_authenticated and request.user.perfil %}
-                        {% if request.user.perfil.puede_generar_reportes or request.user.perfil.puede_ver_estadisticas %}
-                        <a class="qlink" href="{% url 'reportes:dashboard' %}">Reportes</a>
-                        {% endif %}
-                    {% endif %}
-                    {% if request.user.is_authenticated and request.user.perfil and request.user.perfil.puede_ver_estadisticas %}
-                    <a class="qlink" href="{% url 'satisfaccion:list' %}">SatisfacciÃ³n</a>
-                    {% endif %}
-                    {% if request.user.is_authenticated and request.user.perfil and request.user.perfil.rol == 'admin' %}
-                    <a class="qlink" href="{% url 'admin_mod' %}">Admin</a>
-                    {% endif %}
-                </div>
-            </div>
-            <div class="user-info">
-                <span style="color: #666;">Bienvenido, <strong>{{ request.user.first_name|default:request.user.username }}</strong></span>
-                <div class="avatar">{{ request.user.first_name|default:request.user.username|slice:":1"|upper }}</div>
-                <form method="post" action="{% url 'logout' %}" class="logout-form">
-                    {% csrf_token %}
-                    <button type="submit">Cerrar sesiÃ³n</button>
-                </form>
-            </div>
+  <div class="container">
+    <div class="header">
+      <div class="header-left">
+        <div class="logo">
+          <div class="logo-icon">
+            <img src="{% static 'ASSETS/logo_trifusion.png' %}" alt="TerraVerde">
+          </div>
+          <h1>TerraVerde</h1>
         </div>
-
-        <div class="grid">
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">Pacientes Activos</span>
-                    <div class="card-icon icon-purple">ðŸ‘¥</div>
-                </div>
-                <div class="stat-number">{{ pacientes_activos }}</div>
-                <div class="stat-label">Activos en sistema</div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: 100%;"></div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">Sesiones Hoy</span>
-                    <div class="card-icon icon-pink">ðŸ“…</div>
-                </div>
-                <div class="stat-number">{{ sesiones_hoy_total }}</div>
-                <div class="stat-label">{{ sesiones_hoy_completadas }} completadas, {{ sesiones_hoy_pendientes }} pendientes</div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: {{ sesiones_hoy_pct }}%;"></div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">Tasa de Progreso</span>
-                    <div class="card-icon icon-blue">ðŸ“Š</div>
-                </div>
-                <div class="stat-number">{{ tasa_progreso }}%</div>
-                <div class="stat-label">Progreso diario</div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: {{ tasa_progreso }}%;"></div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">SatisfacciÃ³n</span>
-                    <div class="card-icon icon-green">â­</div>
-                </div>
-                <div class="stat-number">{% if satisfaccion %}{{ satisfaccion }}{% else %}N/D{% endif %}</div>
-                <div class="stat-label">De 5.0 estrellas</div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: {{ satisfaccion_pct }}%;"></div>
-                </div>
-            </div>
+        <div class="quick-links">
+          {% if request.user.is_authenticated and request.user.perfil and request.user.perfil.puede_ver_calendario %}
+          <a class="qlink" href="{% url 'turnos:list' %}">Turnos</a>
+          {% endif %}
+          {% if request.user.is_authenticated and request.user.perfil and request.user.perfil.puede_ver_pacientes %}
+          <a class="qlink" href="{% url 'pacientes:list' %}">Pacientes</a>
+          {% endif %}
+          <a class="qlink" href="{% url 'profesionales:list' %}">Profesionales</a>
+          {% if request.user.is_authenticated and request.user.perfil and request.user.perfil.puede_ver_historias %}
+          <a class="qlink" href="{% url 'historias:historia' %}">Historias</a>
+          {% endif %}
+          {% if request.user.is_authenticated and request.user.perfil %}
+            {% if request.user.perfil.puede_generar_reportes or request.user.perfil.puede_ver_estadisticas %}
+            <a class="qlink" href="{% url 'reportes:dashboard' %}">Reportes</a>
+            {% endif %}
+          {% endif %}
+          {% if request.user.is_authenticated and request.user.perfil and request.user.perfil.puede_ver_estadisticas %}
+          <a class="qlink" href="{% url 'satisfaccion:list' %}">Satisfacción</a>
+          {% endif %}
+          {% if request.user.is_authenticated and request.user.perfil and request.user.perfil.rol == 'admin' %}
+          <a class="qlink" href="{% url 'admin_mod' %}">Admin</a>
+          {% endif %}
         </div>
-
-        <div class="grid">
-            <div class="card" style="grid-column: span 2;">
-                <div class="card-header">
-                    <span class="card-title">Turnos Programados Hoy</span>
-                </div>
-                <ul class="session-list">
-                    {% for t in turnos_hoy %}
-                    <li class="session-item">
-                        <div>
-                            <div class="session-time">{{ t.fecha_hora|date:"H:i" }}</div>
-                            <div class="session-name">{{ t.motivo|default:"SesiÃ³n" }} - {{ t.paciente.apellido }}, {{ t.paciente.nombre }}</div>
-                        </div>
-                        <span class="status-badge {% if t.estado == 'pendiente' %}status-pending{% else %}status-active{% endif %}">{{ t.get_estado_display }}</span>
-                    </li>
-                    {% empty %}
-                    <li class="session-item">
-                        <div class="session-name">Sin turnos programados para hoy</div>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">Actividad Reciente</span>
-                </div>
-                <div class="activity-feed">
-                    <div class="activity-item">
-                        <div class="activity-dot"></div>
-                        <div class="activity-content">
-                            <div class="activity-title">Nuevo paciente registrado</div>
-                            <div class="activity-time">Hace 2 horas</div>
-                        </div>
-                    </div>
-                    <div class="activity-item">
-                        <div class="activity-dot"></div>
-                        <div class="activity-content">
-                            <div class="activity-title">Informe completado</div>
-                            <div class="activity-time">Hace 5 horas</div>
-                        </div>
-                    </div>
-                    <div class="activity-item">
-                        <div class="activity-dot"></div>
-                        <div class="activity-content">
-                            <div class="activity-title">SesiÃ³n reagendada</div>
-                            <div class="activity-time">Hace 1 dÃ­a</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-header" style="justify-content:space-between;">
-                <span class="card-title">Calendario</span>
-                <div>
-                    <button id="cal_prev" class="btn" style="padding:6px 10px;">â—€</button>
-                    <button id="cal_today" class="btn" style="padding:6px 10px;">Hoy</button>
-                    <button id="cal_next" class="btn" style="padding:6px 10px;">â–¶</button>
-                </div>
-            </div>
-            <div id="cal_header" style="font-weight:700; color:#333; margin-bottom:8px;"></div>
-            <div id="calendar" class="calendar-grid"></div>
-        </div>
+      </div>
+      <div class="user-info">
+        <span style="color:#666;">Bienvenido, <strong>{{ request.user.first_name|default:request.user.username }}</strong></span>
+        <div class="avatar">{{ request.user.first_name|default:request.user.username|slice:":1"|upper }}</div>
+        <form method="post" action="{% url 'logout' %}" class="logout-form">
+          {% csrf_token %}
+          <button type="submit">Cerrar sesión</button>
+        </form>
+      </div>
     </div>
 
-    <div class="notification" id="notification" {% if show_notification %}data-show="1"{% endif %}>
-        <strong>ðŸ”” PrÃ³xima sesiÃ³n</strong>
-        <p style="margin-top: 8px; color: #666;">{% if notif_text %}{{ notif_text }}{% else %}Sin prÃ³ximas notificaciones{% endif %}</p>
+    <div class="grid">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Pacientes Activos</span>
+          <div class="card-icon icon-purple"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 3-1.34 3-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V20h14v-3.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V20h7v-3.5c0-2.33-4.67-3.5-8-3.5z"/></svg></div>
+        </div>
+        <div class="stat-number">{{ pacientes_activos }}</div>
+        <div class="stat-label">Activos en sistema</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:100%;"></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Sesiones Hoy</span>
+          <div class="card-icon icon-pink"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 4h-1V2h-2v2H8V2H6v2H5C3.9 4 3 4.9 3 6v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H5V9h14v9z"/></svg></div>
+        </div>
+        <div class="stat-number">{{ sesiones_hoy_total }}</div>
+        <div class="stat-label">{{ sesiones_hoy_completadas }} completadas, {{ sesiones_hoy_pendientes }} pendientes</div>
+        <div class="progress-bar"><div class="progress-fill" style="width: {{ sesiones_hoy_pct }}%;"></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Tasa de Progreso</span>
+          <div class="card-icon icon-blue"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5 9h3v10H5V9zm6-6h3v16h-3V3zm6 8h3v8h-3v-8z"/></svg></div>
+        </div>
+        <div class="stat-number">{{ tasa_progreso }}%</div>
+        <div class="stat-label">Progreso diario</div>
+        <div class="progress-bar"><div class="progress-fill" style="width: {{ tasa_progreso }}%;"></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Satisfacción</span>
+          <div class="card-icon icon-green"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></div>
+        </div>
+        <div class="stat-number">{% if satisfaccion %}{{ satisfaccion }}{% else %}N/D{% endif %}</div>
+        <div class="stat-label">De 5.0 estrellas</div>
+        <div class="progress-bar"><div class="progress-fill" style="width: {{ satisfaccion_pct }}%;"></div></div>
+      </div>
     </div>
 
-    <script>
-        // Mostrar notificaciÃ³n real si el backend lo indica
-        (function(){
-            const n = document.getElementById('notification');
-            if (n && n.dataset.show === '1') {
-                n.classList.add('show');
-                setTimeout(() => n.classList.remove('show'), 6000);
-            }
-        })();
+    <div class="grid">
+      <div class="card" style="grid-column: span 2;">
+        <div class="card-header">
+          <span class="card-title">Turnos Programados Hoy</span>
+        </div>
+        <ul class="session-list">
+          {% for t in turnos_hoy %}
+          <li class="session-item">
+            <div>
+              <div class="session-time">{{ t.fecha_hora|date:"H:i" }}</div>
+              <div class="session-name">{{ t.motivo|default:"Sesión" }} - {{ t.paciente.apellido }}, {{ t.paciente.nombre }}</div>
+            </div>
+            <span class="status-badge {% if t.estado == 'pendiente' %}status-pending{% else %}status-active{% endif %}">{{ t.get_estado_display }}</span>
+          </li>
+          {% empty %}
+          <li class="session-item"><div class="session-name">Sin turnos programados para hoy</div></li>
+          {% endfor %}
+        </ul>
+      </div>
 
-        // AnimaciÃ³n suave al hacer hover
-        document.querySelectorAll('.card').forEach(card => {
-            card.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-5px) scale(1.02)';
-            });
-            card.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0) scale(1)';
-            });
-        });
-    </script>
-    <script>
-        // Calendario mensual simple con enlaces a Turnos por fecha
-        (function(){
-            const grid = document.getElementById('calendar');
-            const hdr = document.getElementById('cal_header');
-            const btnPrev = document.getElementById('cal_prev');
-            const btnNext = document.getElementById('cal_next');
-            const btnToday = document.getElementById('cal_today');
-            if(!grid || !hdr) return;
-            let current = new Date();
-            current.setDate(1);
-            const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-            function fmt(d){ const y=d.getFullYear(); const m=String(d.getMonth()+1).padStart(2,'0'); const day=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
-            function render(){
-                const y=current.getFullYear(); const m=current.getMonth();
-                hdr.textContent = monthNames[m] + ' ' + y;
-                grid.innerHTML = '';
-                // Encabezados semana
-                const dn = ['Lun','Mar','MiÃ©','Jue','Vie','SÃ¡b','Dom'];
-                dn.forEach(n=>{ const h=document.createElement('div'); h.className='cal-head'; h.textContent=n; grid.appendChild(h); });
-                const first = new Date(y,m,1);
-                const startDow = (first.getDay()+6)%7; // 0=Lun
-                const daysInMonth = new Date(y, m+1, 0).getDate();
-                // celdas vacÃ­as antes
-                for(let i=0;i<startDow;i++){ const e=document.createElement('div'); e.className='cal-empty'; grid.appendChild(e); }
-                // dÃ­as
-                const today = new Date(); today.setHours(0,0,0,0);
-                for(let d=1; d<=daysInMonth; d++){
-                    const date = new Date(y,m,d);
-                    const cell = document.createElement('a');
-                    cell.className = 'cal-day';
-                    cell.href = `/turnos/?fecha=${fmt(date)}`;
-                    cell.textContent = String(d);
-                    if(date.getTime()===today.getTime()) cell.classList.add('is-today');
-                    grid.appendChild(cell);
-                }
-            }
-            btnPrev && btnPrev.addEventListener('click', ()=>{ current.setMonth(current.getMonth()-1); render(); });
-            btnNext && btnNext.addEventListener('click', ()=>{ current.setMonth(current.getMonth()+1); render(); });
-            btnToday && btnToday.addEventListener('click', ()=>{ current=new Date(); current.setDate(1); render(); });
-            render();
-        })();
-    </script>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Actividad Reciente</span></div>
+        <div class="activity-feed">
+          <div class="activity-item"><div class="activity-dot"></div><div class="activity-content"><div class="activity-title">Nuevo paciente registrado</div><div class="activity-time">Hace 2 horas</div></div></div>
+          <div class="activity-item"><div class="activity-dot"></div><div class="activity-content"><div class="activity-title">Informe completado</div><div class="activity-time">Hace 5 horas</div></div></div>
+          <div class="activity-item"><div class="activity-dot"></div><div class="activity-content"><div class="activity-title">Sesión reagendada</div><div class="activity-time">Hace 1 día</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header" style="justify-content:space-between;">
+        <span class="card-title">Calendario</span>
+        <div>
+          <button id="cal_prev" class="btn" style="padding:6px 10px;">‹</button>
+          <button id="cal_today" class="btn" style="padding:6px 10px;">Hoy</button>
+          <button id="cal_next" class="btn" style="padding:6px 10px;">›</button>
+        </div>
+      </div>
+      <div id="cal_header" style="font-weight:700; color:#333; margin-bottom:8px;"></div>
+      <div id="calendar" class="calendar-grid"></div>
+    </div>
+  </div>
+
+  <div class="notification" id="notification" {% if show_notification %}data-show="1"{% endif %}>
+    <strong>🔔 Próxima sesión</strong>
+    <p style="margin-top: 8px; color: #666;">{% if notif_text %}{{ notif_text }}{% else %}Sin próximas notificaciones{% endif %}</p>
+  </div>
+
+  <script>
+    // Mostrar notificación real si el backend lo indica
+    (function(){
+      const n = document.getElementById('notification');
+      if (n && n.dataset.show === '1') {
+        n.classList.add('show');
+        setTimeout(() => n.classList.remove('show'), 6000);
+      }
+    })();
+
+    // Calendario mensual simple con enlaces a Turnos por fecha
+    (function(){
+      const grid = document.getElementById('calendar');
+      const hdr = document.getElementById('cal_header');
+      const btnPrev = document.getElementById('cal_prev');
+      const btnNext = document.getElementById('cal_next');
+      const btnToday = document.getElementById('cal_today');
+      if(!grid || !hdr) return;
+      let current = new Date();
+      current.setDate(1);
+      const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+      const dayNames = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+      function fmt(d){ const y=d.getFullYear(); const m=String(d.getMonth()+1).padStart(2,'0'); const day=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
+      function render(){
+        const y=current.getFullYear(); const m=current.getMonth();
+        hdr.textContent = monthNames[m] + ' ' + y;
+        grid.innerHTML = '';
+        // Encabezados semana
+        dayNames.forEach(n=>{ const h=document.createElement('div'); h.className='cal-head'; h.textContent=n; grid.appendChild(h); });
+        const first = new Date(y,m,1);
+        const startDow = (first.getDay()+6)%7; // 0=Lun
+        const daysInMonth = new Date(y, m+1, 0).getDate();
+        // celdas vacías antes
+        for(let i=0;i<startDow;i++){ const e=document.createElement('div'); e.className='cal-empty'; grid.appendChild(e); }
+        // días
+        const today = new Date(); today.setHours(0,0,0,0);
+        for(let d=1; d<=daysInMonth; d++){
+          const date = new Date(y,m,d);
+          const cell = document.createElement('a');
+          cell.className = 'cal-day';
+          cell.href = `/turnos/?fecha=${fmt(date)}`;
+          cell.textContent = String(d);
+          if(date.getTime()===today.getTime()) cell.classList.add('is-today');
+          grid.appendChild(cell);
+        }
+      }
+      btnPrev && btnPrev.addEventListener('click', ()=>{ current.setMonth(current.getMonth()-1); render(); });
+      btnNext && btnNext.addEventListener('click', ()=>{ current.setMonth(current.getMonth()+1); render(); });
+      btnToday && btnToday.addEventListener('click', ()=>{ current=new Date(); current.setDate(1); render(); });
+      render();
+    })();
+  </script>
 </body>
 </html>
+
