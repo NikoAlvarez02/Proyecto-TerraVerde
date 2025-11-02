@@ -1,3 +1,4 @@
+﻿:root{
             --p-700:#2e7d32; --p-600:#2e7d32; --p-500:#43a047; --p-400:#66bb6a; --p-50:#e8f5e9;
             --blue-500:#4fa3f7; --purple-500:#9c89e9; --amber-200:#ffecb3; --ink-900:#263238;
             --card:#ffffff; --border:#e7ebef;
@@ -217,6 +218,7 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            color: #2e7d32; /* fallback */
             margin: 15px 0;
         }
 
@@ -233,8 +235,13 @@
             overflow: hidden;
             margin-top: 15px;
         }
-
-         param($m) $inner = $m.Groups[2].Value; $inner = $inner -replace "animation:\s*fillProgress[^;]*;",""; $inner = $inner + "`n            transform-origin: left;`n            transform: scaleX(0);`n            animation: fillProgress 1.0s ease forwards;"; return $m.Groups[1].Value + $inner + "}`n" 
+        .progress-bar .progress-fill{
+            height: 100%;
+            background: linear-gradient(90deg, var(--p-500), var(--p-400));
+            transform-origin: left;
+            transform: scaleX(0);
+            animation: fillProgress 0.8s ease forwards;
+        }
 
         @keyframes fillProgress {
             to { transform: scaleX(1); }
@@ -407,7 +414,7 @@
             color: #999;
         }
 
-        /* --- Responsive: ajustes mÃ³viles y tablets --- */
+        /* --- Responsive: ajustes mÃƒÂ³viles y tablets --- */
         @media (max-width: 1024px) {
             .container { padding: 12px; }
             .header { padding: 18px 20px; gap: 12px; }
@@ -461,7 +468,7 @@
 
             .chart-container { height: 160px; gap: 8px; }
 
-            /* NotificaciÃ³n fija: evitar que tape contenido en mÃ³vil */
+            /* NotificaciÃƒÂ³n fija: evitar que tape contenido en mÃƒÂ³vil */
             .notification {
                 left: 12px;
                 right: 12px;
@@ -484,4 +491,5 @@
         @media (hover: none) {
             .card:hover { transform: none; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); }
         }
-    </style>
+    
+
