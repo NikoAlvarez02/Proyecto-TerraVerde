@@ -25,3 +25,28 @@ def require_perfil_attr(attr_name):
             super().__init__(attr_name)
     return _Perm
 
+
+class IsAdminOrHasPerfilAttrs(permissions.BasePermission):
+    """Permite acceso si el usuario es staff o si tiene al menos
+    uno de los atributos True en su perfil (attrs)."""
+
+    def __init__(self, attrs=None):
+        self.attrs = attrs or []
+
+    def has_permission(self, request, view):
+        user = getattr(request, 'user', None)
+        if not user or not user.is_authenticated:
+            return False
+        if user.is_staff:
+            return True
+        perfil = getattr(user, 'perfil', None)
+        if not perfil:
+            return False
+        return any(bool(getattr(perfil, a, False)) for a in self.attrs)
+
+
+def require_any_perfil_attrs(*attrs):
+    class _P(IsAdminOrHasPerfilAttrs):
+        def __init__(self):
+            super().__init__(list(attrs))
+    return _P

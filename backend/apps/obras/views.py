@@ -4,8 +4,9 @@ from drf_spectacular.utils import extend_schema
 from rest_framework.response import Response
 from django.conf import settings
 from urllib.request import urlopen, Request
-import json, csv, io
+import json, csv, io, ssl
 from .models import ObraSocial, PlanObraSocial
+from core.permissions import require_any_perfil_attrs
 from .serializers import ObraSocialSerializer, PlanObraSocialSerializer
 
 
@@ -37,11 +38,13 @@ class PlanObraSocialViewSet(viewsets.ModelViewSet):
 
 @extend_schema(exclude=True)
 class ObraSocialImportView(APIView):
-    permission_classes = [permissions.IsAdminUser]
+    # Permite admin o usuarios con permisos de administración afines
+    permission_classes = [require_any_perfil_attrs('puede_admin_roles', 'puede_admin_centros', 'puede_admin_especialidades')]
 
     def get(self, request):
         url = request.GET.get('url') or getattr(settings, 'OBRAS_SNRS_URL', None)
-        csv_url = request.GET.get('csv_url')
+        # Permite especificar un CSV online alternativo (?csv_url=...)
+        csv_url = request.GET.get('csv_url') or getattr(settings, 'OBRAS_SNRS_CSV_FALLBACK', None)
         if not url and not csv_url:
             return Response({"detail": "No hay URL configurada. Pasa ?url= o configura OBRAS_SNRS_URL."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -49,9 +52,23 @@ class ObraSocialImportView(APIView):
         updated = 0
         items = []
         try:
+            timeout = getattr(settings, 'OBRAS_SNRS_TIMEOUT', 30)
+            insecure = getattr(settings, 'OBRAS_SNRS_INSECURE', False)
+            base_headers = {'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json, text/plain, */*'}
+            # Cabeceras extra desde settings (string JSON u otros formatos simples)
+            extra_headers = {}
+            try:
+                raw = getattr(settings, 'OBRAS_SNRS_HEADERS', '')
+                if raw:
+                    extra_headers = json.loads(raw) if raw.strip().startswith('{') else {}
+            except Exception:
+                extra_headers = {}
+            headers = {**base_headers, **extra_headers}
+            context = ssl._create_unverified_context() if insecure else None
+
             if csv_url:
-                req = Request(csv_url, headers={'User-Agent': 'Mozilla/5.0'})
-                with urlopen(req, timeout=30) as resp:
+                req = Request(csv_url, headers=headers)
+                with urlopen(req, timeout=timeout, context=context) as resp:
                     data = resp.read()
                 text = data.decode('utf-8', errors='ignore')
                 reader = csv.DictReader(io.StringIO(text))
@@ -62,8 +79,8 @@ class ObraSocialImportView(APIView):
                         continue
                     items.append({"nombre": nombre, "codigo": codigo})
             else:
-                req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-                with urlopen(req, timeout=30) as resp:
+                req = Request(url, headers=headers)
+                with urlopen(req, timeout=timeout, context=context) as resp:
                     raw = resp.read().decode('utf-8', errors='ignore')
                 try:
                     payload = json.loads(raw)
@@ -80,8 +97,8 @@ class ObraSocialImportView(APIView):
                 for it in data_list:
                     if not isinstance(it, dict):
                         continue
-                    nombre = (it.get('nombre') or it.get('obraSocial') or it.get('descripcion') or '').strip()
-                    val_id = it.get('codigo') if 'codigo' in it else it.get('id')
+                    nombre = (it.get('nombre') or it.get('obraSocial') or it.get('descripcion') or it.get('razon_social') or '').strip()
+                    val_id = it.get('codigo') if 'codigo' in it else (it.get('id') or it.get('rnos'))
                     codigo = str(val_id) if val_id is not None else ''
                     if not nombre:
                         continue

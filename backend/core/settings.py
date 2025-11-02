@@ -270,3 +270,11 @@ SIMPLE_JWT = {
 
 # Obras sociales (fuente pública opcional)
 OBRAS_SNRS_URL = env('OBRAS_SNRS_URL', default='https://sisa.msal.gov.ar/sisa/services/rest/obraSocial/get')
+# Opcionales para robustecer la importación desde SNRS/SISA
+OBRAS_SNRS_TIMEOUT = int(env('OBRAS_SNRS_TIMEOUT', default=30))
+# Cabeceras adicionales como JSON: '{"Authorization": "Bearer <token>"}' o 'User-Agent'
+OBRAS_SNRS_HEADERS = env('OBRAS_SNRS_HEADERS', default='')
+# Permitir desactivar verificación TLS si el entorno lo requiere (no recomendado)
+OBRAS_SNRS_INSECURE = env.bool('OBRAS_SNRS_INSECURE', default=False)
+# CSV público alternativo por si el endpoint JSON no está disponible
+OBRAS_SNRS_CSV_FALLBACK = env('OBRAS_SNRS_CSV_FALLBACK', default='')
