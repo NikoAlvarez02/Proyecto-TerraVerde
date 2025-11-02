@@ -1,12 +1,13 @@
-﻿{% load static %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="{% static 'ASSETS/terraverde.ico' %}">
-  <title>TerraVerde - Centro PsicopedagÃ³gico</title>
+  <title>TerraVerde - Centro Psicopedagógico</title>
   <link rel="stylesheet" href="{% static 'CSS/home.css' %}">
+  <meta http-equiv="Content-Language" content="es" />
 </head>
 <body>
   <div class="container">
@@ -35,7 +36,7 @@
             {% endif %}
           {% endif %}
           {% if request.user.is_authenticated and request.user.perfil and request.user.perfil.puede_ver_estadisticas %}
-          <a class="qlink" href="{% url 'satisfaccion:list' %}"><svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>SatisfacciÃ³n</a>
+          <a class="qlink" href="{% url 'satisfaccion:list' %}"><svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>Satisfacción</a>
           {% endif %}
           {% if request.user.is_authenticated and request.user.perfil and request.user.perfil.rol == 'admin' %}
           <a class="qlink" href="{% url 'admin_mod' %}">Admin</a>
@@ -47,7 +48,7 @@
         <div class="avatar">{% if request.user.perfil and request.user.perfil.foto %}<img src="{{ request.user.perfil.foto.url }}" alt="avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">{% else %}{{ request.user.first_name|default:request.user.username|slice:":1"|upper }}{% endif %}</div>
         <form method="post" action="{% url 'logout' %}" class="logout-form">
           {% csrf_token %}
-          <button type="submit">Cerrar sesiÃ³n</button>
+          <button type="submit">Cerrar sesión</button>
         </form>
       </div>
     </div>
@@ -85,7 +86,7 @@
 
       <div class="card">
         <div class="card-header">
-          <span class="card-title">SatisfacciÃ³n</span>
+          <span class="card-title">Satisfacción</span>
           <div class="card-icon icon-green"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></div>
         </div>
         <div class="stat-number">{% if satisfaccion %}{{ satisfaccion }}{% else %}N/D{% endif %}</div>
@@ -104,7 +105,7 @@
           <li class="session-item">
             <div>
               <div class="session-time">{{ t.fecha_hora|date:"H:i" }}</div>
-              <div class="session-name">{{ t.motivo|default:"SesiÃ³n" }} - {{ t.paciente.apellido }}, {{ t.paciente.nombre }}</div>
+              <div class="session-name">{{ t.motivo|default:"Sesión" }} - {{ t.paciente.apellido }}, {{ t.paciente.nombre }}</div>
             </div>
             <span class="status-badge {% if t.estado == 'pendiente' %}status-pending{% else %}status-active{% endif %}">{{ t.get_estado_display }}</span>
           </li>
@@ -119,7 +120,7 @@
         <div class="activity-feed">
           <div class="activity-item"><div class="activity-dot"></div><div class="activity-content"><div class="activity-title">Nuevo paciente registrado</div><div class="activity-time">Hace 2 horas</div></div></div>
           <div class="activity-item"><div class="activity-dot"></div><div class="activity-content"><div class="activity-title">Informe completado</div><div class="activity-time">Hace 5 horas</div></div></div>
-          <div class="activity-item"><div class="activity-dot"></div><div class="activity-content"><div class="activity-title">SesiÃ³n reagendada</div><div class="activity-time">Hace 1 dÃ­a</div></div></div>
+          <div class="activity-item"><div class="activity-dot"></div><div class="activity-content"><div class="activity-title">Sesión reagendada</div><div class="activity-time">Hace 1 día</div></div></div>
         </div>
       </div>
     </div>
@@ -128,9 +129,9 @@
       <div class="card-header" style="justify-content:space-between;">
         <span class="card-title">Calendario</span>
         <div>
-          <button id="cal_prev" class="btn" style="padding:6px 10px;">â€¹</button>
+          <button id="cal_prev" class="btn" style="padding:6px 10px;">&lsaquo;</button>
           <button id="cal_today" class="btn" style="padding:6px 10px;">Hoy</button>
-          <button id="cal_next" class="btn" style="padding:6px 10px;">â€º</button>
+          <button id="cal_next" class="btn" style="padding:6px 10px;">&rsaquo;</button>
         </div>
       </div>
       <div id="cal_header" style="font-weight:700; color:#333; margin-bottom:8px;"></div>
@@ -139,12 +140,12 @@
   </div>
 
   <div class="notification" id="notification" {% if show_notification %}data-show="1"{% endif %}>
-    <strong>ðŸ”” PrÃ³xima sesiÃ³n</strong>
-    <p style="margin-top: 8px; color: #666;">{% if notif_text %}{{ notif_text }}{% else %}Sin prÃ³ximas notificaciones{% endif %}</p>
+    <strong>&#128276; Próxima sesión</strong>
+    <p style="margin-top: 8px; color: #666;">{% if notif_text %}{{ notif_text }}{% else %}Sin próximas notificaciones{% endif %}</p>
   </div>
 
   <script>
-    // Mostrar notificaciÃ³n real si el backend lo indica
+    // Mostrar notificación real si el backend lo indica
     (function(){
       const n = document.getElementById('notification');
       if (n && n.dataset.show === '1') {
@@ -164,7 +165,7 @@
       let current = new Date();
       current.setDate(1);
       const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-      const dayNames = ['Lun','Mar','MiÃ©','Jue','Vie','SÃ¡b','Dom'];
+      const dayNames = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
       function fmt(d){ const y=d.getFullYear(); const m=String(d.getMonth()+1).padStart(2,'0'); const day=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
       function render(){
         const y=current.getFullYear(); const m=current.getMonth();
@@ -175,9 +176,9 @@
         const first = new Date(y,m,1);
         const startDow = (first.getDay()+6)%7; // 0=Lun
         const daysInMonth = new Date(y, m+1, 0).getDate();
-        // celdas vacÃ­as antes
+        // celdas vacías antes
         for(let i=0;i<startDow;i++){ const e=document.createElement('div'); e.className='cal-empty'; grid.appendChild(e); }
-        // dÃ­as
+        // días
         const today = new Date(); today.setHours(0,0,0,0);
         for(let d=1; d<=daysInMonth; d++){
           const date = new Date(y,m,d);
@@ -197,3 +198,4 @@
   </script>
 </body>
 </html>
+
