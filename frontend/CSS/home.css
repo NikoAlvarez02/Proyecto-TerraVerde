@@ -214,11 +214,12 @@
         .stat-number {
             font-size: 36px;
             font-weight: bold;
+            /* Usar color sólido para compatibilidad, el gradiente es opcional */
+            color: #2e7d32;
             background: linear-gradient(135deg, var(--p-600) 0%, var(--p-500) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            color: #2e7d32; /* fallback */
+            /* Descomenta estas dos líneas si querés efecto de texto con gradiente estable */
+            /* -webkit-background-clip: text; */
+            /* color: transparent; */
             margin: 15px 0;
         }
 
