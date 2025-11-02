@@ -213,8 +213,8 @@
 
         .stat-number {
             font-size: 36px;
-            font-weight: 800;
-            color: #1f4d2e; /* texto más oscuro y legible */
+            font-weight:900;
+            color:#0b2f1a; /* texto más oscuro y legible */
             margin: 15px 0;
         }
 
@@ -486,5 +486,6 @@
             .card:hover { transform: none; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); }
         }
     
+
 
 
