@@ -46,6 +46,9 @@ jobs:
             fi
             "$PYTHON_BIN" -m pip install -r requirements.txt
 
+            # Asegura STATIC_ROOT para collectstatic si no está en .env
+            export STATIC_ROOT_DEPLOY=${STATIC_ROOT_DEPLOY:-staticfiles}
+
             echo "Migrando DB"
             "$PYTHON_BIN" manage.py migrate --noinput
 
@@ -55,4 +58,3 @@ jobs:
             echo "Reiniciando servicios"
             sudo systemctl restart gunicorn
             sudo systemctl reload nginx || echo "Nginx no recargado (no es critico)"
-
