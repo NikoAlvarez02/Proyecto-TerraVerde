@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 
+
 class Perfil(models.Model):
     ROLES = (
         ('admin', 'Administrador'),
@@ -11,7 +12,7 @@ class Perfil(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="perfil")
     rol = models.CharField(max_length=20, choices=ROLES, default="recep")
 
-    # Permisos AdministraciÃ³n
+    # Permisos Administración
     puede_admin_usuarios = models.BooleanField(default=False)
     puede_admin_especialidades = models.BooleanField(default=False)
     puede_admin_centros = models.BooleanField(default=False)
@@ -23,7 +24,7 @@ class Perfil(models.Model):
     puede_editar_pacientes = models.BooleanField(default=False)
     puede_eliminar_pacientes = models.BooleanField(default=False)
 
-    # Permisos Historia ClÃ­nica
+    # Permisos Historia Clínica
     puede_crear_historias = models.BooleanField(default=False)
     puede_ver_historias = models.BooleanField(default=True)
     puede_editar_historias = models.BooleanField(default=False)
@@ -35,13 +36,13 @@ class Perfil(models.Model):
     puede_gestionar_turnos = models.BooleanField(default=False)
     puede_cancelar_turnos = models.BooleanField(default=False)
 
-    # Reportes y AuditorÃ­a
+    # Reportes y Auditoría
     puede_generar_reportes = models.BooleanField(default=False)
     puede_ver_estadisticas = models.BooleanField(default=False)
     puede_exportar_datos = models.BooleanField(default=False)
     puede_ver_auditoria = models.BooleanField(default=False)
 
-    # VÃ­nculo opcional al registro de Profesional correspondiente
+    # Vínculo opcional al registro de Profesional correspondiente
     profesional = models.ForeignKey(
         'profesionales.Profesional', null=True, blank=True,
         on_delete=models.SET_NULL, related_name='perfiles'
@@ -51,11 +52,13 @@ class Perfil(models.Model):
     email_recuperacion = models.EmailField("Email de recuperación", null=True, blank=True)
     # Foto/Avatar opcional del usuario
     foto = models.ImageField(upload_to="usuarios/avatars/", null=True, blank=True)
+
+    def __str__(self):
         return f"{self.user.username} ({self.get_rol_display()})"
 
     def asignar_permisos_por_rol(self):
         r = self.rol
-        # reset a valores mÃ­nimos seguros
+        # reset a valores mínimos seguros
         for f in [
             'puede_admin_usuarios','puede_admin_especialidades','puede_admin_centros','puede_admin_roles',
             'puede_crear_pacientes','puede_ver_pacientes','puede_editar_pacientes','puede_eliminar_pacientes',
@@ -95,10 +98,10 @@ class Perfil(models.Model):
 class AuditoriaLog(models.Model):
     ACCIONES = (
         ('access', 'Acceso'),
-        ('create', 'CreaciÃ³n'),
-        ('update', 'ActualizaciÃ³n'),
-        ('delete', 'EliminaciÃ³n'),
-        ('export', 'ExportaciÃ³n'),
+        ('create', 'Creación'),
+        ('update', 'Actualización'),
+        ('delete', 'Eliminación'),
+        ('export', 'Exportación'),
         ('report', 'Reporte'),
     )
     usuario = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
@@ -138,7 +141,7 @@ class LoginThrottle(models.Model):
 
     def register_fail(self, window_seconds=600, threshold=5, cooldown_seconds=900):
         now = timezone.now()
-        # Reset ventana si pasÃ³ el tiempo
+        # Reset ventana si pasó el tiempo
         if (now - self.first_attempt).total_seconds() > window_seconds:
             self.count = 0
             self.first_attempt = now
@@ -159,3 +162,4 @@ class LoginThrottle(models.Model):
             return 0
         delta = (self.locked_until - timezone.now()).total_seconds()
         return int(delta) if delta > 0 else 0
+
