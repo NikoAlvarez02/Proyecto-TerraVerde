@@ -489,3 +489,15 @@
 
 
 
+
+        /* Aumentar contraste de números */
+        .numero-principal, .stat-number, .metric-value {
+            color: #1a5f3f !important; /* Verde más oscuro */
+            font-weight: 700 !important;
+            opacity: 1 !important;
+            letter-spacing: 0.2px;
+        }
+
+        @media (prefers-color-scheme: dark){
+            .numero-principal, .stat-number, .metric-value { color: #e6f5ec !important; }
+        }
