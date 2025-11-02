@@ -1,4 +1,4 @@
-import logging
+﻿import logging
 import traceback
 from django.conf import settings
 from django.http import HttpResponse
@@ -6,7 +6,7 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
 from django.shortcuts import render
-from django.db.models import Avg
+from django.db.models import Avg, Q
 from django.db.utils import DatabaseError, ProgrammingError
 
 from apps.turnos.models import Turno
@@ -30,7 +30,7 @@ def weasy_pdf_test(request):
     </html>
     """
     try:
-        logger.info("[weasy] Intentando importar WeasyPrint…")
+        logger.info("[weasy] Intentando importar WeasyPrintâ€¦")
         from weasyprint import HTML, __version__
         logger.info(f"[weasy] Importado WeasyPrint {__version__}")
         pdf_bytes = HTML(string=html_content).write_pdf()
@@ -47,7 +47,7 @@ def weasy_pdf_test(request):
 
 
 def weasy_diagnostico(request):
-    """Chequeos básicos de entorno WeasyPrint."""
+    """Chequeos bÃ¡sicos de entorno WeasyPrint."""
     out = []
     try:
         from weasyprint import __version__
@@ -65,11 +65,11 @@ def weasy_diagnostico(request):
 
 @login_required
 def home_dashboard(request):
-    """Vista de inicio con métricas reales para el dashboard."""
+    """Vista de inicio con mÃ©tricas reales para el dashboard."""
     hoy = timezone.localdate()
     ahora = timezone.now()
 
-    pacientes_activos = Paciente.objects.filter(activo=True).count()
+    pacientes_activos = Paciente.objects.filter(Q(activo=True) | Q(activo__isnull=True)).count()
 
     turnos_hoy_qs = Turno.objects.filter(fecha_hora__date=hoy)
     sesiones_hoy_total = turnos_hoy_qs.count()
@@ -110,7 +110,7 @@ def home_dashboard(request):
         if 0 < delta_min <= 60:
             pac = f"{next_turno.paciente.apellido}, {next_turno.paciente.nombre}"
             hora_txt = next_turno.fecha_hora.strftime('%H:%M')
-            motivo = next_turno.motivo or 'Sesión'
+            motivo = next_turno.motivo or 'SesiÃ³n'
             notif_text = f"{motivo} con {pac} a las {hora_txt} (en {delta_min} min)"
             show_notification = True
 
@@ -121,7 +121,7 @@ def home_dashboard(request):
         dias.append((dia, cnt))
 
     max_cnt = max((c for _, c in dias), default=1)
-    nombres = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
+    nombres = ['Lun', 'Mar', 'MiÃ©', 'Jue', 'Vie', 'SÃ¡b', 'Dom']
     weekly = []
     for dia, cnt in dias:
         idx = dia.weekday()
@@ -150,11 +150,11 @@ def home_dashboard(request):
 
 
 class SessionLoginView(LoginView):
-    """LoginView con protección básica anti-fuerza bruta.
+    """LoginView con protecciÃ³n bÃ¡sica anti-fuerza bruta.
 
-    - Cuenta intentos en sesión y en DB por (usuario, IP).
+    - Cuenta intentos en sesiÃ³n y en DB por (usuario, IP).
     - Bloquea tras 5 fallos dentro de 10 min por 15 min.
-    - Resetea contadores al iniciar sesión correctamente.
+    - Resetea contadores al iniciar sesiÃ³n correctamente.
     """
 
     session_key = 'login_fail_count'
@@ -219,11 +219,11 @@ class SessionLoginView(LoginView):
         return super().form_valid(form)
 
     def post(self, request, *args, **kwargs):
-        # Bloqueo por sesión
+        # Bloqueo por sesiÃ³n
         if self.get_fail_count(request) >= self.lock_threshold:
             form = self.get_form()
             try:
-                form.add_error(None, "Demasiados intentos fallidos. Restablece tu contraseña o espera.")
+                form.add_error(None, "Demasiados intentos fallidos. Restablece tu contraseÃ±a o espera.")
             except Exception:
                 pass
             context = self.get_context_data(form=form)
@@ -236,7 +236,7 @@ class SessionLoginView(LoginView):
             if lt and lt.is_locked():
                 form = self.get_form()
                 try:
-                    form.add_error(None, "Demasiados intentos fallidos. Intenta más tarde o restablece tu contraseña.")
+                    form.add_error(None, "Demasiados intentos fallidos. Intenta mÃ¡s tarde o restablece tu contraseÃ±a.")
                 except Exception:
                     pass
                 context = self.get_context_data(form=form)
@@ -252,9 +252,9 @@ class SessionLoginView(LoginView):
 
 
 def serve_static_schema(request):
-    """Sirve un esquema OpenAPI estático si existe (schema.yaml/json en BASE_DIR).
+    """Sirve un esquema OpenAPI estÃ¡tico si existe (schema.yaml/json en BASE_DIR).
 
-    Útil en Windows cuando la vista dinámica de drf-spectacular falla
+    Ãštil en Windows cuando la vista dinÃ¡mica de drf-spectacular falla
     al escribir advertencias en stderr (OSError 22).
     """
     import os
@@ -270,7 +270,7 @@ def serve_static_schema(request):
         with open(json_path, 'rb') as f:
             data = f.read()
         return HttpResponse(data, content_type='application/json')
-    return HttpResponse('Schema no encontrado. Generá con: manage.py spectacular --file schema.yaml', status=404)
+    return HttpResponse('Schema no encontrado. GenerÃ¡ con: manage.py spectacular --file schema.yaml', status=404)
 
 
 def serve_schema_json(request):
@@ -283,4 +283,5 @@ def serve_schema_json(request):
         with open(json_path, 'rb') as f:
             data = f.read()
         return HttpResponse(data, content_type='application/json')
-    return HttpResponse('schema.json no encontrado. Generá con: manage.py spectacular --file schema.json --format openapi-json', status=404)
+    return HttpResponse('schema.json no encontrado. GenerÃ¡ con: manage.py spectacular --file schema.json --format openapi-json', status=404)
+
