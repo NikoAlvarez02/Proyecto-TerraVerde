@@ -88,6 +88,17 @@ def _load_logo_base64() -> str | None:
     """
     try:
         candidates: list[Path] = []
+        # 0) Usar el buscador de staticfiles si está disponible (post-collectstatic)
+        try:
+            from django.contrib.staticfiles import finders  # type: ignore
+            for name in ("ASSETS/terraverde.png", "ASSETS/logo.png", "ASSETS/logo_trifusion.png"):
+                fp = finders.find(name)
+                if fp:
+                    p = Path(fp)
+                    if p.exists():
+                        candidates.append(p)
+        except Exception:
+            pass
         root = Path(getattr(settings, 'ROOT_DIR', settings.BASE_DIR)).resolve()
         # 1) Carpeta de frontend en el repo
         fe = root / 'frontend' / 'ASSETS'
