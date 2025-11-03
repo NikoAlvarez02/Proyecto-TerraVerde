@@ -42,9 +42,9 @@
           <input id="fhasta" type="date">
         </div>
         <div class="hc-actions full">
-          <button id="btnNueva" class="btn btn-outline">Agregar Observación</button>
-          <button id="btnFiltrar" class="btn btn-outline">Filtrar</button>
-          <button id="btnPDF" class="btn btn-primary">Exportar Historia PDF</button>
+          <button id="btnNueva" type="button" class="btn btn-outline">Agregar Observación</button>
+          <button id="btnFiltrar" type="button" class="btn btn-outline">Filtrar</button>
+          <button id="btnPDF" type="button" class="btn btn-primary">Exportar Historia PDF</button>
         </div>
       </div>
     </section>
@@ -90,9 +90,9 @@
         </div>
         <div class="hc-actions full">
           <input type="hidden" id="obs_id" value="" />
-          <button id="btnGuardar" class="btn btn-primary">Guardar Observación</button>
-          <button id="btnEliminarObs" class="btn btn-outline" style="display:none">Eliminar Observación</button>
-          <span id="msg" class="hint" style="display:none">Guardado</span>
+          <button id="btnGuardar" type="button" class="btn btn-primary">Guardar Observación</button>
+          <button id="btnEliminarObs" type="button" class="btn btn-outline" style="display:none">Eliminar Observación</button>
+          <span id="msg" class="hint" style="display:none">Se ha guardado con éxito</span>
         </div>
       </div>
     </section>
@@ -209,6 +209,7 @@
   selPac.onchange = listarObs;
 
   document.getElementById('btnGuardar').onclick = async ()=>{
+    const btnGuardar = document.getElementById('btnGuardar');
     const body = {
       paciente: selPac.value ? parseInt(selPac.value) : null,
       profesional: selProf.value ? parseInt(selProf.value) : null,
@@ -228,7 +229,8 @@
     if(!body.profesional){ window.showToast('Seleccioná un profesional', 'warning'); return; }
     if(!body.centro){ window.showToast('Seleccioná un centro', 'warning'); return; }
     try{
-      if(!confirm('¿Desea confirmar estos datos?')) return;
+      // Evita envíos múltiples por doble click
+      btnGuardar.disabled = true;
       const id = (document.getElementById('obs_id').value || '').trim();
       if(id){
         const csrftoken = getCookie('csrftoken');
@@ -237,12 +239,19 @@
       } else {
         await apiPost('/historias/api/observaciones/', body);
       }
+      // Mensaje de éxito (toast + fallback inline)
+      if(window.showToast){ window.showToast('Se ha guardado con éxito', 'success'); }
       document.getElementById('msg').style.display='inline';
       setTimeout(()=>document.getElementById('msg').style.display='none', 1500);
-      document.getElementById('btnEliminarObs').style.display = id ? 'inline-block' : 'none';
+      // Después de guardar, limpiar para nueva carga
+      document.getElementById('obs_id').value = '';
+      document.getElementById('btnEliminarObs').style.display = 'none';
+      document.getElementById('btnNueva').click();
       listarObs();
     }catch(e){
       window.showToast('Error al guardar: ' + e.message, 'error', 5000);
+    } finally {
+      btnGuardar.disabled = false;
     }
   };
 

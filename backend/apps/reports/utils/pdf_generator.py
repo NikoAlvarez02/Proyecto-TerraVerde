@@ -80,15 +80,50 @@ def _simple_pdf(title: str, lines: list[str], size='A4', orient='portrait') -> b
 
 
 def _load_logo_base64() -> str | None:
+    """Busca un logo en varias ubicaciones conocidas y lo devuelve en base64.
+
+    Esto evita depender de rutas estáticas absolutas ("/static/..."), que WeasyPrint
+    no puede resolver en algunos despliegues. Al incrustar la imagen como data URI,
+    garantizamos que aparezca en todos los PDFs.
+    """
     try:
+        candidates: list[Path] = []
         root = Path(getattr(settings, 'ROOT_DIR', settings.BASE_DIR)).resolve()
-        logo_path = root / 'frontend' / 'ASSETS' / 'terraverde.png'
-        if not logo_path.exists():
-            return None
-        data = logo_path.read_bytes()
-        return base64.b64encode(data).decode('utf-8')
+        # 1) Carpeta de frontend en el repo
+        fe = root / 'frontend' / 'ASSETS'
+        candidates += [fe / n for n in (
+            'logo.png',
+            'logo_trifusion.png',
+            'terraverde.png',
+        )]
+        # 2) STATIC_ROOT (si existe en despliegue)
+        try:
+            static_root = Path(getattr(settings, 'STATIC_ROOT')) if hasattr(settings, 'STATIC_ROOT') else None
+            if static_root:
+                se = static_root / 'ASSETS'
+                candidates += [se / n for n in (
+                    'logo.png', 'logo_trifusion.png', 'terraverde.png'
+                )]
+        except Exception:
+            pass
+        # 3) MEDIA_ROOT por si el logo se sube como archivo administrable
+        try:
+            media_root = Path(getattr(settings, 'MEDIA_ROOT', ''))
+            if media_root:
+                candidates += [media_root / 'logo.png', media_root / 'logo.jpg', media_root / 'logo.jpeg']
+        except Exception:
+            pass
+
+        for path in candidates:
+            try:
+                if path and path.exists() and path.is_file():
+                    data = path.read_bytes()
+                    return base64.b64encode(data).decode('utf-8')
+            except Exception:
+                continue
     except Exception:
-        return None
+        pass
+    return None
 
 
 def generate_patient_history_pdf(paciente, observaciones, params: dict, summary: dict | None = None) -> bytes:
