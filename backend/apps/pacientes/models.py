@@ -26,10 +26,9 @@ class Paciente(models.Model):
     obra_social = models.ForeignKey('obras.ObraSocial', on_delete=models.SET_NULL, null=True, blank=True, related_name='pacientes')
     plan = models.ForeignKey('obras.PlanObraSocial', on_delete=models.SET_NULL, null=True, blank=True, related_name='pacientes')
 
-    # Columna legacy que quedó de una migración inicial (CharField NOT NULL)
-    # La mantenemos solo a nivel de modelo para completar '' en INSERT y evitar
-    # errores de integridad en entornos donde la columna persiste.
-    obra_social_legacy = models.CharField(max_length=50, blank=True, default='', db_column='obra_social', editable=False)
+    # Columna legacy de texto preservada por migraciones (nombre físico: obra_social_legacy)
+    # Se mantiene solo para compatibilidad y evitar errores en bases antiguas.
+    obra_social_legacy = models.CharField(max_length=50, blank=True, default='', editable=False)
 
     centro = models.ForeignKey('centers.Center', on_delete=models.PROTECT, related_name='pacientes', null=True, blank=True)
     contacto_emergencia_nombre = models.CharField(max_length=100, blank=True)
@@ -52,4 +51,3 @@ class Paciente(models.Model):
 
     def __str__(self):
         return f"{self.apellido}, {self.nombre} ({self.dni})"
-
