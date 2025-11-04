@@ -1,0 +1,140 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ titulo }} - TerraVerde</title>
+  <style>
+    @page { margin: 2cm; }
+    body { font-family: Arial, sans-serif; color:#2c3e50; line-height:1.55; }
+    .page { max-width:21cm; margin:0 auto; padding:2cm; position:relative; }
+    .stamp { position:absolute; top:12px; right:12px; opacity:.12; width:120px; }
+    .header { text-align:center; margin-bottom:18px; }
+    .logo { width:120px; height:auto; margin:0 auto 4px auto; display:block; }
+    .title { color:#2d5f4f; font-size:22px; font-weight:bold; margin:2px 0; }
+    .subtitle { color:#5a8c73; font-size:14px; }
+    .document-title { background:linear-gradient(135deg,#2d5f4f 0%,#5a8c73 100%); color:#fff; padding:10px 16px; border-radius:8px; margin:10px 0 16px; }
+    .kpi-grid { display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin:10px 0 18px; }
+    .kpi { background:#f8f9fa; border-left:4px solid #5a8c73; padding:10px 12px; border-radius:6px; font-size:13px; }
+    .kpi .label { color:#2d5f4f; font-weight:bold; }
+    .section { margin:18px 0; }
+    .section-title { color:#2d5f4f; font-weight:bold; font-size:16px; margin-bottom:8px; border-bottom:2px solid #e0e0e0; padding-bottom:4px; }
+    table { width:100%; border-collapse: collapse; font-size:13px; }
+    th, td { border-bottom:1px solid #e5e5e5; padding:6px 4px; }
+    th { text-align:left; color:#2d5f4f; }
+    .row { display:flex; align-items:center; gap:8px; margin:6px 0; }
+    .row .label { width:45%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .row .value { width:8%; text-align:right; }
+    .row .bar { flex:1; background:#e9f3ee; border:1px solid #b7d1c3; height:16px; border-radius:8px; overflow:hidden; }
+    .row .bar > span { display:block; height:100%; background:#2d5f4f; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="header">
+      {% if logo_uri %}
+        <img src="{{ logo_uri }}" alt="TERRAVERDE" class="logo" />
+      {% elif logo_b64 %}
+        <img src="data:image/png;base64,{{ logo_b64|safe }}" alt="TERRAVERDE" class="logo" />
+      {% else %}
+        <img src="{% static 'ASSETS/terraverde.png' %}" alt="TERRAVERDE" class="logo" />
+      {% endif %}
+      <div class="title">TERRAVERDE</div>
+      <div class="subtitle">Espacio de Desarrollo Integral</div>
+      <div style="font-size:12px; color:#666; margin-top:6px;">Generado: {{ generado|date:"d/m/Y H:i" }}</div>
+    </div>
+
+    {% if logo_uri %}
+      <img class="stamp" src="{{ logo_uri }}" alt="sello" />
+    {% elif logo_b64 %}
+      <img class="stamp" src="data:image/png;base64,{{ logo_b64|safe }}" alt="sello" />
+    {% endif %}
+
+    <div class="document-title"><strong>{{ titulo|default:"Reporte Estadístico" }}</strong></div>
+
+    <div class="kpi-grid">
+      <div class="kpi"><div class="label">Desde</div><div>{{ params.desde|default:"-" }}</div></div>
+      <div class="kpi"><div class="label">Hasta</div><div>{{ params.hasta|default:"-" }}</div></div>
+      <div class="kpi"><div class="label">Total</div><div>{{ total|default:"-" }}</div></div>
+    </div>
+
+    {% if resumen.por_centro %}
+    <div class="section">
+      <div class="section-title">Gestión de Turnos y Asistencia</div>
+      <table>
+        <thead><tr><th>Centro</th><th style="text-align:right">Atenciones</th></tr></thead>
+        <tbody>
+          {% for it in resumen.por_centro %}
+          <tr>
+            <td>{% if it.centro__nombre %}{{ it.centro__nombre }}{% elif it.centro %}{{ it.centro }}{% else %}-{% endif %}</td>
+            <td style="text-align:right">{{ it.c }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="2">Sin datos</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
+    {% if resumen.productividad or resumen.por_profesional %}
+    <div class="section">
+      <div class="section-title">Desempeño por profesional</div>
+      <table>
+        <thead><tr><th>Profesional</th><th style="text-align:right">Atenciones</th></tr></thead>
+        <tbody>
+        {% if resumen.productividad %}
+          {% for it in resumen.productividad %}
+          <tr><td>{{ it.profesional__apellido }}, {{ it.profesional__nombre }}</td><td style="text-align:right">{{ it.c }}</td></tr>
+          {% empty %}<tr><td colspan="2">Sin datos</td></tr>{% endfor %}
+        {% elif resumen.por_profesional %}
+          {% for it in resumen.por_profesional %}
+          <tr><td>{{ it.profesional__apellido }}, {{ it.profesional__nombre }}</td><td style="text-align:right">{{ it.c }}</td></tr>
+          {% empty %}<tr><td colspan="2">Sin datos</td></tr>{% endfor %}
+        {% endif %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
+    {% if resumen.por_cie10 or resumen.top_diagnosticos %}
+    <div class="section">
+      <div class="section-title">Pacientes y Seguimiento Clínico</div>
+      <table>
+        <thead><tr><th>Diagnóstico / Código</th><th style="text-align:right">Casos</th></tr></thead>
+        <tbody>
+        {% if resumen.por_cie10 %}
+          {% for it in resumen.por_cie10 %}
+          <tr><td>{{ it.diagnostico_codigo|default:"N/A" }}</td><td style="text-align:right">{{ it.c }}</td></tr>
+          {% empty %}<tr><td colspan="2">Sin datos</td></tr>{% endfor %}
+        {% elif resumen.top_diagnosticos %}
+          {% for it in resumen.top_diagnosticos %}
+          <tr><td>{{ it.diagnostico_texto|default:"N/A" }}</td><td style="text-align:right">{{ it.c }}</td></tr>
+          {% empty %}<tr><td colspan="2">Sin datos</td></tr>{% endfor %}
+        {% endif %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
+    {% if chart_blocks %}
+    <div class="section">
+      <div class="section-title">Gráficos</div>
+      {% for ch in chart_blocks %}
+      <div class="chart">
+        <div class="kv" style="margin-bottom:6px"><strong>{{ ch.title }}</strong></div>
+        {% for r in ch.rows %}
+        <div class="row">
+          <div class="label">{{ r.label }}</div>
+          <div class="bar"><span style="width: {{ r.perc }}%"></span></div>
+          <div class="value">{{ r.value }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+</body>
+</html>
+

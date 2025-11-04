@@ -308,6 +308,9 @@ def generate_statistical_report_pdf(title: str, resumen: dict, params: dict, cha
     except Exception:
         total = None
 
+    from django.conf import settings as _s
+    _b64 = _load_logo_base64()
+    _uri = _logo_file_uri()
     ctx = {
         'generado': datetime.now(),
         'titulo': title,
@@ -316,11 +319,14 @@ def generate_statistical_report_pdf(title: str, resumen: dict, params: dict, cha
         'charts': charts or [],
         'chart_blocks': chart_blocks,
         'total': total,
-        'logo_b64': _load_logo_base64(),
-        'logo_uri': _logo_file_uri(),
+        'logo_b64': _b64,
+        'logo_uri': _uri,
+        'logo_debug': bool(getattr(_s, 'DEBUG', False)),
+        'logo_info': f"uri={'yes' if _uri else 'no'} b64_len={len(_b64 or '')}",
         'avatar_b64': avatar_b64,
     }
     for tpl in (
+        'reports/pdf/statistics_v2.html',
         'reports/pdf/statistics.html',
         'reports/pdf/statistical.html',
         'reports/pdf/estadistico.html',
