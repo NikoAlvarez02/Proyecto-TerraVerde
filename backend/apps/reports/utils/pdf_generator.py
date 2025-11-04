@@ -1,4 +1,4 @@
-from io import BytesIO
+﻿from io import BytesIO
 import logging
 from datetime import datetime
 from pathlib import Path
@@ -72,7 +72,7 @@ def _simple_pdf(title: str, lines: list[str], size='A4', orient='portrait') -> b
         c.showPage()
         c.save()
         return buf.getvalue()
-    # Fallback textual mínimo
+    # Fallback textual mÃ­nimo
     buf.write((title + "\n\n").encode("utf-8"))
     for ln in lines:
         buf.write((str(ln) + "\n").encode("utf-8"))
@@ -82,13 +82,13 @@ def _simple_pdf(title: str, lines: list[str], size='A4', orient='portrait') -> b
 def _load_logo_base64() -> str | None:
     """Busca un logo en varias ubicaciones conocidas y lo devuelve en base64.
 
-    Esto evita depender de rutas estáticas absolutas ("/static/..."), que WeasyPrint
+    Esto evita depender de rutas estÃ¡ticas absolutas ("/static/..."), que WeasyPrint
     no puede resolver en algunos despliegues. Al incrustar la imagen como data URI,
     garantizamos que aparezca en todos los PDFs.
     """
     try:
         candidates: list[Path] = []
-        # 0) Usar el buscador de staticfiles si está disponible (post-collectstatic)
+        # 0) Usar el buscador de staticfiles si estÃ¡ disponible (post-collectstatic)
         try:
             from django.contrib.staticfiles import finders  # type: ignore
             for name in ("ASSETS/terraverde.png", "ASSETS/logo.png", "ASSETS/logo_trifusion.png"):
@@ -137,7 +137,51 @@ def _load_logo_base64() -> str | None:
     return None
 
 
-def generate_patient_history_pdf(paciente, observaciones, params: dict, summary: dict | None = None) -> bytes:
+def _logo_file_uri() -> str | None:
+    """Devuelve file:///... del logo si está disponible.
+    WeasyPrint soporta URIs de archivo absolutas; esto evita depender de /static.
+    """
+    try:
+        candidates = []
+        # Buscar con staticfiles
+        try:
+            from django.contrib.staticfiles import finders  # type: ignore
+            for name in ("ASSETS/terraverde.png", "ASSETS/logo.png", "ASSETS/logo_trifusion.png"):
+                fp = finders.find(name)
+                if fp:
+                    candidates.append(Path(fp))
+        except Exception:
+            pass
+        # Rutas locales del repo y STATIC_ROOT/MEDIA_ROOT
+        try:
+            root = Path(getattr(settings, 'ROOT_DIR', settings.BASE_DIR)).resolve()
+            candidates += [root / 'frontend' / 'ASSETS' / n for n in ('terraverde.png','logo.png','logo_trifusion.png')]
+        except Exception:
+            pass
+        try:
+            static_root = Path(getattr(settings, 'STATIC_ROOT')) if hasattr(settings, 'STATIC_ROOT') else None
+            if static_root:
+                candidates += [static_root / 'ASSETS' / n for n in ('terraverde.png','logo.png','logo_trifusion.png')]
+        except Exception:
+            pass
+        try:
+            media_root = Path(getattr(settings, 'MEDIA_ROOT', ''))
+            if media_root:
+                candidates += [media_root / n for n in ('logo.png','logo.jpg','logo.jpeg')]
+        except Exception:
+            pass
+        for p in candidates:
+            try:
+                if p and p.exists() and p.is_file():
+                    return p.resolve().as_uri()
+            except Exception:
+                continue
+    except Exception:
+        pass
+    return None
+
+
+def generate_patient_history_pdf(paciente, observaciones, params: dict, summary: dict | None = None, avatar_b64: str | None = None) -> bytes:
     ctx = {
         'generado': datetime.now(),
         'paciente': paciente,
@@ -147,13 +191,15 @@ def generate_patient_history_pdf(paciente, observaciones, params: dict, summary:
         'sum_diag': (summary or {}).get('diagnosticos', []),
         'sum_estudios': (summary or {}).get('estudios', []),
         'logo_b64': _load_logo_base64(),
+        'logo_uri': _logo_file_uri(),
+        'avatar_b64': avatar_b64,
     }
     # Usar nueva plantilla UTF-8 con sello
     pdfb = _weasy_pdf_from_template('reports/pdf/patient_history_v2.html', ctx, params)
     if pdfb:
         return pdfb
     # Fallback simple
-    title = f"Historia Clínica - {paciente}"
+    title = f"Historia ClÃ­nica - {paciente}"
     lines = [
         f"Generado: {datetime.now():%Y-%m-%d %H:%M}",
         f"Paciente: {paciente}",
@@ -163,14 +209,14 @@ def generate_patient_history_pdf(paciente, observaciones, params: dict, summary:
         lines.append("Profesionales:")
         for p in summary.get('profesionales', []):
             lines.append(f"  - {p.get('profesional')} ({p.get('c')})")
-        lines.append("Diagnósticos:")
+        lines.append("DiagnÃ³sticos:")
         for d in summary.get('diagnosticos', []):
             dx = d.get('diagnostico_texto') or ''
             code = d.get('diagnostico_codigo') or ''
-            lines.append(f"  - {dx} {f'({code})' if code else ''} · {d.get('c')}")
+            lines.append(f"  - {dx} {f'({code})' if code else ''} Â· {d.get('c')}")
         lines.append("Estudios:")
         for e in summary.get('estudios', []):
-            lines.append(f"  - {e.get('nombre')} · {e.get('c')}")
+            lines.append(f"  - {e.get('nombre')} Â· {e.get('c')}")
     for o in observaciones:
         lines.append(f"{o.fecha_hora:%Y-%m-%d %H:%M} - {o.profesional}: {o.motivo} / {o.diagnostico_texto}")
     return _simple_pdf(title, lines, params.get('tamano_pagina','A4'), params.get('orientacion','portrait'))
@@ -178,7 +224,7 @@ def generate_patient_history_pdf(paciente, observaciones, params: dict, summary:
 
 def generate_chart_image(title: str, labels: list[str], values: list[float]):
     """
-    Devuelve una estructura simple de gráfico para plantillas/fallback.
+    Devuelve una estructura simple de grÃ¡fico para plantillas/fallback.
     { 'title': str, 'labels': [str], 'values': [float] }
     """
     try:
@@ -202,12 +248,12 @@ def generate_chart_image(title: str, labels: list[str], values: list[float]):
     }
 
 
-def generate_statistical_report_pdf(title: str, resumen: dict, params: dict, charts=None) -> bytes:
+def generate_statistical_report_pdf(title: str, resumen: dict, params: dict, charts=None, avatar_b64: str | None = None) -> bytes:
     """
-    Genera un PDF para reportes estadísticos. Usa WeasyPrint si está disponible,
+    Genera un PDF para reportes estadÃ­sticos. Usa WeasyPrint si estÃ¡ disponible,
     cae a un PDF simple si hay errores.
     """
-    # Preparar bloques de gráficos (barras CSS) si hay datos
+    # Preparar bloques de grÃ¡ficos (barras CSS) si hay datos
     chart_blocks = []
     try:
         for ch in charts or []:
@@ -249,6 +295,8 @@ def generate_statistical_report_pdf(title: str, resumen: dict, params: dict, cha
         'chart_blocks': chart_blocks,
         'total': total,
         'logo_b64': _load_logo_base64(),
+        'logo_uri': _logo_file_uri(),
+        'avatar_b64': avatar_b64,
     }
     for tpl in (
         'reports/pdf/statistics.html',
@@ -267,7 +315,7 @@ def generate_statistical_report_pdf(title: str, resumen: dict, params: dict, cha
                 for it in list(v)[:10]:
                     lines.append(f"  - {it}")
                 if len(v) > 10:
-                    lines.append(f"  ... (+{len(v)-10} más)")
+                    lines.append(f"  ... (+{len(v)-10} mÃ¡s)")
             elif isinstance(v, dict):
                 lines.append(f"{k}:")
                 shown = 0
@@ -275,7 +323,7 @@ def generate_statistical_report_pdf(title: str, resumen: dict, params: dict, cha
                     lines.append(f"  - {sk}: {sv}")
                     shown += 1
                     if shown >= 10:
-                        lines.append("  ... (más)")
+                        lines.append("  ... (mÃ¡s)")
                         break
             else:
                 lines.append(f"{k}: {v}")
@@ -284,7 +332,7 @@ def generate_statistical_report_pdf(title: str, resumen: dict, params: dict, cha
 
     if charts:
         lines.append("")
-        lines.append("Gráficos:")
+        lines.append("GrÃ¡ficos:")
         for ch in charts:
             try:
                 title_ch = (ch or {}).get('title', '') if isinstance(ch, dict) else ''
@@ -298,18 +346,20 @@ def generate_statistical_report_pdf(title: str, resumen: dict, params: dict, cha
                     bar = '#'*n
                     lines.append(f"   - {lab}: {val} {bar}")
             except Exception:
-                lines.append("  [No se pudo renderizar el gráfico]")
+                lines.append("  [No se pudo renderizar el grÃ¡fico]")
 
-    return _simple_pdf(str(title or 'Reporte Estadístico'), lines, (params or {}).get('tamano_pagina','A4'), (params or {}).get('orientacion','portrait'))
+    return _simple_pdf(str(title or 'Reporte EstadÃ­stico'), lines, (params or {}).get('tamano_pagina','A4'), (params or {}).get('orientacion','portrait'))
 
 
-def generate_epicrisis_pdf(paciente, resumen: dict, params: dict) -> bytes:
+def generate_epicrisis_pdf(paciente, resumen: dict, params: dict, avatar_b64: str | None = None) -> bytes:
     ctx = {
         'generado': datetime.now(),
         'paciente': paciente,
         'resumen': resumen,
         'params': params,
         'logo_b64': _load_logo_base64(),
+        'logo_uri': _logo_file_uri(),
+        'avatar_b64': avatar_b64,
     }
     # Plantilla nueva con sello y UTF-8
     pdfb = _weasy_pdf_from_template('reports/pdf/epicrisis_v2.html', ctx, params)
@@ -321,7 +371,7 @@ def generate_epicrisis_pdf(paciente, resumen: dict, params: dict) -> bytes:
     return _simple_pdf(title, lines, params.get('tamano_pagina','A4'), params.get('orientacion','portrait'))
 
 
-def generate_certificate_pdf(paciente, profesional, datos: dict, params: dict) -> bytes:
+def generate_certificate_pdf(paciente, profesional, datos: dict, params: dict, avatar_b64: str | None = None) -> bytes:
     ctx = {
         'generado': datetime.now(),
         'paciente': paciente,
@@ -329,6 +379,8 @@ def generate_certificate_pdf(paciente, profesional, datos: dict, params: dict) -
         'datos': datos,
         'params': params,
         'logo_b64': _load_logo_base64(),
+        'logo_uri': _logo_file_uri(),
+        'avatar_b64': avatar_b64,
     }
     # Plantilla nueva con sello y UTF-8
     pdfb = _weasy_pdf_from_template('reports/pdf/certificate_v2.html', ctx, params)
@@ -338,8 +390,8 @@ def generate_certificate_pdf(paciente, profesional, datos: dict, params: dict) -
     title = f"Certificado - {paciente}"
     lines = [
         f"Profesional: {profesional}",
-        f"Diagnóstico: {datos.get('diagnostico','')} ",
-        f"Reposo (días): {datos.get('reposo_dias','')}",
+        f"DiagnÃ³stico: {datos.get('diagnostico','')} ",
+        f"Reposo (dÃ­as): {datos.get('reposo_dias','')}",
         f"Observaciones: {datos.get('observaciones','')} ",
     ]
     return _simple_pdf(title, lines, params.get('tamano_pagina','A4'), params.get('orientacion','portrait'))

@@ -28,10 +28,12 @@
     <div class="header">
       <div class="logo-section">
         <div class="logo">
-          {% if logo_b64 %}
-          <img src="data:image/png;base64,{{ logo_b64 }}" alt="TERRAVERDE" />
+          {% if logo_uri %}
+            <img src="{{ logo_uri }}" alt="TERRAVERDE" />
+          {% elif logo_b64 %}
+            <img src="data:image/png;base64,{{ logo_b64 }}" alt="TERRAVERDE" />
           {% else %}
-          <img src="{% static 'ASSETS/terraverde.png' %}" alt="TERRAVERDE" />
+            <img src="{% static 'ASSETS/terraverde.png' %}" alt="TERRAVERDE" />
           {% endif %}
         </div>
         <div class="title-section">
@@ -44,10 +46,12 @@
       </div>
     </div>
 
-    {% if logo_b64 %}
-    <img class="stamp" src="data:image/png;base64,{{ logo_b64 }}" alt="sello" />
+    {% if logo_uri %}
+      <img class="stamp" src="{{ logo_uri }}" alt="sello" />
+    {% elif logo_b64 %}
+      <img class="stamp" src="data:image/png;base64,{{ logo_b64 }}" alt="sello" />
     {% else %}
-    <img class="stamp" src="{% static 'ASSETS/terraverde.png' %}" alt="sello" />
+      <img class="stamp" src="{% static 'ASSETS/terraverde.png' %}" alt="sello" />
     {% endif %}
 
     <div class="document-title">
