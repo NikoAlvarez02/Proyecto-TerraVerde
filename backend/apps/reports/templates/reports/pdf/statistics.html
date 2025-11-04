@@ -12,10 +12,9 @@
         .stamp { position:absolute; top:10px; right:10px; opacity:.12; width:120px; }
         .header { display:flex; align-items:center; justify-content:space-between; padding-bottom:20px; border-bottom:3px solid #2d5f4f; margin-bottom:30px; }
         .logo-section { display:flex; align-items:center; gap:15px; }
-        .logo { width:70px; height:70px; border-radius:10px; border:3px solid #2d5f4f; overflow:hidden; display:flex; align-items:center; justify-content:center; }
-        /* En WeasyPrint, height:100% dentro de un contenedor fijo puede colapsar.
-           Priorizamos ancho al 100% y altura automática para asegurar render. */
-        .logo img { width:100%; height:auto; display:block; object-fit:contain; }
+        /* Logo: replicamos el estilo simple de la demo que funciona */
+        .logo { width:120px; height:auto; border:none; border-radius:0; overflow:visible; display:block; }
+        .logo img { width:100%; height:auto; display:block; }
         .title-section h1 { color:#2d5f4f; font-size:22px; font-weight:bold; }
         .title-section h2 { color:#5a8c73; font-size:16px; }
         .header-right { text-align:right; color:#666; font-size:12px; }
