@@ -53,6 +53,9 @@ urlpatterns = [
     path("", core_views.home_dashboard, name="home"),
     path("weasy/pdf/", core_views.weasy_pdf_test, name="weasy_pdf_test"),
     path("weasy/diagnostico/", core_views.weasy_diagnostico, name="weasy_diagnostico"),
+    # Demo para depurar imágenes en WeasyPrint
+    path("weasy/demo/", core_views.weasy_demo_form, name="weasy_demo_form"),
+    path("weasy/demo/create/", core_views.weasy_demo_create, name="weasy_demo_create"),
 
     # Auth
     path("login/",  core_views.SessionLoginView.as_view(template_name="registration/login.html"), name="login"),

@@ -1,0 +1,47 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generar PDF - TerraVerde</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; background:#f5f5f5; }
+    .container { background:#fff; padding:24px; border-radius:8px; box-shadow: 0 2px 6px rgba(0,0,0,.1); }
+    h1 { color:#2d6a4f; text-align:center; margin-top:0; }
+    .group { margin-bottom:16px; }
+    label { display:block; font-weight:bold; margin-bottom:6px; }
+    input[type=text], textarea, input[type=file] { width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box; }
+    textarea { min-height: 110px; resize: vertical; }
+    button { width:100%; padding:12px; background:#2d6a4f; color:#fff; border:none; border-radius:6px; font-size:16px; cursor:pointer; }
+    small { color:#666; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌱 Generar PDF (demo Weasy)</h1>
+    <form method="post" action="{% url 'weasy_demo_create' %}" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="group">
+        <label for="titulo">Título</label>
+        <input type="text" id="titulo" name="titulo" value="Desempeño por profesional" required />
+      </div>
+      <div class="group">
+        <label for="usuario">Usuario/Profesional</label>
+        <input type="text" id="usuario" name="usuario" placeholder="Nombre" required />
+      </div>
+      <div class="group">
+        <label for="descripcion">Descripción</label>
+        <textarea id="descripcion" name="descripcion">Este documento prueba la incrustación del logo usando file:/// y WeasyPrint.</textarea>
+      </div>
+      <div class="group">
+        <label for="imagen">Imagen adicional (opcional)</label>
+        <input type="file" id="imagen" name="imagen" accept="image/*" />
+        <small>Se insertará debajo del contenido</small>
+      </div>
+      <button type="submit">📄 Generar PDF</button>
+    </form>
+  </div>
+</body>
+</html>
+

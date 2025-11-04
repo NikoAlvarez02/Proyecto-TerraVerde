@@ -13,6 +13,7 @@ from apps.turnos.models import Turno
 from apps.pacientes.models import Paciente
 from apps.feedback.models import Satisfaccion
 from apps.usuarios.models import LoginThrottle
+from apps.reports.utils import pdf_generator as _pg
 
 logger = logging.getLogger(__name__)
 
@@ -284,4 +285,78 @@ def serve_schema_json(request):
             data = f.read()
         return HttpResponse(data, content_type='application/json')
     return HttpResponse('schema.json no encontrado. GenerÃ¡ con: manage.py spectacular --file schema.json --format openapi-json', status=404)
+
+
+def weasy_demo_form(request):
+    """Formulario simple para probar generación de PDF con una imagen.
+
+    Permite verificar rápidamente si el entorno puede renderizar el logo.
+    """
+    return render(request, 'weasy/formulario_pdf.html')
+
+
+def weasy_demo_create(request):
+    """Genera un PDF minimalista usando WeasyPrint, con el logo por file:///.
+
+    Si se sube una imagen, también la incrusta.
+    """
+    if request.method != 'POST':
+        return weasy_demo_form(request)
+    try:
+        from weasyprint import HTML
+    except Exception:
+        return HttpResponse('WeasyPrint no está instalado', status=500)
+
+    titulo = request.POST.get('titulo') or 'Documento TerraVerde'
+    descripcion = request.POST.get('descripcion') or 'Contenido de prueba'
+    usuario = request.POST.get('usuario') or (getattr(getattr(request, 'user', None), 'username', '') or 'sistema')
+
+    # Calcular logo como file:/// URI preferentemente
+    logo_uri = _pg._logo_file_uri() or ''
+
+    # Guardar imagen adicional si la hay
+    imagen_adicional = None
+    imagen_path = None
+    try:
+        up = request.FILES.get('imagen')
+        if up:
+            import os
+            from django.conf import settings as _s
+            temp_dir = _s.MEDIA_ROOT / 'temp'
+            temp_dir.mkdir(parents=True, exist_ok=True)
+            imagen_path = temp_dir / up.name
+            with open(imagen_path, 'wb+') as f:
+                for chunk in up.chunks():
+                    f.write(chunk)
+            imagen_adicional = imagen_path.resolve().as_uri()
+    except Exception:
+        imagen_adicional = None
+
+    ctx = {
+        'titulo': titulo,
+        'descripcion': descripcion,
+        'usuario': usuario,
+        'fecha': timezone.localdate().strftime('%d/%m/%Y'),
+        'fecha_generacion': timezone.now().strftime('%d/%m/%Y %H:%M'),
+        'imagen_adicional': imagen_adicional,
+        'logo_uri': logo_uri,
+    }
+
+    html = render_to_string('weasy/pdf_template.html', ctx)
+    # base_url para permitir que Weasy resuelva rutas relativas
+    try:
+        base_url = settings.ROOT_DIR.as_uri()
+    except Exception:
+        base_url = str(settings.ROOT_DIR)
+    pdf_bytes = HTML(string=html, base_url=base_url).write_pdf()
+    resp = HttpResponse(pdf_bytes, content_type='application/pdf')
+    resp['Content-Disposition'] = 'inline; filename="demo_weasy.pdf"'
+
+    # Limpieza
+    try:
+        if imagen_path and imagen_path.exists():
+            imagen_path.unlink(missing_ok=True)
+    except Exception:
+        pass
+    return resp
 

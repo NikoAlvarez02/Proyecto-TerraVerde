@@ -1,0 +1,46 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    @page { size:A4; margin:2cm; }
+    body { font-family: Arial, sans-serif; }
+    .header { text-align:center; margin-bottom:30px; }
+    .logo { width:200px; margin:20px auto; display:block; }
+    .title { color:#2d6a4f; font-size:24px; margin: 10px 0; }
+    .info { background:#f0f8f5; padding:12px; border-left:4px solid #2d6a4f; }
+    .content { margin-top:20px; line-height:1.6; }
+    .footer { position: fixed; bottom:2cm; left:2cm; right:2cm; text-align:center; color:#666; font-size:12px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    {% if logo_uri %}
+      <img src="{{ logo_uri }}" alt="TerraVerde Logo" class="logo" />
+    {% else %}
+      <img src="{% static 'ASSETS/terraverde.png' %}" alt="TerraVerde Logo" class="logo" />
+    {% endif %}
+    <h1 class="title">TERRAVERDE</h1>
+    <div>Espacio de Desarrollo Integral</div>
+  </div>
+
+  <div class="info">
+    <strong>Título:</strong> {{ titulo }}<br/>
+    <strong>Fecha:</strong> {{ fecha }}<br/>
+    <strong>Usuario:</strong> {{ usuario }}
+  </div>
+
+  <div class="content">
+    <p>{{ descripcion }}</p>
+    {% if imagen_adicional %}
+    <div style="text-align:center; margin: 30px 0;">
+      <img src="{{ imagen_adicional }}" alt="Imagen adicional" style="max-width:100%; height:auto;" />
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="footer">Documento generado el {{ fecha_generacion }}</div>
+</body>
+</html>
+
