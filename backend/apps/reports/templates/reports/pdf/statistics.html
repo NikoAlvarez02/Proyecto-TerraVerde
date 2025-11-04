@@ -67,9 +67,21 @@
         <img class="stamp" src="{% static 'ASSETS/terraverde.png' %}" alt="sello" />
       {% endif %}
 
+      {% if logo_debug %}
+      <div style="font-size:10px;color:#9aa; margin:-8px 0 8px 0;">[logo] {{ logo_info }}</div>
+      {% endif %}
+
       <div class="document-title">
         <strong>{{ titulo|default:"Reporte Estadístico" }}</strong>
       </div>
+
+      {% if logo_debug %}
+      <div style="margin:6px 0 14px 0; color:#666; font-size:12px;">
+        Debug imágenes: 
+        {% if logo_uri %}<img src="{{ logo_uri }}" style="width:90px; height:auto; margin-right:8px;" />{% endif %}
+        {% if logo_b64 %}<img src="data:image/png;base64,{{ logo_b64|safe }}" style="width:90px; height:auto;" />{% endif %}
+      </div>
+      {% endif %}
 
       <div class="kpi-grid">
         <div class="kpi"><div class="label">Desde</div><div>{{ params.desde|default:"-" }}</div></div>

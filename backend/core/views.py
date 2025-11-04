@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
 from django.shortcuts import render
+from django.template.loader import render_to_string
 from django.db.models import Avg, Q
 from django.db.utils import DatabaseError, ProgrammingError
 
