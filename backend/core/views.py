@@ -71,7 +71,8 @@ def home_dashboard(request):
     hoy = timezone.localdate()
     ahora = timezone.now()
 
-    pacientes_activos = Paciente.objects.filter(Q(activo=True) | Q(activo__isnull=True)).count()
+    # Contar solo los pacientes con flag activo=True para coincidir con el filtro del listado
+    pacientes_activos = Paciente.objects.filter(activo=True).count()
 
     turnos_hoy_qs = Turno.objects.filter(fecha_hora__date=hoy)
     sesiones_hoy_total = turnos_hoy_qs.count()

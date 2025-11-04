@@ -1,5 +1,7 @@
 ﻿from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
+from django.utils import timezone
+import re
 from .models import Paciente
 from apps.profesionales.models import Profesional
 
@@ -61,6 +63,22 @@ class PacienteSerializer(serializers.ModelSerializer):
         # Permitir vacío o None
         return value or None
 
+    def validate_dni(self, value: str) -> str:
+        v = (value or '').strip()
+        # Exigir exactamente 8 dígitos numéricos
+        if not re.fullmatch(r"\d{8}", v):
+            raise serializers.ValidationError('El DNI debe tener exactamente 8 dígitos numéricos')
+        return v
+
+    def validate_telefono(self, value: str) -> str:
+        v = (value or '').strip()
+        if not v:
+            return v
+        digits = re.sub(r"[^\d]", "", v)
+        if len(digits) < 8 or len(digits) > 15:
+            raise serializers.ValidationError('El teléfono debe tener entre 8 y 15 dígitos')
+        return v
+
     def get_centro_nombre(self, obj):
         return getattr(obj.centro, 'nombre', None)
 
@@ -78,8 +96,37 @@ class PacienteSerializer(serializers.ModelSerializer):
 
     # Validaciones adicionales para evitar IntegrityError y retornar 400 descriptivo
     def validate(self, attrs):
-        if not attrs.get('fecha_nacimiento'):
+        # Apellido y nombre obligatorios
+        for f in ('apellido', 'nombre'):
+            if not (attrs.get(f) or '').strip():
+                raise serializers.ValidationError({f: 'Este campo es obligatorio'})
+
+        # Fecha de nacimiento obligatoria y en rango lógico
+        fnac = attrs.get('fecha_nacimiento')
+        if not fnac:
             raise serializers.ValidationError({'fecha_nacimiento': 'La fecha de nacimiento es obligatoria'})
+        hoy = timezone.localdate()
+        if fnac > hoy:
+            raise serializers.ValidationError({'fecha_nacimiento': 'La fecha no puede ser futura'})
+        # Rango inferior básico
+        try:
+            if fnac.year < 1900:
+                raise serializers.ValidationError({'fecha_nacimiento': 'La fecha es demasiado antigua'})
+        except Exception:
+            pass
+
+        # Representante requerido para menores de 18: usamos los campos de contacto de emergencia
+        edad = hoy.year - fnac.year - ((hoy.month, hoy.day) < (fnac.month, fnac.day))
+        if edad < 18:
+            if not (attrs.get('contacto_emergencia_nombre') or '').strip():
+                raise serializers.ValidationError({'contacto_emergencia_nombre': 'Obligatorio para menores'})
+            tel_rep = (attrs.get('contacto_emergencia_telefono') or '').strip()
+            if not tel_rep:
+                raise serializers.ValidationError({'contacto_emergencia_telefono': 'Obligatorio para menores'})
+            digits = re.sub(r"[^\d]", "", tel_rep)
+            if len(digits) < 8:
+                raise serializers.ValidationError({'contacto_emergencia_telefono': 'El teléfono del representante es inválido'})
+
         return attrs
 
     def create(self, validated_data):
