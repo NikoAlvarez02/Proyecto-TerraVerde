@@ -9,15 +9,14 @@
     * { margin:0; padding:0; box-sizing:border-box; }
     body { font-family: Arial, sans-serif; color:#2c3e50; line-height:1.6; }
     .page { max-width:21cm; margin:0 auto; padding:2cm; position:relative; }
-    .stamp { position:absolute; top:10px; right:10px; opacity:.12; width:120px; }
-    .header { display:flex; align-items:center; justify-content:space-between; padding-bottom:20px; border-bottom:3px solid #2d5f4f; margin-bottom:30px; }
-    .logo-section { display:flex; align-items:center; gap:15px; }
-    .logo { width:120px; height:auto; border:none; border-radius:0; overflow:visible; display:block; }
-    .logo img { width:100%; height:auto; display:block; }
-    .title-section h1 { color:#2d5f4f; font-size:22px; font-weight:bold; }
-    .title-section h2 { color:#5a8c73; font-size:16px; }
-    .header-right { text-align:right; color:#666; font-size:12px; }
-    .document-title { background:linear-gradient(135deg,#2d5f4f 0%,#5a8c73 100%); color:#fff; padding:12px 20px; border-radius:8px; margin-bottom:20px; }
+    .stamp { position:absolute; top:12px; right:12px; opacity:.12; width:120px; }
+    /* Header centrado como la demo */
+    .header { text-align:center; margin-bottom:18px; }
+    .logo { width:120px; height:auto; margin:0 auto 4px auto; display:block; }
+    .title { color:#2d5f4f; font-size:22px; font-weight:bold; margin:2px 0; }
+    .subtitle { color:#5a8c73; font-size:14px; }
+    .date { font-size:12px; color:#666; margin-top:6px; }
+    .document-title { background:linear-gradient(135deg,#2d5f4f 0%,#5a8c73 100%); color:#fff; padding:10px 16px; border-radius:8px; margin:10px 0 16px; }
     .section { margin:20px 0; }
     .section-title { color:#2d5f4f; font-weight:bold; font-size:16px; margin-bottom:8px; border-bottom:2px solid #e0e0e0; padding-bottom:4px; }
     .kv { font-size:13px; margin:6px 0; }
@@ -26,32 +25,22 @@
 <body>
   <div class="page">
     <div class="header">
-      <div class="logo-section">
-        <div class="logo">
-          {% if logo_uri %}
-            <img src="{{ logo_uri }}" alt="TERRAVERDE" />
-          {% elif logo_b64 %}
-            <img src="data:image/png;base64,{{ logo_b64|safe }}" alt="TERRAVERDE" />
-          {% else %}
-            <img src="{% static 'ASSETS/terraverde.png' %}" alt="TERRAVERDE" />
-          {% endif %}
-        </div>
-        <div class="title-section">
-          <h1>TERRAVERDE</h1>
-          <h2>Espacio de Desarrollo Integral</h2>
-        </div>
-      </div>
-      <div class="header-right">
-        <div><strong>Fecha:</strong> {{ generado|date:"d/m/Y H:i" }}</div>
-      </div>
+      {% if logo_uri %}
+        <img src="{{ logo_uri }}" alt="TERRAVERDE" class="logo" />
+      {% elif logo_b64 %}
+        <img src="data:image/png;base64,{{ logo_b64|safe }}" alt="TERRAVERDE" class="logo" />
+      {% else %}
+        <img src="{% static 'ASSETS/terraverde.png' %}" alt="TERRAVERDE" class="logo" />
+      {% endif %}
+      <div class="title">TERRAVERDE</div>
+      <div class="subtitle">Espacio de Desarrollo Integral</div>
+      <div class="date">Fecha: {{ generado|date:"d/m/Y H:i" }}</div>
     </div>
 
     {% if logo_uri %}
       <img class="stamp" src="{{ logo_uri }}" alt="sello" />
     {% elif logo_b64 %}
       <img class="stamp" src="data:image/png;base64,{{ logo_b64|safe }}" alt="sello" />
-    {% else %}
-      <img class="stamp" src="{% static 'ASSETS/terraverde.png' %}" alt="sello" />
     {% endif %}
 
     <div class="document-title">
