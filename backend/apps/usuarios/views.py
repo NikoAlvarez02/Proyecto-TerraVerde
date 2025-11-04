@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import render
 from .forms import SecurePasswordResetRequestForm
+from django.http import HttpResponseRedirect
 
 User = get_user_model()
 
@@ -50,5 +51,6 @@ class SecurePasswordResetView(PasswordResetView):
                     extra_email_context=self.extra_email_context,
                     token_generator=self.token_generator,
                 )
-        # Siempre redirige a success_url, sin revelar estado
-        return super().form_valid(form)
+        # Redirige a success_url sin llamar al form.save() del padre
+        # para evitar AttributeError (nuestro form no implementa save).
+        return HttpResponseRedirect(self.get_success_url())
