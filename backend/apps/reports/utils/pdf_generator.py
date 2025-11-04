@@ -6,6 +6,10 @@ import base64
 
 from django.template.loader import render_to_string
 from django.conf import settings
+try:
+    from PIL import Image  # type: ignore
+except Exception:
+    Image = None
 
 try:
     from weasyprint import HTML, CSS  # type: ignore
@@ -128,6 +132,24 @@ def _load_logo_base64() -> str | None:
         for path in candidates:
             try:
                 if path and path.exists() and path.is_file():
+                    # Re-encode con Pillow para maximizar compatibilidad (PNG RGB sin alfa)
+                    if Image is not None:
+                        try:
+                            with Image.open(path) as im:
+                                if im.mode not in ("RGB", "L"):
+                                    # a RGB sobre fondo blanco si trae alfa
+                                    bg = Image.new("RGB", im.size, (255, 255, 255))
+                                    if im.mode == "RGBA":
+                                        bg.paste(im, mask=im.split()[-1])
+                                    else:
+                                        bg.paste(im)
+                                    im = bg
+                                buf = BytesIO()
+                                im.save(buf, format="PNG", optimize=True)
+                                return base64.b64encode(buf.getvalue()).decode("utf-8")
+                        except Exception:
+                            pass
+                    # Fallback: bytes crudos
                     data = path.read_bytes()
                     return base64.b64encode(data).decode('utf-8')
             except Exception:

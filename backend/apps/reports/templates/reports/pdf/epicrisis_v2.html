@@ -29,7 +29,7 @@
       <div class="logo-section">
         <div class="logo">
           {% if logo_b64 %}
-            <img src="data:image/png;base64,{{ logo_b64 }}" alt="TERRAVERDE" />
+            <img src="data:image/png;base64,{{ logo_b64|safe }}" alt="TERRAVERDE" />
           {% elif logo_uri %}
             <img src="{{ logo_uri }}" alt="TERRAVERDE" />
           {% else %}
@@ -47,7 +47,7 @@
     </div>
 
     {% if logo_b64 %}
-      <img class="stamp" src="data:image/png;base64,{{ logo_b64 }}" alt="sello" />
+      <img class="stamp" src="data:image/png;base64,{{ logo_b64|safe }}" alt="sello" />
     {% elif logo_uri %}
       <img class="stamp" src="{{ logo_uri }}" alt="sello" />
     {% else %}
