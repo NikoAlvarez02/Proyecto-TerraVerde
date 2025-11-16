@@ -1,4 +1,5 @@
 from rest_framework import viewsets, permissions, filters
+from django.utils import timezone
 from .models import Profesional, ProfesionalHorario, Especialidad
 from .serializers import ProfesionalSerializer, ProfesionalHorarioSerializer, EspecialidadSerializer
 
@@ -11,6 +12,18 @@ class ProfesionalViewSet(viewsets.ModelViewSet):
     filterset_fields = ["activo", "especialidad", "centros"]
     ordering_fields = ["apellido", "nombre", "dni", "matricula", "fecha_alta"]
     pagination_class = None
+
+    def perform_destroy(self, instance):
+        instance.activo = False
+        instance.fecha_baja = timezone.now()
+        instance.save(update_fields=["activo", "fecha_baja"])
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        include_inactive = str(self.request.query_params.get('include_inactive', '')).lower() in ('1', 'true', 'yes')
+        if not include_inactive:
+            qs = qs.filter(activo=True)
+        return qs
 
 
 class ProfesionalHorarioViewSet(viewsets.ModelViewSet):
