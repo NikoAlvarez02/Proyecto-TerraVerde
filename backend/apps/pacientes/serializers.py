@@ -21,7 +21,6 @@ class PacienteSerializer(serializers.ModelSerializer):
     )
     centro_nombre = serializers.SerializerMethodField(read_only=True)
     obra_social_nombre = serializers.SerializerMethodField(read_only=True)
-    plan_nombre = serializers.SerializerMethodField(read_only=True)
     profesionales_asignados = serializers.PrimaryKeyRelatedField(
         many=True, queryset=Profesional.objects.all(), required=False
     )
@@ -32,9 +31,9 @@ class PacienteSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'dni', 'nombre', 'apellido', 'fecha_nacimiento', 'telefono', 'email', 'direccion',
             'centro', 'centro_nombre',
-            'obra_social', 'obra_social_nombre', 'plan', 'plan_nombre',
+            'obra_social', 'obra_social_nombre',
             'contacto_emergencia_nombre', 'contacto_emergencia_telefono',
-            'grupo_sanguineo', 'antecedentes', 'genero', 'foto',
+            'grupo_sanguineo', 'alergias', 'antecedentes', 'genero', 'foto',
             'activo', 'fecha_registro', 'fecha_baja',
             'profesionales_asignados', 'profesionales_asignados_nombres',
         ]
@@ -58,6 +57,17 @@ class PacienteSerializer(serializers.ModelSerializer):
                 'allow_blank': True,
             },
         }
+
+    def to_internal_value(self, data):
+        # Ignorar campos legados/no mapeados para que requests antiguos no fallen
+        cleaned = data.copy()
+        for extra in (
+            'nacionalidad', 'tiene_representante',
+            'rep_nombre', 'rep_apellido', 'rep_edad',
+            'rep_telefono', 'rep_nacionalidad',
+        ):
+            cleaned.pop(extra, None)
+        return super().to_internal_value(cleaned)
 
     def validate_email(self, value):
         # Permitir vacío o None
@@ -84,9 +94,6 @@ class PacienteSerializer(serializers.ModelSerializer):
 
     def get_obra_social_nombre(self, obj):
         return getattr(obj.obra_social, 'nombre', None)
-
-    def get_plan_nombre(self, obj):
-        return getattr(obj.plan, 'nombre', None)
 
     def get_profesionales_asignados_nombres(self, obj):
         try:

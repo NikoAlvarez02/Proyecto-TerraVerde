@@ -261,7 +261,6 @@ form.addEventListener('submit', async (e) => {
   };
 
   try {
-    if (!confirm('¿Desea confirmar estos datos?')) { return; }
     if (editId === null) {
       await apiCreate(payload);
       showFlash('Profesional creado');
@@ -400,4 +399,3 @@ document.getElementById('h_agregar')?.addEventListener('click', async ()=>{
     showFlash('Horario agregado');
   }catch(err){ console.error(err); showFlash('No se pudo agregar horario','error'); }
 });
-

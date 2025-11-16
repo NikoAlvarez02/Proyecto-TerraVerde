@@ -36,7 +36,6 @@ let editId = null;      // null = crear, número = editar
 let deleteId = null;
 
 const API_OBRAS = '/obras/api/obras-sociales/';
-const API_PLANES = '/obras/api/planes/';
 
 // ---------- helpers UI ----------
 function showFlash(msg, type = 'ok') {
@@ -106,9 +105,8 @@ function openModalEdit(p) {
   document.getElementById('rep_edad').value = p.rep_edad ?? '';
   document.getElementById('rep_telefono').value = p.rep_telefono ?? '';
   document.getElementById('rep_nacionalidad').value = p.rep_nacionalidad ?? '';
-  // obras sociales y plan
+  // obras sociales
   try { const os = document.getElementById('obra_social'); if (os) os.innerHTML = os.innerHTML; if (os) os.value = p.obra_social || ''; } catch (e) {}
-  try { const pl = document.getElementById('plan'); if (pl) pl.value = p.plan || ''; } catch (e) {}
 
   resetModalPosition();
   modalForm.classList.add('is-open');
@@ -364,6 +362,8 @@ form.addEventListener('submit', async (e) => {
     if(m){ const d=m[1], mo=m[2], y=m[3]; return `${y}-${mo.padStart(2,'0')}-${d.padStart(2,'0')}`; }
     return v; // assume yyyy-mm-dd
   }
+  const alergiasInput = document.getElementById('alergias');
+  const alergias = alergiasInput ? alergiasInput.value : '';
   const payload = {
     apellido,
     nombre,
@@ -374,24 +374,15 @@ form.addEventListener('submit', async (e) => {
     email: document.getElementById('email').value || '',
     centro: document.getElementById('centro')?.value ? Number(document.getElementById('centro').value) : null,
     obra_social: document.getElementById('obra_social')?.value ? Number(document.getElementById('obra_social').value) : null,
-    plan: document.getElementById('plan')?.value ? Number(document.getElementById('plan').value) : null,
     genero: document.getElementById('genero').value || '',
     grupo_sanguineo: document.getElementById('grupo_sanguineo').value || '',
-    alergias: document.getElementById('alergias').value || '',
+    alergias,
     antecedentes: document.getElementById('antecedentes').value || '',
     contacto_emergencia_nombre: document.getElementById('contacto_emergencia_nombre').value || '',
     contacto_emergencia_telefono: document.getElementById('contacto_emergencia_telefono').value || '',
-    nacionalidad: document.getElementById('nacionalidad').value || '',
-    tiene_representante: document.getElementById('tiene_representante').checked,
-    rep_nombre: document.getElementById('rep_nombre').value || '',
-    rep_apellido: document.getElementById('rep_apellido').value || '',
-    rep_edad: document.getElementById('rep_edad').value ? Number(document.getElementById('rep_edad').value) : null,
-    rep_telefono: document.getElementById('rep_telefono').value || '',
-    rep_nacionalidad: document.getElementById('rep_nacionalidad').value || '',
   };
 
   try {
-    if (!confirm('¿Desea confirmar estos datos?')) { return; }
     // Evitar DNI duplicado al crear
     if (editId === null && dni) {
       try {
@@ -517,9 +508,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }).catch(()=>{});
   }
 
-  // cargar obras sociales y planes
+  // cargar obras sociales
   const selObra = document.getElementById('obra_social');
-  const selPlan = document.getElementById('plan');
   const selOSFilter = document.getElementById('os_filter');
   if (selObra) {
     fetch('/obras/api/obras-sociales/?page_size=500&ordering=nombre', {credentials:'include'})
@@ -533,18 +523,5 @@ document.addEventListener('DOMContentLoaded', () => {
           list.forEach(o=>{ const opt=document.createElement('option'); opt.value=o.id; opt.textContent=o.nombre; selOSFilter.appendChild(opt); });
         }
       }).catch(()=>{});
-    selObra.addEventListener('change', ()=>{
-      if(!selPlan) return;
-      selPlan.innerHTML = '<option value="">(sin plan)</option>';
-      const oid = selObra.value;
-      if(!oid) return;
-      fetch(`/obras/api/planes/?obra_social=${encodeURIComponent(oid)}&page_size=500&ordering=nombre`, {credentials:'include'})
-        .then(r=>r.ok?r.json():null)
-        .then(d=>{
-          const list = Array.isArray(d)?d:(d?.results||[]);
-          list.forEach(p=>{ const opt=document.createElement('option'); opt.value=p.id; opt.textContent=p.nombre; selPlan.appendChild(opt); });
-        }).catch(()=>{});
-    });
   }
 });
-
