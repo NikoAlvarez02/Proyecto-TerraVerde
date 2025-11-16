@@ -1,5 +1,6 @@
 # backend/apps/pacientes/api_views.py
 from rest_framework import viewsets, permissions
+from django.utils import timezone
 from .models import Paciente
 from .serializers import PacienteSerializer
 
@@ -28,10 +29,19 @@ class PacienteViewSet(viewsets.ModelViewSet):
             from rest_framework.exceptions import ValidationError
             raise ValidationError({'server_error': str(e)})
 
+    def perform_destroy(self, instance):
+        # Baja lógica: evita errores por FKs y mantiene trazabilidad
+        instance.activo = False
+        instance.fecha_baja = timezone.now()
+        instance.save(update_fields=["activo", "fecha_baja"])
+
     def get_queryset(self):
         qs = Paciente.objects.all().order_by(*self.ordering)
         user = getattr(self.request, 'user', None)
         perfil = getattr(user, 'perfil', None) if user and user.is_authenticated else None
+        include_inactive = str(self.request.query_params.get('include_inactive', '')).lower() in ('1', 'true', 'yes')
+        if not include_inactive:
+            qs = qs.filter(activo=True)
         if not perfil:
             # Sin perfil: staff/superuser ven todo; resto, nada
             return qs if (user and (user.is_staff or user.is_superuser)) else qs.none()
