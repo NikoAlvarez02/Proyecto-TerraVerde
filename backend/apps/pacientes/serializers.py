@@ -30,6 +30,8 @@ class PacienteSerializer(serializers.ModelSerializer):
         model = Paciente
         fields = [
             'id', 'dni', 'nombre', 'apellido', 'fecha_nacimiento', 'telefono', 'email', 'direccion',
+            'nacionalidad', 'tiene_representante',
+            'rep_nombre', 'rep_apellido', 'rep_edad', 'rep_telefono', 'rep_nacionalidad',
             'centro', 'centro_nombre',
             'obra_social', 'obra_social_nombre',
             'contacto_emergencia_nombre', 'contacto_emergencia_telefono',
@@ -61,12 +63,7 @@ class PacienteSerializer(serializers.ModelSerializer):
     def to_internal_value(self, data):
         # Ignorar campos legados/no mapeados para que requests antiguos no fallen
         cleaned = data.copy()
-        for extra in (
-            'nacionalidad', 'tiene_representante',
-            'rep_nombre', 'rep_apellido', 'rep_edad',
-            'rep_telefono', 'rep_nacionalidad',
-        ):
-            cleaned.pop(extra, None)
+        cleaned.pop('obra_social_legacy', None)
         return super().to_internal_value(cleaned)
 
     def validate_email(self, value):

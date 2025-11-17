@@ -23,6 +23,13 @@ class Paciente(models.Model):
     telefono = models.CharField(max_length=20, blank=True)
     email = models.EmailField(blank=True, null=True)
     direccion = models.CharField(max_length=100, blank=True)
+    nacionalidad = models.CharField(max_length=50, blank=True, default='')
+    tiene_representante = models.BooleanField(default=False)
+    rep_nombre = models.CharField(max_length=100, blank=True, default='')
+    rep_apellido = models.CharField(max_length=100, blank=True, default='')
+    rep_edad = models.PositiveIntegerField(blank=True, null=True)
+    rep_telefono = models.CharField(max_length=20, blank=True, default='')
+    rep_nacionalidad = models.CharField(max_length=50, blank=True, default='')
     obra_social = models.ForeignKey('obras.ObraSocial', on_delete=models.SET_NULL, null=True, blank=True, related_name='pacientes')
     plan = models.ForeignKey('obras.PlanObraSocial', on_delete=models.SET_NULL, null=True, blank=True, related_name='pacientes')
 

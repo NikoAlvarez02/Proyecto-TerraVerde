@@ -124,12 +124,14 @@ function closeModal() {
 function openConfirm(id) {
   deleteId = id;
   modalConfirm.classList.add('is-open');
+  modalConfirm.style.display = 'flex';
   document.body.classList.add('modal-open');
 }
 
 function closeConfirm() {
   deleteId = null;
   modalConfirm.classList.remove('is-open');
+  modalConfirm.style.display = 'none';
   document.body.classList.remove('modal-open');
 }
 
@@ -371,6 +373,7 @@ form.addEventListener('submit', async (e) => {
     fecha_nacimiento: normalizeDate(rawDate),
     telefono: document.getElementById('telefono').value || '',
     direccion: document.getElementById('direccion').value || '',
+    nacionalidad: document.getElementById('nacionalidad').value || '',
     email: document.getElementById('email').value || '',
     centro: document.getElementById('centro')?.value ? Number(document.getElementById('centro').value) : null,
     obra_social: document.getElementById('obra_social')?.value ? Number(document.getElementById('obra_social').value) : null,
@@ -380,6 +383,12 @@ form.addEventListener('submit', async (e) => {
     antecedentes: document.getElementById('antecedentes').value || '',
     contacto_emergencia_nombre: document.getElementById('contacto_emergencia_nombre').value || '',
     contacto_emergencia_telefono: document.getElementById('contacto_emergencia_telefono').value || '',
+    tiene_representante: !!document.getElementById('tiene_representante').checked,
+    rep_nombre: document.getElementById('rep_nombre').value || '',
+    rep_apellido: document.getElementById('rep_apellido').value || '',
+    rep_edad: document.getElementById('rep_edad').value ? Number(document.getElementById('rep_edad').value) : null,
+    rep_telefono: document.getElementById('rep_telefono').value || '',
+    rep_nacionalidad: document.getElementById('rep_nacionalidad').value || '',
   };
 
   try {
