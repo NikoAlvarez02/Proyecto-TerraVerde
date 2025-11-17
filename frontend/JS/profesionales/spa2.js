@@ -341,9 +341,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   renderList();
   makeModalDraggable();
-  // cerrar por ESC y click en overlay
-  document.addEventListener('keydown', (ev)=>{ if(ev.key==='Escape'){ if(modalConfirm.classList.contains('is-open')) closeConfirm(); else if(modalForm.classList.contains('is-open')) closeModal(); }});
-  [modalForm, modalConfirm].forEach(ov=>{ ov?.addEventListener('click', (e)=>{ if(e.target===ov){ ov.id==='modalConfirm' ? closeConfirm() : closeModal(); } }); });
+  // Mantener modales abiertos: solo botones cierran
 
   // preparar select de centros en modal (para horarios)
   (async ()=>{

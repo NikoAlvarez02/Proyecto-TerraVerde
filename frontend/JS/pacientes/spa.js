@@ -451,20 +451,7 @@ btnSi.addEventListener('click', async () => {
 document.addEventListener('DOMContentLoaded', () => {
   renderList();
   makeModalDraggable();
-  // Cerrar por ESC y al clickear fuera de la tarjeta
-  document.addEventListener('keydown', (ev) => {
-    if (ev.key === 'Escape') {
-      if (modalConfirm.classList.contains('is-open')) closeConfirm();
-      else if (modalForm.classList.contains('is-open')) closeModal();
-    }
-  });
-  [modalForm, modalConfirm].forEach(overlay => {
-    overlay?.addEventListener('click', (e) => {
-      if (e.target === overlay) {
-        overlay.id === 'modalConfirm' ? closeConfirm() : closeModal();
-      }
-    });
-  });
+  // Mantener los modales abiertos: solo botones cierran
 });
 
 // Controles de filtros y paginación

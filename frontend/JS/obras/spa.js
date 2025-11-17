@@ -71,7 +71,7 @@ document.getElementById('btnImportar')?.addEventListener('click', async ()=>{
 form.addEventListener('submit', async(e)=>{ e.preventDefault(); const payload={ nombre:document.getElementById('o_nombre').value.trim(), codigo:document.getElementById('o_codigo').value.trim(), activo:document.getElementById('o_activo_chk').checked }; if(!payload.nombre){ showFlash('El nombre es obligatorio','warning'); return; } try{ if(editId===null){ await apiCreate(payload); showFlash('Obra Social creada'); } else { await apiUpdate(editId,payload); showFlash('Obra Social actualizada'); } closeModal(); await renderList(); }catch(err){ console.error(err); showFlash('No se pudo guardar','error'); } });
 
 // init
-document.addEventListener('DOMContentLoaded', ()=>{ renderList(); document.addEventListener('keydown',(ev)=>{ if(ev.key==='Escape'){ if(confirmModal.classList.contains('is-open')) closeConfirm(); else if(modal.classList.contains('is-open')) closeModal(); }}); [modal,confirmModal].forEach(ov=>{ ov?.addEventListener('click',(e)=>{ if(e.target===ov){ ov.id==='o_modalConfirm'?closeConfirm():closeModal(); } }); }); });
+document.addEventListener('DOMContentLoaded', ()=>{ renderList(); /* Mantener modales abiertos: solo botones cierran */ });
 
 // ---- soporte extra: importar CSV local (sin red) ----
 try{

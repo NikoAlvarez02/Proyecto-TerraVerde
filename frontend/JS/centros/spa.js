@@ -202,6 +202,5 @@ form.addEventListener('submit', async (e)=>{
 });
 
 document.addEventListener('DOMContentLoaded', ()=>{ renderList(); makeModalDraggable();
-  document.addEventListener('keydown', (ev)=>{ if(ev.key==='Escape'){ if(modalConfirm.classList.contains('is-open')) closeConfirm(); else if(modal.classList.contains('is-open')) closeModal(); }});
-  [modal, modalConfirm].forEach(ov=>{ ov?.addEventListener('click', (e)=>{ if(e.target===ov){ ov.id==='modalConfirm' ? closeConfirm() : closeModal(); } }); });
+  // Mantener modales abiertos: solo botones cierran
 });
