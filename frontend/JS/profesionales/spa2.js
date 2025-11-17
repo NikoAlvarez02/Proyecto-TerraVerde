@@ -113,9 +113,19 @@ function closeModal() {
   document.body.classList.remove('modal-open');
 }
 
-function openConfirm(id) { deleteId = id; modalConfirm.classList.add('is-open'); document.body.classList.add('modal-open'); }
+function openConfirm(id) {
+  deleteId = id;
+  modalConfirm.classList.add('is-open');
+  modalConfirm.style.display = 'flex';
+  document.body.classList.add('modal-open');
+}
 
-function closeConfirm() { deleteId = null; modalConfirm.classList.remove('is-open'); document.body.classList.remove('modal-open'); }
+function closeConfirm() {
+  deleteId = null;
+  modalConfirm.classList.remove('is-open');
+  modalConfirm.style.display = 'none';
+  document.body.classList.remove('modal-open');
+}
 
 // drag support (igual que pacientes/turnos)
 function resetModalPosition(){
@@ -241,9 +251,14 @@ form.addEventListener('submit', async (e) => {
   const apellido = document.getElementById('apellido').value.trim();
   const nombre = document.getElementById('nombre').value.trim();
   const dni = document.getElementById('dni').value.trim();
+  const alphaRegex = /^[A-Za-zÁÉÍÓÚáéíóúñÑüÜ\s']+$/;
 
   if (!apellido || !nombre || !dni) {
     showFlash('Apellido, Nombre y DNI son obligatorios', 'error');
+    return;
+  }
+  if (!alphaRegex.test(apellido) || !alphaRegex.test(nombre)) {
+    showFlash('Apellido y Nombre: solo letras y espacios', 'error');
     return;
   }
 

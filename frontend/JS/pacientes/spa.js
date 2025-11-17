@@ -350,9 +350,14 @@ form.addEventListener('submit', async (e) => {
   const apellido = document.getElementById('apellido').value.trim();
   const nombre = document.getElementById('nombre').value.trim();
   const dni = document.getElementById('dni').value.trim();
+  const alphaRegex = /^[A-Za-zÁÉÍÓÚáéíóúñÑüÜ\s']+$/;
 
   if (!apellido || !nombre || !dni) {
     showFlash('Apellido, Nombre y DNI son obligatorios', 'warning');
+    return;
+  }
+  if (!alphaRegex.test(apellido) || !alphaRegex.test(nombre)) {
+    showFlash('Apellido y Nombre: solo letras y espacios', 'warning');
     return;
   }
 
@@ -393,19 +398,7 @@ form.addEventListener('submit', async (e) => {
 
   try {
     // Evitar DNI duplicado al crear
-    if (editId === null && dni) {
-      try {
-        const r = await fetch(`/pacientes/api/pacientes/?page_size=1&search=${encodeURIComponent(dni)}`, {credentials:'include'});
-        if (r.ok) {
-          const d = await r.json();
-          const list = Array.isArray(d) ? d : (d.results || []);
-          if (list.some(p => String(p.dni) === dni)) {
-            showFlash('Error de validación: dni: Ya existe un paciente con este DNI', 'error');
-            return;
-          }
-        }
-      } catch(_) {}
-    }
+    // ya valida el backend; no bloquear por pacientes inactivos
     if (editId === null) {
       await apiCreate(payload);
       showFlash('Paciente creado correctamente');

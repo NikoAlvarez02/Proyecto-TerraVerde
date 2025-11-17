@@ -9,6 +9,12 @@ class ProfesionalSerializer(serializers.ModelSerializer):
     centros = serializers.PrimaryKeyRelatedField(many=True, queryset=Center.objects.all())
     centros_nombres = serializers.SerializerMethodField(read_only=True)
     especialidad_nombre = serializers.CharField(source='especialidad.nombre', read_only=True)
+    dni = serializers.CharField(validators=[
+        UniqueValidator(
+            queryset=Profesional.objects.filter(activo=True),
+            message='Ya existe un profesional activo con este DNI'
+        )
+    ])
     email = serializers.EmailField(validators=[
         UniqueValidator(
             queryset=Profesional.objects.all(),
@@ -32,7 +38,25 @@ class ProfesionalSerializer(serializers.ModelSerializer):
         # Solo 8 dígitos
         if not re.fullmatch(r"\d{8}", (value or '').strip()):
             raise serializers.ValidationError('El DNI debe tener exactamente 8 dígitos numéricos')
+        # Validar duplicado solo entre activos (excluirse en update)
+        qs = Profesional.objects.filter(dni=(value or '').strip(), activo=True)
+        if self.instance:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise serializers.ValidationError('Ya existe un profesional activo con este DNI')
         return value
+
+    def _solo_letras(self, value: str, field: str) -> str:
+        v = (value or '').strip()
+        if not re.fullmatch(r"[A-Za-zÁÉÍÓÚáéíóúñÑüÜ\s']+", v):
+            raise serializers.ValidationError('Solo se permiten letras y espacios')
+        return v
+
+    def validate_nombre(self, value: str) -> str:
+        return self._solo_letras(value, 'nombre')
+
+    def validate_apellido(self, value: str) -> str:
+        return self._solo_letras(value, 'apellido')
 
     def validate_telefono(self, value: str) -> str:
         v = (value or '').strip()

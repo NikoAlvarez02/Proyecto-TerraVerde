@@ -14,8 +14,8 @@ class PacienteSerializer(serializers.ModelSerializer):
     dni = serializers.CharField(
         validators=[
             UniqueValidator(
-                queryset=Paciente.objects.all(),
-                message="Ya existe un paciente con este DNI"
+                queryset=Paciente.objects.filter(activo=True),
+                message="Ya existe un paciente con este DNI activo"
             )
         ]
     )
@@ -75,6 +75,13 @@ class PacienteSerializer(serializers.ModelSerializer):
         # Exigir exactamente 8 dígitos numéricos
         if not re.fullmatch(r"\d{8}", v):
             raise serializers.ValidationError('El DNI debe tener exactamente 8 dígitos numéricos')
+        # Validar manualmente duplicados solo en activos
+        qs = Paciente.objects.filter(dni=v, activo=True)
+        # En update, excluir el propio
+        if self.instance:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise serializers.ValidationError('Ya existe un paciente activo con este DNI')
         return v
 
     def validate_telefono(self, value: str) -> str:
@@ -85,6 +92,18 @@ class PacienteSerializer(serializers.ModelSerializer):
         if len(digits) < 8 or len(digits) > 15:
             raise serializers.ValidationError('El teléfono debe tener entre 8 y 15 dígitos')
         return v
+
+    def _solo_letras(self, value: str) -> str:
+        v = (value or '').strip()
+        if not re.fullmatch(r"[A-Za-zÁÉÍÓÚáéíóúñÑüÜ\s']+", v):
+            raise serializers.ValidationError('Solo se permiten letras y espacios')
+        return v
+
+    def validate_nombre(self, value: str) -> str:
+        return self._solo_letras(value)
+
+    def validate_apellido(self, value: str) -> str:
+        return self._solo_letras(value)
 
     def get_centro_nombre(self, obj):
         return getattr(obj.centro, 'nombre', None)

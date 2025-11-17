@@ -12,7 +12,7 @@ class Especialidad(models.Model):
         return self.nombre
 
 class Profesional(models.Model):
-    dni = models.CharField("DNI", max_length=10, unique=True)
+    dni = models.CharField("DNI", max_length=10)
     nombre = models.CharField(max_length=50)
     apellido = models.CharField(max_length=50)
     matricula = models.CharField(max_length=20)
