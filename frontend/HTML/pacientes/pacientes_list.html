@@ -50,137 +50,294 @@
 </div>
 
 <!-- Modal Crear/Editar -->
-<div id="modalForm" class="modal" style="display:none;">
-  <div class="card" style="max-width:720px; width:95%; background:#fff; border-radius:12px; padding:16px; margin:0;">
-    <div class="drag-handle" style="display:flex; justify-content:space-between; align-items:center;">
-      <h2 id="modalTitle" class="main-title" style="margin:0;">Registrar Paciente</h2>
-      <button id="btnCerrarModal" class="btn btn-secundario">Cerrar</button>
+<div id="modalForm" class="modal">
+  <div class="card modal-card">
+    <div class="modal-header drag-handle">
+      <div class="title-wrap">
+        <h2 id="modalTitle" class="main-title" style="color:#fff;">Registrar Paciente</h2>
+        <p>Completa los datos personales y de contacto del paciente.</p>
+      </div>
+      <button id="btnCerrarModal" class="modal-close" aria-label="Cerrar modal">✕</button>
     </div>
 
-    <form id="formPaciente" class="form-modal formulario-paciente" style="margin-top:12px;">
-      {% csrf_token %}
-      <input type="hidden" id="pacienteId">
-
-      <div class="form-grid">
-        <div>
-          <label>Apellido</label>
-          <input type="text" id="apellido" name="apellido" required pattern="[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s']+" title="Solo letras y espacios">
-        </div>
-        <div>
-          <label>Nombre</label>
-          <input type="text" id="nombre" name="nombre" required pattern="[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s']+" title="Solo letras y espacios">
-        </div>
-        <div>
-          <label>DNI</label>
-          <input type="text" id="dni" name="dni" required>
-        </div>
-        <div>
-          <label>Fecha Nacimiento</label>
-          <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" required>
-        </div>
-        <div>
-          <label>Teléfono</label>
-          <input type="text" id="telefono" name="telefono">
-        </div>
-        <div>
-          <label>Dirección</label>
-          <input type="text" id="direccion" name="direccion">
-        </div>
-        <div>
-          <label>Nacionalidad</label>
-          <input type="text" id="nacionalidad" name="nacionalidad">
-        </div>
-        <div>
-          <label>Obra Social</label>
-          <select id="obra_social" name="obra_social"></select>
-        </div>
-        <div>
-          <label>
-            <input type="checkbox" id="tiene_representante" name="tiene_representante"> Tiene representante
-          </label>
-        </div>
-
-        <!-- Datos representante (opcionales) -->
-        <div>
-          <label>Rep. Nombre</label>
-          <input type="text" id="rep_nombre" name="rep_nombre">
-        </div>
-        <div>
-          <label>Rep. Apellido</label>
-          <input type="text" id="rep_apellido" name="rep_apellido">
-        </div>
-        <div>
-          <label>Rep. Edad</label>
-          <input type="number" id="rep_edad" name="rep_edad" min="0">
-        </div>
-        <div>
-          <label>Rep. Teléfono</label>
-          <input type="text" id="rep_telefono" name="rep_telefono">
-        </div>
-        <div>
-          <label>Rep. Nacionalidad</label>
-          <input type="text" id="rep_nacionalidad" name="rep_nacionalidad">
-        </div>
-        <div>
-          <label>Email</label>
-          <input type="email" id="email" name="email">
-        </div>
-        <div>
-          <label>Centro</label>
-          <select id="centro" name="centro"></select>
-        </div>
-        <div>
-          <label>Género</label>
-          <select id="genero" name="genero">
-            <option value="">(sin especificar)</option>
-            <option value="M">Masculino</option>
-            <option value="F">Femenino</option>
-            <option value="X">Otro/No binario</option>
-          </select>
-        </div>
-        <div>
-          <label>Grupo Sanguíneo</label>
-          <select id="grupo_sanguineo" name="grupo_sanguineo">
-            <option value="">(sin especificar)</option>
-            <option>A+</option><option>A-</option>
-            <option>B+</option><option>B-</option>
-            <option>AB+</option><option>AB-</option>
-            <option>O+</option><option>O-</option>
-          </select>
-        </div>
-        <div style="grid-column:1/-1;">
-          <label>Antecedentes</label>
-          <textarea id="antecedentes" rows="2"></textarea>
-        </div>
-        <div>
-          <label>Contacto Emergencia (Nombre)</label>
-          <input type="text" id="contacto_emergencia_nombre">
-        </div>
-        <div>
-          <label>Contacto Emergencia (Teléfono)</label>
-          <input type="text" id="contacto_emergencia_telefono">
-        </div>
+    <div class="progress-indicator">
+      <div class="step active" data-step="1">
+        <div class="step-number">1</div>
+        <div class="step-label">Datos Personales</div>
       </div>
-
-      <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px;">
-        <button type="button" id="btnCancelar" class="btn btn-cancelar-edit">Cancelar</button>
-        <button type="submit" class="btn btn-guardar">Guardar</button>
+      <div class="step" data-step="2">
+        <div class="step-number">2</div>
+        <div class="step-label">Información Adicional</div>
       </div>
-    </form>
+    </div>
+
+    <div class="modal-body">
+      <form id="formPaciente" class="form-modal formulario-paciente">
+        {% csrf_token %}
+        <input type="hidden" id="pacienteId">
+
+        <div class="form-section active" data-step="1">
+          <div class="form-grid">
+            <div>
+              <label>Apellido <span class="required">*</span></label>
+              <input type="text" id="apellido" name="apellido" required>
+            </div>
+            <div>
+              <label>Nombre <span class="required">*</span></label>
+              <input type="text" id="nombre" name="nombre" required>
+            </div>
+            <div>
+              <label>DNI <span class="required">*</span></label>
+              <input type="text" id="dni" name="dni" required>
+              <span class="info-text">Verificaremos si el paciente ya existe</span>
+            </div>
+            <div>
+              <label>Fecha Nacimiento <span class="required">*</span></label>
+              <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" required>
+            </div>
+            <div>
+              <label>Teléfono <span class="required">*</span></label>
+              <input type="text" id="telefono" name="telefono" required>
+            </div>
+            <div class="full-width">
+              <label>Dirección Completa <span class="required">*</span></label>
+              <input type="text" id="direccion" name="direccion" placeholder="Calle, Número, Piso/Depto, Ciudad, Provincia" required>
+            </div>
+            <div>
+              <label>Nacionalidad</label>
+              <input type="text" id="nacionalidad" name="nacionalidad">
+            </div>
+            <div>
+              <label>Género</label>
+              <select id="genero" name="genero">
+                <option value="">(sin especificar)</option>
+                <option value="M">Masculino</option>
+                <option value="F">Femenino</option>
+                <option value="X">Otro/No binario</option>
+              </select>
+            </div>
+            <div class="full-width checkbox-row">
+              <input type="checkbox" id="tiene_representante" name="tiene_representante">
+              <label for="tiene_representante" style="margin:0; font-weight:600;">¿El paciente tiene representante legal?</label>
+            </div>
+          </div>
+
+          <div id="representativeSection" class="representative-section">
+            <h3 style="margin:6px 0 14px; color:#495057;">Datos del Representante</h3>
+            <div class="form-grid">
+              <div>
+                <label>Rep. Nombre</label>
+                <input type="text" id="rep_nombre" name="rep_nombre">
+              </div>
+              <div>
+                <label>Rep. Apellido</label>
+                <input type="text" id="rep_apellido" name="rep_apellido">
+              </div>
+              <div>
+                <label>Rep. Edad</label>
+                <input type="number" id="rep_edad" name="rep_edad" min="0">
+              </div>
+              <div>
+                <label>Rep. Teléfono</label>
+                <input type="text" id="rep_telefono" name="rep_telefono">
+              </div>
+              <div>
+                <label>Rep. Nacionalidad</label>
+                <input type="text" id="rep_nacionalidad" name="rep_nacionalidad">
+              </div>
+            </div>
+          </div>
+          <div id="step1Error" class="form-error" style="display:none;"></div>
+        </div>
+
+        <div class="form-section" data-step="2">
+          <div class="form-grid">
+            <div>
+              <label>Obra Social <span class="required">*</span></label>
+              <select id="obra_social" name="obra_social" required></select>
+            </div>
+            <div>
+              <label>Grupo Sanguíneo</label>
+              <select id="grupo_sanguineo" name="grupo_sanguineo">
+                <option value="">(sin especificar)</option>
+                <option>A+</option><option>A-</option>
+                <option>B+</option><option>B-</option>
+                <option>AB+</option><option>AB-</option>
+                <option>O+</option><option>O-</option>
+              </select>
+            </div>
+            <div class="full-width">
+              <label>Antecedentes Médicos</label>
+              <textarea id="antecedentes" rows="2"></textarea>
+            </div>
+            <div>
+              <label>Contacto Emergencia (Nombre)</label>
+              <input type="text" id="contacto_emergencia_nombre">
+            </div>
+            <div>
+              <label>Contacto Emergencia (Teléfono)</label>
+              <input type="text" id="contacto_emergencia_telefono">
+            </div>
+            <div>
+              <label>Email</label>
+              <input type="email" id="email" name="email">
+            </div>
+            <div>
+              <label>Centro</label>
+              <select id="centro" name="centro"></select>
+            </div>
+          </div>
+          <div id="formError" class="form-error" style="display:none;"></div>
+        </div>
+      </form>
+    </div>
+
+    <div class="modal-footer">
+      <div class="footer-left">
+        <button type="button" id="btnCancelar" class="btn btn-secondary">Cancelar</button>
+      </div>
+      <div class="footer-actions">
+        <button type="button" id="btnAnteriorPaso" class="btn btn-secondary" style="display:none;">← Anterior</button>
+        <button type="button" id="btnSiguientePaso" class="btn btn-primary">Siguiente →</button>
+        <button type="submit" form="formPaciente" class="btn btn-success" id="btnGuardarPaciente" style="display:none;">💾 Guardar</button>
+      </div>
+    </div>
   </div>
 </div>
 
 <!-- Confirmación Eliminación -->
 <div id="modalConfirm" class="modal">
-  <div class="card" style="max-width:480px; width:95%; background:#fff; border-radius:12px; padding:16px; margin:0;">
-    <h3 style="margin-top:0;">Confirmar eliminación</h3>
-    <p>¿Seguro que querés eliminar este paciente?</p>
-    <div style="display:flex; gap:8px; justify-content:flex-end;">
-      <button id="btnNo" class="btn btn-regresar">Cancelar</button>
-      <button id="btnSi" class="btn btn-eliminar">Eliminar</button>
+  <div class="card modal-card" style="max-width:520px;">
+    <div class="modal-header">
+      <div class="title-wrap">
+        <h2 style="margin:0; color:#fff;">Confirmar eliminación</h2>
+        <p>Esta acción no se puede deshacer.</p>
+      </div>
+      <button id="btnNoClose" class="modal-close" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-body">
+      <p>¿Seguro que querés eliminar este paciente?</p>
+    </div>
+    <div class="modal-footer">
+      <div class="footer-left">
+        <button id="btnNo" type="button" class="btn btn-secondary">Cancelar</button>
+      </div>
+      <div class="footer-actions">
+        <button id="btnSi" class="btn btn-danger">Eliminar</button>
+      </div>
     </div>
   </div>
 </div>
 
 <script src="{% static 'JS/pacientes/spa.js' %}?v=20251116"></script>
+<script>
+  // Navegación de pasos y secciones dentro del modal de paciente
+  (function(){
+    const sections = Array.from(document.querySelectorAll('#modalForm .form-section'));
+    const steps = Array.from(document.querySelectorAll('#modalForm .step'));
+    const nextBtn = document.getElementById('btnSiguientePaso');
+    const prevBtn = document.getElementById('btnAnteriorPaso');
+    const saveBtn = document.getElementById('btnGuardarPaciente');
+    const repToggle = document.getElementById('tiene_representante');
+    const repSection = document.getElementById('representativeSection');
+    const step1ErrorBox = document.getElementById('step1Error');
+    const step2ErrorBox = document.getElementById('formError');
+    const fechaNac = document.getElementById('fecha_nacimiento');
+    const btnNuevo = document.getElementById('btnNuevo');
+    const btnCerrar = document.getElementById('btnCerrarModal');
+    const btnCancel = document.getElementById('btnCancelar');
+    const btnNoClose = document.getElementById('btnNoClose');
+    let current = 0;
+
+    function showStep(index){
+      sections.forEach((s,i)=>s.classList.toggle('active', i===index));
+      steps.forEach((s,i)=>{
+        s.classList.toggle('active', i===index);
+        s.classList.toggle('completed', i<index);
+      });
+      prevBtn.style.display = index === 0 ? 'none' : 'inline-flex';
+      nextBtn.style.display = index === sections.length-1 ? 'none' : 'inline-flex';
+      saveBtn.style.display = index === sections.length-1 ? 'inline-flex' : 'none';
+    }
+
+    function showStepError(msg){
+      const box = current === 0 ? step1ErrorBox : step2ErrorBox;
+      if(!box) return;
+      box.textContent = msg;
+      box.style.display = 'block';
+      box.scrollIntoView({behavior:'smooth', block:'center'});
+    }
+    function clearStepErrors(){
+      [step1ErrorBox, step2ErrorBox].forEach(box=>{
+        if(!box) return;
+        box.textContent = '';
+        box.style.display = 'none';
+      });
+    }
+
+    function validateCurrent(){
+      clearStepErrors();
+      const requiredInputs = sections[current].querySelectorAll('[required]');
+      let ok = true;
+      requiredInputs.forEach(input=>{
+        if(!input.value.trim()){
+          input.classList.add('error');
+          ok = false;
+        }else{
+          input.classList.remove('error');
+        }
+      });
+      if(current === 0 && fechaNac && fechaNac.value){
+        const min = fechaNac.min ? new Date(fechaNac.min) : null;
+        const max = fechaNac.max ? new Date(fechaNac.max) : null;
+        const val = new Date(fechaNac.value);
+        if((min && val < min) || (max && val > max)){
+          showStepError('La fecha de nacimiento debe estar entre hoy y hace 100 años');
+          fechaNac.classList.add('error');
+          ok = false;
+        }else{
+          fechaNac.classList.remove('error');
+        }
+      }
+      return ok;
+    }
+
+    function resetSteps(){
+      current = 0;
+      showStep(current);
+      if(repToggle && repSection){
+        repSection.classList.toggle('show', repToggle.checked);
+      }
+      clearStepErrors();
+    }
+
+    if(nextBtn && prevBtn && saveBtn && sections.length){
+      showStep(current);
+      nextBtn.addEventListener('click', ()=>{
+        if(!validateCurrent()) return;
+        current = Math.min(current+1, sections.length-1);
+        showStep(current);
+      });
+      prevBtn.addEventListener('click', ()=>{
+        current = Math.max(current-1, 0);
+        showStep(current);
+      });
+    }
+
+    if(repToggle && repSection){
+      repToggle.addEventListener('change', ()=>{
+        repSection.classList.toggle('show', repToggle.checked);
+      });
+    }
+    if(btnNuevo){ btnNuevo.addEventListener('click', resetSteps); }
+    if(btnCerrar){ btnCerrar.addEventListener('click', resetSteps); }
+    if(btnCancel){ btnCancel.addEventListener('click', resetSteps); }
+    if(btnNoClose){
+      btnNoClose.addEventListener('click', ()=>{
+        const cancel = document.getElementById('btnNo');
+        if(cancel){ cancel.click(); }
+      });
+    }
+  })();
+</script>
 {% endblock %}

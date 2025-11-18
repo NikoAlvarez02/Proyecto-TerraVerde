@@ -26,6 +26,18 @@ const btnSi = document.getElementById('btnSi');
 
 const selPaciente = document.getElementById('paciente');
 const selProfesional = document.getElementById('profesional');
+const patientInput = document.getElementById('patientInput');
+const clearPatientBtn = document.getElementById('clearPatientBtn');
+const selectedPatientInfo = document.getElementById('selectedPatientInfo');
+const patientAvatarSmall = document.getElementById('patientAvatarSmall');
+const patientNameSmall = document.getElementById('patientNameSmall');
+const patientDetailsSmall = document.getElementById('patientDetailsSmall');
+const patientSearchOverlay = document.getElementById('patientSearchOverlay');
+const patientSearchBox = document.getElementById('patientSearchBox');
+const patientListEl = document.getElementById('patientList');
+const patientFilters = document.getElementById('patientFilters');
+let pacientesCache = [];
+let filtroPaciente = 'todos';
 
 let editId = null;
 let deleteId = null;
@@ -77,6 +89,8 @@ function openModalCreate() {
   modalTitle.textContent = 'Nuevo Turno';
   form.reset();
   ensureEstadoOptions();
+  setSelectedPatient(null);
+  resetModalPosition();
   modalForm.classList.add('is-open');
   document.body.classList.add('modal-open');
   if (flash) flash.style.display = 'none';
@@ -93,8 +107,9 @@ function openModalEdit(t) {
   document.getElementById('estado').value = t.estado || 'pendiente';
   document.getElementById('motivo').value = t.motivo || '';
   document.getElementById('observaciones').value = t.observaciones || '';
-  selPaciente.value = String(t.paciente ?? '');
+  setSelectedPatient(t.paciente ?? '');
   selProfesional.value = String(t.profesional ?? '');
+  resetModalPosition();
   modalForm.classList.add('is-open');
   document.body.classList.add('modal-open');
   if (flash) flash.style.display = 'none';
@@ -182,6 +197,7 @@ async function loadPacientes() {
   if (!resp.ok) return;
   const data = await resp.json();
   const list = Array.isArray(data) ? data : (data.results || []);
+  pacientesCache = list;
   if (selPaciente) selPaciente.innerHTML = `<option value="">Seleccione...</option>`;
   list.forEach(p => {
     const opt = document.createElement('option');
@@ -209,6 +225,93 @@ async function ensureOptions() {
   await Promise.all([loadPacientes(), loadProfesionales()]);
 }
 
+// ====== Selección de pacientes con buscador ======
+function setSelectedPatient(id) {
+  selPaciente.value = id ? String(id) : '';
+  if (!id) {
+    if (patientInput) patientInput.value = '';
+    selectedPatientInfo?.classList.remove('show');
+    clearPatientBtn?.classList.remove('show');
+    return;
+  }
+  const p = pacientesCache.find(x => String(x.id) === String(id));
+  if (!p) return;
+  if (patientInput) patientInput.value = `${p.apellido || ''}, ${p.nombre || ''}`;
+  if (patientAvatarSmall) patientAvatarSmall.textContent = `${(p.nombre||'?')[0] || ''}${(p.apellido||'?')[0] || ''}`;
+  if (patientNameSmall) patientNameSmall.textContent = `${p.apellido || ''}, ${p.nombre || ''}`;
+  if (patientDetailsSmall) patientDetailsSmall.textContent = `DNI: ${p.dni || ''} • ${p.obra_social_nombre || p.obraSocial || ''} • ${p.telefono || ''}`;
+  selectedPatientInfo?.classList.add('show');
+  clearPatientBtn?.classList.add('show');
+}
+
+function openPatientSearch() {
+  if (!patientSearchOverlay) return;
+  patientSearchOverlay.classList.add('show');
+  if (patientSearchBox) {
+    patientSearchBox.value = '';
+    setTimeout(() => patientSearchBox.focus(), 50);
+  }
+  if (!pacientesCache.length) {
+    loadPacientes().then(renderPatientList);
+  } else {
+    renderPatientList();
+  }
+}
+function closePatientSearch() {
+  patientSearchOverlay?.classList.remove('show');
+}
+function clearSelectedPatient() {
+  setSelectedPatient(null);
+}
+function highlight(text, term) {
+  if (!term) return text;
+  return text.replace(new RegExp(`(${term})`, 'gi'), '<span class="highlight">$1</span>');
+}
+function renderPatientList() {
+  if (!patientListEl) return;
+  const term = (patientSearchBox?.value || '').trim().toLowerCase();
+  let list = pacientesCache.slice();
+  if (filtroPaciente === 'recientes') {
+    list.sort((a,b) => new Date(b.ultima_visita || b.ultimaVisita || b.created || 0) - new Date(a.ultima_visita || a.ultimaVisita || a.created || 0));
+  } else if (filtroPaciente === 'frecuentes') {
+    list.sort((a,b) => (b.visitas || 0) - (a.visitas || 0));
+  }
+  if (term) {
+    list = list.filter(p =>
+      (p.nombre || '').toLowerCase().includes(term) ||
+      (p.apellido || '').toLowerCase().includes(term) ||
+      String(p.dni || '').includes(term)
+    );
+  }
+  if (!list.length) {
+    patientListEl.innerHTML = `<div class="empty-state"><div style="font-size:48px;margin-bottom:12px;">🔍</div><div style="font-weight:600;">No se encontraron pacientes</div></div>`;
+    return;
+  }
+  patientListEl.innerHTML = '';
+  list.forEach(p=>{
+    const nombre = `${p.apellido || ''}, ${p.nombre || ''}`;
+    const dni = String(p.dni || '');
+    const item = document.createElement('div');
+    item.className = 'patient-item';
+    item.innerHTML = `
+      <div class="patient-avatar">${(p.nombre||'?')[0] || ''}${(p.apellido||'?')[0] || ''}</div>
+      <div class="patient-info">
+        <div class="patient-name">${highlight(nombre, term)}</div>
+        <div class="patient-details">DNI: ${highlight(dni, term)} • ${p.obra_social_nombre || p.obraSocial || ''}</div>
+      </div>
+    `;
+    item.addEventListener('click', ()=>{
+      setSelectedPatient(p.id);
+      closePatientSearch();
+    });
+    patientListEl.appendChild(item);
+  });
+}
+function crearNuevoPaciente(){
+  showFlash('Redirige a creación de paciente desde aquí', 'info');
+  closePatientSearch();
+}
+
 // Asegurar opciones de estado en el modal (defensa ante HTML cacheado)
 function ensureEstadoOptions() {
   const sel = document.getElementById('estado');
@@ -225,6 +328,78 @@ function ensureEstadoOptions() {
   if (missing.length) {
     sel.innerHTML = want.map(w => `<option value="${w.v}">${w.l}</option>`).join('');
   }
+}
+
+// ----- drag del modal -----
+function resetModalPosition() {
+  const card = document.querySelector('#modalForm .card');
+  if (!card) return;
+  card.style.position = 'relative';
+  card.style.left = '';
+  card.style.top = '';
+  card.style.margin = '0 auto';
+  card.classList.remove('dragging');
+  modalForm?.classList.remove('dragging');
+}
+
+function makeModalDraggable() {
+  const overlay = document.getElementById('modalForm');
+  const card = document.querySelector('#modalForm .card');
+  const handle = document.querySelector('#modalForm .drag-handle');
+  if (!overlay || !card || !handle) return;
+
+  let isDown = false;
+  let offsetX = 0;
+  let offsetY = 0;
+  const pointer = (e) => (e.touches ? e.touches[0] : e);
+
+  function onDown(e) {
+    const p = pointer(e);
+    const rect = card.getBoundingClientRect();
+    card.style.position = 'absolute';
+    card.style.margin = '0';
+    card.style.left = rect.left + 'px';
+    card.style.top = rect.top + 'px';
+    isDown = true;
+    offsetX = p.clientX - rect.left;
+    offsetY = p.clientY - rect.top;
+    card.classList.add('dragging');
+    overlay.classList.add('dragging');
+    e.preventDefault();
+  }
+  function onMove(e) {
+    if (!isDown) return;
+    const p = pointer(e);
+    let nx = p.clientX - offsetX;
+    let ny = p.clientY - offsetY;
+    const pad = 8;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const cw = card.offsetWidth;
+    const ch = card.offsetHeight;
+    const minX = Math.min(pad, vw - cw - pad);
+    const maxX = Math.max(pad, vw - cw - pad);
+    const minY = -ch + pad;
+    const maxY = vh - pad;
+    nx = Math.min(Math.max(nx, minX), maxX);
+    ny = Math.min(Math.max(ny, minY), maxY);
+    card.style.left = nx + 'px';
+    card.style.top = ny + 'px';
+    e.preventDefault();
+  }
+  function onUp() {
+    isDown = false;
+    card.classList.remove('dragging');
+    overlay.classList.remove('dragging');
+  }
+
+  handle.addEventListener('mousedown', onDown);
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onUp);
+  handle.addEventListener('touchstart', onDown, { passive: false });
+  window.addEventListener('touchmove', onMove, { passive: false });
+  window.addEventListener('touchend', onUp);
+  handle.addEventListener('dblclick', resetModalPosition);
 }
 
 // ====== Evento clic calendario ======
@@ -367,6 +542,14 @@ form?.addEventListener('submit', async (e) => {
     showFlash('Fecha, hora, paciente, profesional y estado son obligatorios', 'warning');
     return;
   }
+  const hasCollision = await checkSlotCollision({
+    fecha,
+    hora,
+    paciente,
+    profesional,
+    excludeId: editId,
+  });
+  if (hasCollision) return;
   const payload = {
     fecha,
     hora,
@@ -392,6 +575,36 @@ form?.addEventListener('submit', async (e) => {
     }
   }
 });
+
+async function checkSlotCollision({ fecha, hora, paciente, profesional, excludeId }) {
+  if (!fecha || !hora) return false;
+  try {
+    const params = new URLSearchParams({ fecha, page_size: '500' });
+    const resp = await fetch(`${API_TURNOS}?${params.toString()}`, { credentials: 'same-origin' });
+    if (!resp.ok) return false;
+    const data = await resp.json();
+    const list = Array.isArray(data) ? data : (data.results || []);
+    const hhmm = (hora || '').slice(0, 5);
+    const sameSlot = list.filter(
+      (t) =>
+        t.id !== excludeId &&
+        (t.fecha_display || '').slice(0, 10) === fecha &&
+        (t.hora_display || '').slice(0, 5) === hhmm
+    );
+    const clashPaciente = sameSlot.find((t) => String(t.paciente) === String(paciente));
+    const clashProfesional = sameSlot.find((t) => String(t.profesional) === String(profesional));
+    if (clashPaciente || clashProfesional) {
+      const parts = [];
+      if (clashPaciente) parts.push('el paciente ya tiene un turno en ese horario');
+      if (clashProfesional) parts.push('el profesional ya tiene un turno en ese horario');
+      showFlash(parts.join(' y '), 'warning');
+      return true;
+    }
+  } catch (err) {
+    console.warn('[turnos] checkSlotCollision', err);
+  }
+  return false;
+}
 
 // ====== eventos ======
 btnNuevo?.addEventListener('click', async () => { await ensureOptions(); openModalCreate(); });
@@ -477,6 +690,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   t_btnPrev?.addEventListener('click', async () => { if (t_prev) { const d = await apiList(t_prev); t_next = d.next; t_prev = d.previous; await renderList(); } });
   t_btnNext?.addEventListener('click', async () => { if (t_next) { const d = await apiList(t_next); t_next = d.next; t_prev = d.previous; await renderList(); } });
 
+  makeModalDraggable();
+  if (patientInput) {
+    patientInput.addEventListener('click', openPatientSearch);
+  }
+  if (patientSearchBox) {
+    patientSearchBox.addEventListener('input', renderPatientList);
+  }
+  if (patientFilters) {
+    patientFilters.querySelectorAll('.filter-tab').forEach(tab=>{
+      tab.addEventListener('click', (e)=>{
+        patientFilters.querySelectorAll('.filter-tab').forEach(t=>t.classList.remove('active'));
+        e.currentTarget.classList.add('active');
+        filtroPaciente = e.currentTarget.dataset.filter || 'todos';
+        renderPatientList();
+      });
+    });
+  }
   console.log('[turnos] calling renderList');
   await renderList();
 });

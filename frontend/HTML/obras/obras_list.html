@@ -54,47 +54,66 @@
 
   <!-- Modal Crear/Editar Obra Social -->
   <div id="modalObra" class="modal">
-    <div class="card" style="max-width:600px; width:95%; background:#fff; border-radius:12px; padding:16px; margin:0;">
-      <div style="display:flex;justify-content:space-between;align-items:center;" class="drag-handle">
-        <h2 id="o_modalTitle" class="main-title" style="margin:0;">Nueva Obra Social</h2>
-        <button id="o_cerrar" class="btn btn-secundario">Cerrar</button>
+    <div class="card modal-card">
+      <div class="modal-header drag-handle">
+        <div class="title-wrap">
+          <h2 id="o_modalTitle" class="main-title" style="color:#fff;">Nueva Obra Social</h2>
+          <p>Gestiona las obras sociales disponibles.</p>
+        </div>
+        <button id="o_cerrar" class="modal-close" aria-label="Cerrar modal">✕</button>
       </div>
-      <form id="o_form" class="form-modal" style="margin-top:12px;">
-        {% csrf_token %}
-        <input type="hidden" id="o_id">
+      <div class="modal-body">
+        <form id="o_form" class="form-modal">
+          {% csrf_token %}
+          <input type="hidden" id="o_id">
 
-        <div class="form-grid">
-          <div>
-            <label>Nombre</label>
-            <input type="text" id="o_nombre" required>
+          <div class="form-grid">
+            <div>
+              <label>Nombre</label>
+              <input type="text" id="o_nombre" required>
+            </div>
+            <div>
+              <label>Código</label>
+              <input type="text" id="o_codigo">
+            </div>
+            <div>
+              <label style="display:flex; align-items:center; gap:8px;">
+                <input type="checkbox" id="o_activo_chk" checked> Activa
+              </label>
+            </div>
           </div>
-          <div>
-            <label>Código</label>
-            <input type="text" id="o_codigo">
-          </div>
-          <div>
-            <label style="display:flex; align-items:center; gap:8px;">
-              <input type="checkbox" id="o_activo_chk" checked> Activa
-            </label>
-          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <div class="footer-left"></div>
+        <div class="footer-actions">
+          <button type="button" id="o_cancelar" class="btn btn-secondary">Cancelar</button>
+          <button type="submit" form="o_form" class="btn btn-success">Guardar</button>
         </div>
-
-        <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px;">
-          <button type="button" id="o_cancelar" class="btn btn-cancelar-edit">Cancelar</button>
-          <button type="submit" class="btn btn-guardar">Guardar</button>
-        </div>
-      </form>
+      </div>
     </div>
   </div>
 
   <!-- Confirmación Eliminación -->
   <div id="o_modalConfirm" class="modal">
-    <div class="card" style="max-width:480px; width:95%; background:#fff; border-radius:12px; padding:16px; margin:0;">
-      <h3 style="margin-top:0;">Confirmar eliminación</h3>
-      <p>¿Seguro que querés eliminar esta obra social?</p>
-      <div style="display:flex; gap:8px; justify-content:flex-end;">
-        <button id="o_no" class="btn btn-regresar">Cancelar</button>
-        <button id="o_si" class="btn btn-eliminar">Eliminar</button>
+    <div class="card modal-card" style="max-width:520px;">
+      <div class="modal-header">
+        <div class="title-wrap">
+          <h2 style="margin:0; color:#fff;">Confirmar eliminación</h2>
+          <p>Esta acción no se puede deshacer.</p>
+        </div>
+        <button type="button" class="modal-close" aria-label="Cerrar" onclick="document.getElementById('o_no')?.click();">✕</button>
+      </div>
+      <div class="modal-body">
+        <p>¿Seguro que querés eliminar esta obra social?</p>
+      </div>
+      <div class="modal-footer">
+        <div class="footer-left">
+          <button id="o_no" class="btn btn-secondary" type="button">Cancelar</button>
+        </div>
+        <div class="footer-actions">
+          <button id="o_si" class="btn btn-danger">Eliminar</button>
+        </div>
       </div>
     </div>
   </div>

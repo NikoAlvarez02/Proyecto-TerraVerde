@@ -27,6 +27,10 @@ const form = document.getElementById('formPaciente');
 const btnNuevo = document.getElementById('btnNuevo');
 const btnCancelar = document.getElementById('btnCancelar');
 const btnCerrarModal = document.getElementById('btnCerrarModal');
+const inputFechaNac = document.getElementById('fecha_nacimiento');
+const formErrorBox = document.getElementById('formError');
+const step1ErrorBox = document.getElementById('step1Error');
+const ERROR_CLASS = 'error-message';
 
 const modalConfirm = document.getElementById('modalConfirm');
 const btnNo = document.getElementById('btnNo');
@@ -64,10 +68,55 @@ function showFlash(msg, type = 'ok') {
   }
 }
 
+function setFieldError(input, msg){
+  if(!input) return;
+  let span = input.parentElement?.querySelector('.' + ERROR_CLASS);
+  if(!span){
+    span = document.createElement('div');
+    span.className = ERROR_CLASS;
+    input.parentElement.appendChild(span);
+  }
+  span.textContent = msg;
+  input.classList.add('error');
+}
+function clearFieldError(input){
+  if(!input) return;
+  input.classList.remove('error');
+  const span = input.parentElement?.querySelector('.' + ERROR_CLASS);
+  if(span) span.textContent = '';
+}
+function setFormError(msg, targetBox=formErrorBox){
+  if(!targetBox) return;
+  targetBox.textContent = msg;
+  targetBox.style.display = 'block';
+  targetBox.scrollIntoView({behavior:'smooth', block:'center'});
+}
+function clearFormError(targetBox=formErrorBox){
+  if(!targetBox) return;
+  targetBox.textContent = '';
+  targetBox.style.display = 'none';
+}
+
+// Limitar fecha de nacimiento a máximo hoy y mínimo hace 100 años
+function setFechaNacimientoLimits() {
+  if (!inputFechaNac) return;
+  const today = new Date();
+  const max = today.toISOString().slice(0, 10);
+  const minDate = new Date();
+  minDate.setFullYear(minDate.getFullYear() - 100);
+  const min = minDate.toISOString().slice(0, 10);
+  inputFechaNac.max = max;
+  inputFechaNac.min = min;
+}
+
 function openModalCreate() {
   editId = null;
   modalTitle.textContent = 'Registrar Paciente';
   form.reset();
+  setFechaNacimientoLimits();
+  clearFieldError(inputFechaNac);
+  clearFormError(step1ErrorBox);
+  clearFormError();
   resetModalPosition();
   modalForm.classList.add('is-open');
   modalForm.style.display = 'flex';
@@ -80,6 +129,7 @@ function openModalEdit(p) {
   editId = p.id;
   modalTitle.textContent = 'Editar Paciente';
   form.reset();
+  setFechaNacimientoLimits();
 
   // set values
   document.getElementById('pacienteId').value = p.id ?? '';
@@ -109,6 +159,9 @@ function openModalEdit(p) {
   try { const os = document.getElementById('obra_social'); if (os) os.innerHTML = os.innerHTML; if (os) os.value = p.obra_social || ''; } catch (e) {}
 
   resetModalPosition();
+  clearFieldError(inputFechaNac);
+  clearFormError(step1ErrorBox);
+  clearFormError();
   modalForm.classList.add('is-open');
   modalForm.style.display = 'flex';
   document.body.classList.add('modal-open');
@@ -363,6 +416,22 @@ form.addEventListener('submit', async (e) => {
 
   // normalizar fecha: soportar dd/mm/yyyy -> yyyy-mm-dd
   const rawDate = document.getElementById('fecha_nacimiento').value || '';
+  if (inputFechaNac && rawDate) {
+    const min = inputFechaNac.min ? new Date(inputFechaNac.min) : null;
+    const max = inputFechaNac.max ? new Date(inputFechaNac.max) : null;
+    const val = new Date(rawDate);
+    if ((min && val < min) || (max && val > max)) {
+      const msg = 'La fecha de nacimiento debe estar entre hoy y hace 100 años';
+      setFieldError(inputFechaNac, msg);
+      setFormError(msg, step1ErrorBox);
+      showFlash(msg, 'warning');
+      inputFechaNac.focus();
+      return;
+    }
+    clearFieldError(inputFechaNac);
+    clearFormError(step1ErrorBox);
+    clearFormError();
+  }
   function normalizeDate(v){
     if(!v) return null;
     const m = v.match(/^\s*(\d{2})\/(\d{2})\/(\d{4})\s*$/);
@@ -406,27 +475,37 @@ form.addEventListener('submit', async (e) => {
       await apiUpdate(editId, payload);
       showFlash('Paciente actualizado correctamente');
     }
+    clearFormError(step1ErrorBox);
+    clearFormError();
     closeModal();
     await renderList();
   } catch (err) {
     console.error(err);
+    clearFormError(step1ErrorBox);
+    clearFormError();
     if (err.type === 'validation' && err.detail) {
-      // Mostrar todos los errores de DRF en una sola línea
       try{
         const parts = Object.entries(err.detail).map(([k,v]) => `${k}: ${Array.isArray(v)?v.join(', '):String(v)}`);
-        showFlash(`Error de validación: ${parts.join(' | ')}`, 'error');
+        const msg = `Error de validaci?n: ${parts.join(' | ')}`;
+        setFormError(msg);
+        showFlash(msg, 'error');
       }catch(_){
         const firstField = Object.keys(err.detail)[0];
         const msg = Array.isArray(err.detail[firstField]) ? err.detail[firstField][0] : JSON.stringify(err.detail);
-        showFlash(`Error de validación: ${firstField}: ${msg}`, 'error');
+        setFormError(`${firstField}: ${msg}`);
+        showFlash(`Error de validaci?n: ${firstField}: ${msg}`, 'error');
       }
     } else if (err.type === 'http') {
-      showFlash(`Error HTTP ${err.status}: ${err.body?.slice(0,140) || 'sin detalle'}`, 'error');
+      const msg = `Error HTTP ${err.status}: ${err.body?.slice(0,140) || 'sin detalle'}`;
+      setFormError(msg);
+      showFlash(msg, 'error');
     } else {
+      setFormError('No se pudo guardar el paciente');
       showFlash('No se pudo guardar el paciente', 'error');
     }
   }
 });
+
 
 // ---------- eventos UI ----------
 btnNuevo.addEventListener('click', openModalCreate);
@@ -451,6 +530,10 @@ btnSi.addEventListener('click', async () => {
 document.addEventListener('DOMContentLoaded', () => {
   renderList();
   makeModalDraggable();
+  setFechaNacimientoLimits();
+  if(inputFechaNac){
+    inputFechaNac.addEventListener('input', ()=> clearFieldError(inputFechaNac));
+  }
   // Mantener los modales abiertos: solo botones cierran
 });
 

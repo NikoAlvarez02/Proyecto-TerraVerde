@@ -85,85 +85,134 @@
 
 <!-- Modal Crear/Editar -->
 <div id="modalForm" class="modal">
-  <div class="card" style="max-width:720px; width:95%; background:#fff; border-radius:12px; padding:16px; margin:0;">
-    <div class="drag-handle" style="display:flex; justify-content:space-between; align-items:center;">
-      <h2 id="modalTitle" class="main-title" style="margin:0;">Nuevo Turno</h2>
-      <button id="btnCerrarModal" class="btn btn-secundario">Cerrar</button>
+  <div class="card modal-card">
+    <div class="modal-header drag-handle">
+      <div class="title-wrap">
+        <h2 id="modalTitle" class="main-title" style="color:#fff;">Nuevo Turno</h2>
+        <p>Agendá o edita el turno con la información necesaria.</p>
+      </div>
+      <button id="btnCerrarModal" class="modal-close" aria-label="Cerrar modal">✕</button>
     </div>
 
-    <form id="formTurno" class="form-modal" style="margin-top:12px;">
-      {% csrf_token %}
-      <input type="hidden" id="turnoId">
+    <div class="modal-body">
+      <form id="formTurno" class="form-modal">
+        {% csrf_token %}
+        <input type="hidden" id="turnoId">
 
-      <div class="form-grid">
-        <div>
-          <label for="fecha">Fecha</label>
-          <input type="date" id="fecha" name="fecha" required>
+        <div class="form-grid">
+          <div>
+            <label for="fecha">Fecha</label>
+            <input type="date" id="fecha" name="fecha" required>
+          </div>
+          <div>
+            <label for="hora">Hora</label>
+            <input type="time" id="hora" name="hora" required min="08:00" max="20:00">
+          </div>
+          <div class="full-width patient-selector">
+            <label>Paciente *</label>
+            <div class="search-input-container">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="patientInput" class="patient-search-input" placeholder="Buscar paciente por nombre o DNI..." readonly onclick="openPatientSearch()">
+              <button type="button" class="clear-patient" id="clearPatientBtn" onclick="clearSelectedPatient()">✕</button>
+            </div>
+            <div class="selected-patient-info" id="selectedPatientInfo">
+              <div class="patient-info-header">
+                <div class="patient-avatar-small" id="patientAvatarSmall"></div>
+                <div class="patient-info-details">
+                  <div class="patient-name-small" id="patientNameSmall"></div>
+                  <div class="patient-details-small" id="patientDetailsSmall"></div>
+                </div>
+              </div>
+            </div>
+            <!-- select oculto para compatibilidad con js existente -->
+            <select id="paciente" name="paciente" style="display:none;">
+              <option value="">Cargando...</option>
+            </select>
+          </div>
+          <div>
+            <label for="profesional">Profesional</label>
+            <select id="profesional" name="profesional" required>
+              <option value="">Cargando...</option>
+            </select>
+          </div>
+          <div>
+            <label for="estado">Estado</label>
+            <select id="estado" name="estado" required>
+              <option value="pendiente">Pendiente</option>
+              <option value="confirmado">Confirmado</option>
+              <option value="atendido">Atendido</option>
+              <option value="ausente">Ausente</option>
+              <option value="cancelado">Cancelado</option>
+            </select>
+          </div>
+          <div class="full-width">
+            <label for="motivo">Motivo</label>
+            <input type="text" id="motivo" name="motivo" placeholder="Opcional">
+          </div>
+          <div class="full-width">
+            <label for="observaciones">Observaciones</label>
+            <textarea id="observaciones" name="observaciones" rows="3" placeholder="Opcional"></textarea>
+          </div>
         </div>
-        <div>
-          <label for="hora">Hora</label>
-          <input type="time" id="hora" name="hora" required min="08:00" max="20:00">
-        </div>
-        <div>
-          <label for="paciente">Paciente</label>
-          <select id="paciente" name="paciente" required>
-            <option value="">Cargando...</option>
-          </select>
-        </div>
-        <div>
-          <label for="profesional">Profesional</label>
-          <select id="profesional" name="profesional" required>
-            <option value="">Cargando...</option>
-          </select>
-        </div>
-        <div>
-          <label for="estado">Estado</label>
-          <select id="estado" name="estado" required>
-            <option value="pendiente">Pendiente</option>
-            <option value="confirmado">Confirmado</option>
-            <option value="atendido">Atendido</option>
-            <option value="ausente">Ausente</option>
-            <option value="cancelado">Cancelado</option>
-          </select>
-        </div>
-        <div style="grid-column:1 / -1;">
-          <label for="motivo">Motivo</label>
-          <input type="text" id="motivo" name="motivo" placeholder="Opcional">
-        </div>
-        <div style="grid-column:1 / -1;">
-          <label for="observaciones">Observaciones</label>
-          <textarea id="observaciones" name="observaciones" rows="3" placeholder="Opcional"></textarea>
-        </div>
-      </div>
+      </form>
+    </div>
 
-      <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px;">
-        <button type="button" id="btnCancelar" class="btn btn-cancelar-edit">Cancelar</button>
-        <button type="submit" class="btn btn-guardar">Guardar</button>
+    <div class="modal-footer">
+      <div class="footer-left"></div>
+      <div class="footer-actions">
+        <button type="button" id="btnCancelar" class="btn btn-secondary">Cancelar</button>
+        <button type="submit" form="formTurno" class="btn btn-success">Guardar</button>
       </div>
-    </form>
+    </div>
   </div>
 </div>
 
 <!-- Confirmación Eliminación -->
 <div id="modalConfirm" class="modal">
-  <div class="card" style="max-width:480px; width:95%; background:#fff; border-radius:12px; padding:16px; margin:0;">
-    <h3 style="margin-top:0;">Confirmar eliminación</h3>
-    <p>¿Seguro que querés eliminar este turno?</p>
-    <div style="display:flex; gap:8px; justify-content:flex-end;">
-      <button id="btnNo" class="btn btn-regresar">Cancelar</button>
-      <button id="btnSi" class="btn btn-eliminar">Eliminar</button>
+  <div class="card modal-card" style="max-width:520px;">
+    <div class="modal-header">
+      <div class="title-wrap">
+        <h2 style="margin:0; color:#fff;">Confirmar eliminación</h2>
+        <p>Esta acción no se puede deshacer.</p>
+      </div>
+      <button type="button" class="modal-close" aria-label="Cerrar" onclick="document.getElementById('btnNo')?.click();">✕</button>
+    </div>
+    <div class="modal-body">
+      <p>¿Seguro que querés eliminar este turno?</p>
+    </div>
+    <div class="modal-footer">
+      <div class="footer-left">
+        <button id="btnNo" class="btn btn-secondary" type="button">Cancelar</button>
+      </div>
+      <div class="footer-actions">
+        <button id="btnSi" class="btn btn-danger">Eliminar</button>
+      </div>
     </div>
   </div>
 </div>
 
-<script src="{% static 'JS/turnos/spa.js' %}?v=12"></script>
+<!-- Modal búsqueda de paciente -->
+<div class="search-modal-overlay" id="patientSearchOverlay">
+  <div class="search-modal">
+    <div class="search-modal-header">
+      <h3>🔍 Buscar Paciente</h3>
+      <button class="close-btn" type="button" onclick="closePatientSearch()">✕</button>
+    </div>
+    <div class="search-modal-body">
+      <div class="search-input-container">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-box" id="patientSearchBox" placeholder="Buscar por nombre, apellido o DNI..." autocomplete="off">
+      </div>
+      <div class="filter-tabs" id="patientFilters">
+        <button class="filter-tab active" data-filter="todos">📋 Todos</button>
+        <button class="filter-tab" data-filter="recientes">🕐 Recientes</button>
+        <button class="filter-tab" data-filter="frecuentes">⭐ Frecuentes</button>
+      </div>
+      <div class="patient-list" id="patientList"></div>
+      <button class="btn-new-patient" type="button" onclick="crearNuevoPaciente()">➕ Crear Nuevo Paciente</button>
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'JS/turnos/spa.js' %}?v=13"></script>
 {% endblock %}
-
-
-
-
-
-
-
-
-

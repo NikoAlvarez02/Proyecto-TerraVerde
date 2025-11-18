@@ -15,7 +15,8 @@
       <a class="btn btn-primary" href="{% url 'reportes:dashboard' %}">Ir al Panel de Reportes</a>
     </div>
 
-    <section class="card" style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+    <!-- Sección documentos -->
+    <section id="docSection" class="card" style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
       <label>Documento:
         <select id="tipo">
           <option value="historia">Historia Clínica</option>
@@ -37,23 +38,23 @@
           <select id="prof_sel" style="min-width:220px"></select>
         </label>
       </span>
-      <button id="btnGenerar" class="btn btn-primary">Generar</button>
+      <button id="btnGenerar" class="btn btn-primary">Generar PDF</button>
     </section>
 
-    <h2 class="rp-subtitle">Estadísticos</h2>
-    <section class="card" style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
-      <label>Estadística:
-        <select id="est_tipo">
-          <option value="atenciones">Gestión de Turnos y Asistencia</option>
-          <option value="productividad">Desempeño por profesional</option>
-          <option value="diagnosticos">Pacientes y Seguimiento Clínico</option>
-        </select>
-      </label>
-      <label>Desde: <input id="est_desde" type="date"></label>
-      <label>Hasta: <input id="est_hasta" type="date"></label>
-      <button id="btnEst" class="btn btn-primary">Generar</button>
-      <button id="btnEstCsv" class="btn btn-outline">Exportar CSV</button>
+    <!-- Sección estadísticas -->
+    <section id="statsSection" class="card" style="display:none; gap:12px; align-items:flex-start; flex-wrap:wrap;">
+      <div>
+        <h2 class="rp-subtitle" id="statsTitle" style="margin:0;">Estadística</h2>
+        <p style="margin:4px 0 0; color:#51646f;">Selecciona un rango para exportar</p>
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        <label>Desde: <input id="est_desde" type="date"></label>
+        <label>Hasta: <input id="est_hasta" type="date"></label>
+        <button id="btnStatsPdf" class="btn btn-primary">Exportar PDF</button>
+        <button id="btnStatsExcel" class="btn btn-outline">Exportar Excel</button>
+      </div>
     </section>
+
     <section class="card">
       <h3 class="rp-subtitle">Resultado</h3>
       <div id="resultado" class="rp-result"></div>
@@ -67,6 +68,10 @@
     const profSel = document.getElementById('prof_sel');
     const spanRangos = document.querySelector('.rangos');
     const spanCert = document.querySelector('.cert');
+    const statsSection = document.getElementById('statsSection');
+    const docSection = document.getElementById('docSection');
+    const resultDiv = document.getElementById('resultado');
+
     tipoSel.addEventListener('change', ()=>{
       const t = tipoSel.value;
       spanRangos.style.display = (t === 'historia' || t === 'epicrisis') ? 'inline-flex' : 'none';
@@ -77,7 +82,7 @@
       const t = tipoSel.value;
       const paciente_id = pacSel.value ? parseInt(pacSel.value) : NaN;
       if(!paciente_id){
-        document.getElementById('resultado').textContent = 'Seleccione un paciente';
+        resultDiv.textContent = 'Seleccione un paciente';
         return;
       }
       const params = { paciente: paciente_id, orientacion:'portrait', tamano_pagina:'A4' };
@@ -98,61 +103,22 @@
         url = '/reportes/api/pacientes/certificado/';
       }
       const res = await exportReportToPDF(url, params);
-      const div = document.getElementById('resultado');
       if(res && (res.archivo_url || res.archivo_pdf)){
-        const url = res.archivo_url || res.archivo_pdf;
-        const optText = (tipoSel.options[tipoSel.selectedIndex]||{}).text || 'Reporte';
-        renderDownloadAndAutoClear(url, optText);
-      } else {
-        div.textContent = (res && (res.error || res.detail)) ? (res.error || res.detail) : 'Error generando reporte';
-      }
-    };
-
-    document.getElementById('btnEst').onclick = async ()=>{
-      const t = document.getElementById('est_tipo').value;
-      const body = { desde: document.getElementById('est_desde').value || undefined,
-                     hasta: document.getElementById('est_hasta').value || undefined };
-      let url = '';
-      if (t === 'atenciones') url = '/reportes/api/estadisticas/atenciones/';
-      if (t === 'productividad') url = '/reportes/api/estadisticas/productividad/';
-      if (t === 'diagnosticos') url = '/reportes/api/estadisticas/diagnosticos/';
-      const res = await exportReportToPDF(url, body);
-      const div = document.getElementById('resultado');
-      if(res && (res.archivo_url || res.archivo_pdf)){
-        const url = res.archivo_url || res.archivo_pdf;
-        const estSel = document.getElementById('est_tipo');
-        const optText = (estSel.options[estSel.selectedIndex]||{}).text || 'Reporte';
-        renderDownloadAndAutoClear(url, optText);
-      } else {
-        div.textContent = (res && (res.error || res.detail)) ? (res.error || res.detail) : 'Error generando reporte';
-      }
-    };
-
-    document.getElementById('btnEstCsv').onclick = async ()=>{
-      const t = document.getElementById('est_tipo').value;
-      const desde = document.getElementById('est_desde').value || '';
-      const hasta = document.getElementById('est_hasta').value || '';
-      let url = '';
-      if (t === 'atenciones') url = `/reportes/api/estadisticas/atenciones/datos/?desde=${encodeURIComponent(desde)}&hasta=${encodeURIComponent(hasta)}`;
-      if (t === 'productividad') url = `/reportes/api/estadisticas/productividad/datos/?desde=${encodeURIComponent(desde)}&hasta=${encodeURIComponent(hasta)}`;
-      if (t === 'diagnosticos') url = `/reportes/api/estadisticas/diagnosticos/datos/?desde=${encodeURIComponent(desde)}&hasta=${encodeURIComponent(hasta)}`;
-      try{
-        const r = await fetch(url, {credentials:'include'});
-        if(!r.ok){ throw new Error(await r.text()); }
-        const data = await r.json();
-        const csv = jsonToCsv(t, data);
-        const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+        const fileUrl = res.archivo_url || res.archivo_pdf;
         const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `reporte_${t}.csv`;
+        a.href = fileUrl;
+        a.target = '_blank';
+        a.download = (tipoSel.options[tipoSel.selectedIndex]?.text || 'reporte') + '.pdf';
+        document.body.appendChild(a);
         a.click();
-      }catch(e){
-        const div = document.getElementById('resultado');
-        div.textContent = 'No se pudo exportar CSV';
+        setTimeout(()=>a.remove(), 200);
+        resultDiv.textContent = 'PDF generado y descargado';
+      } else {
+        resultDiv.textContent = (res && (res.error || res.detail)) ? (res.error || res.detail) : 'Error generando reporte';
       }
     };
 
-    function jsonToCsv(tipo, data){
+    function mkCsv(tipo, data){
       const rows = [];
       if (tipo === 'atenciones'){
         rows.push(['centro','atenciones']);
@@ -166,66 +132,80 @@
         rows.push(['diagnostico','casos']);
         (data.por_cie10||[]).forEach(it=> rows.push([it.diagnostico_codigo||'N/A', it.c]));
       }
-      return rows.map(r => r.map(v => String(v).replaceAll('"','""')).map(v=>`"${v}"`).join(',')).join('\n');
+      return rows.map(r => r.map(v => String(v).replaceAll('"','""')).map(v=>`"${v}"`).join(',')).join('\\n');
     }
 
-    // Renderiza botón de descarga y, tras iniciar la descarga, limpia y refresca
-    async function renderDownloadAndAutoClear(fileUrl, suggestedName){
-      try{
-        const div = document.getElementById('resultado');
-        div.innerHTML = '';
-        const btn = document.createElement('a');
-        btn.className = 'btn btn-outline';
-        btn.href = '#';
-        btn.textContent = 'Descargar PDF';
-        btn.addEventListener('click', async (ev)=>{
-          ev.preventDefault();
-          try{
-            const r = await fetch(fileUrl, {credentials:'include'});
-            if(!r.ok) throw new Error('download');
-            const blob = await r.blob();
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            const base = (suggestedName || 'reporte')
-              .toString().normalize('NFD').replace(/\p{Diacritic}/gu,'')
-              .replace(/[^A-Za-z0-9_\- ]+/g,'').replace(/\s+/g,'_');
-            a.download = `${base}.pdf`;
-            document.body.appendChild(a);
-            a.click();
-            setTimeout(()=>{
-              URL.revokeObjectURL(url);
-              a.remove();
-              div.textContent = '';
-              location.reload();
-            }, 400);
-          }catch(e){
-            // Fallback: abrir nueva pestaña y refrescar igual
-            window.open(fileUrl, '_blank');
-            setTimeout(()=>{ div.textContent=''; location.reload(); }, 600);
-          }
-        });
-        div.appendChild(btn);
-      }catch(e){ /* noop */ }
-    }
-
-    // Preseleccionar desde querystring (?est=productividad)
+    // Inicializar para vistas de estadísticas directas
     (function initFromQuery(){
       try{
         const p = new URLSearchParams(location.search);
         const est = p.get('est');
-        if (est){
-          const estSel = document.getElementById('est_tipo');
-          if ([...estSel.options].some(o=>o.value===est)){
-            estSel.value = est;
-            document.querySelector('.rp-subtitle').scrollIntoView({behavior:'smooth'});
+        if (!est) return;
+        docSection.style.display = 'none';
+        statsSection.style.display = 'flex';
+        const friendly = {
+          atenciones: 'Gestión de Turnos y Asistencia',
+          productividad: 'Productividad por Profesional',
+          diagnosticos: 'Pacientes y Seguimiento Clínico'
+        }[est] || 'Estadística';
+        document.getElementById('statsTitle').textContent = friendly;
+
+        document.getElementById('btnStatsPdf').onclick = async ()=>{
+          const desdeVal = document.getElementById('est_desde').value;
+          const hastaVal = document.getElementById('est_hasta').value;
+          const payload = {};
+          if (desdeVal) payload.desde = desdeVal;
+          if (hastaVal) payload.hasta = hastaVal;
+          try{
+            const url = `/reportes/api/estadisticas/${est}/`;
+            const res = await exportReportToPDF(url, payload);
+            if(res && (res.archivo_url || res.archivo_pdf)){
+              const fileUrl = res.archivo_url || res.archivo_pdf;
+              const a = document.createElement('a');
+              a.href = fileUrl;
+              a.target = '_blank';
+              a.download = `${friendly}.pdf`;
+              document.body.appendChild(a);
+              a.click();
+              setTimeout(()=>a.remove(), 200);
+              resultDiv.textContent = 'PDF generado y descargado';
+            } else {
+              resultDiv.textContent = (res && (res.error || res.detail)) ? (res.error || res.detail) : 'Ingrese fechas válidas';
+            }
+          }catch(e){
+            resultDiv.textContent = 'Ingrese fechas válidas';
           }
-        }
+        };
+
+        document.getElementById('btnStatsExcel').onclick = async ()=>{
+          const desde = document.getElementById('est_desde').value || '';
+          const hasta = document.getElementById('est_hasta').value || '';
+          const qs = [];
+          if (desde) qs.push(`desde=${encodeURIComponent(desde)}`);
+          if (hasta) qs.push(`hasta=${encodeURIComponent(hasta)}`);
+          const url = `/reportes/api/estadisticas/${est}/datos/${qs.length ? '?' + qs.join('&') : ''}`;
+          try{
+            const r = await fetch(url, {credentials:'include'});
+            if(!r.ok){ throw new Error(await r.text()); }
+            const data = await r.json();
+            const csv = mkCsv(est, data);
+            // Entregamos en formato compatible con Excel (.xlsx usando MIME de Excel)
+            const blob = new Blob([csv], {type:'application/vnd.ms-excel;charset=utf-8;'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `estadistica_${est}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(()=>a.remove(), 200);
+            resultDiv.textContent = 'Excel exportado';
+          }catch(e){
+            resultDiv.textContent = 'Ingrese fechas válidas';
+          }
+        };
       }catch(e){}
     })();
-  </script>
-  <script>
-    // Cargar combos para evitar confusión con IDs
+
+    // Cargar combos para documentos
     async function apiJson(url){ const r = await fetch(url, {credentials:'include'}); if(!r.ok) throw new Error(await r.text()); return r.json(); }
     (async ()=>{
       try{
@@ -233,8 +213,8 @@
           apiJson('/pacientes/api/pacientes/'),
           apiJson('/profesionales/api/profesionales/')
         ]);
-        pacSel.innerHTML = '<option value="">-- Seleccionar --</option>' + pacs.map(p=>`<option value="${p.id}">${p.apellido}, ${p.nombre} (${p.dni||''})</option>`).join('');
-        profSel.innerHTML = '<option value="">-- Seleccionar --</option>' + profs.map(p=>`<option value="${p.id}">${p.apellido}, ${p.nombre}</option>`).join('');
+        pacSel.innerHTML = '<option value=\"\">-- Seleccionar --</option>' + pacs.map(p=>`<option value=\"${p.id}\">${p.apellido}, ${p.nombre} (${p.dni||''})</option>`).join('');
+        profSel.innerHTML = '<option value=\"\">-- Seleccionar --</option>' + profs.map(p=>`<option value=\"${p.id}\">${p.apellido}, ${p.nombre}</option>`).join('');
       }catch(e){ console.error(e); }
     })();
   </script>

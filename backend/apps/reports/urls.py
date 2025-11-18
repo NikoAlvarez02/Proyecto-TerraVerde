@@ -9,6 +9,7 @@ from .views import (
     PatientReportViewSet,
     StatisticsReportViewSet,
     AdministrativeReportViewSet,
+    AuditLogView,
 )
 
 app_name = 'reportes'
@@ -25,6 +26,8 @@ urlpatterns = [
     # Alias legados para compatibilidad con accesos directos a archivos
     path('report_viewer.html', login_required(TemplateView.as_view(template_name='reports/report_viewer.html')), name='viewer_file'),
     path('visor_de_reportes.html', login_required(TemplateView.as_view(template_name='reports/report_viewer.html')), name='viewer_file_alt'),
+    path('auditoria/', login_required(TemplateView.as_view(template_name='reports/auditoria.html')), name='auditoria_view'),
+    path('api/auditoria/', login_required(AuditLogView.as_view({'get': 'list'})), name='auditoria_api'),
     path('api/pacientes/', PatientReportViewSet.as_view({'post': 'historia'}), name='paciente-historia'),
     path('api/pacientes/epicrisis/', PatientReportViewSet.as_view({'post': 'epicrisis'}), name='paciente-epicrisis'),
     path('api/pacientes/certificado/', PatientReportViewSet.as_view({'post': 'certificado'}), name='paciente-certificado'),

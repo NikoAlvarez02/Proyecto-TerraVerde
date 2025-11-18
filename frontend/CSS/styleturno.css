@@ -117,31 +117,296 @@ body {
 html { scrollbar-gutter: stable both-edges; }
 
 /* ==============================
-   Modal (centrado 3 cm) + Drag
+   Modal (overlay + tarjeta)
 ============================== */
 .modal{
   display:none;
   position:fixed; inset:0;
-  background:rgba(0,0,0,.35);
-  justify-content:center; align-items:flex-start;
-  padding-top:3cm; z-index:1000;
+  background:rgba(0,0,0,.55);
+  justify-content:center; align-items:center;
+  padding:18px; z-index:1000;
 }
 .modal.is-open{ display:flex; }
-
-/* La tarjeta del modal: drag por transform (genérico para todos los modales) */
-.modal .modal-card{
-  max-width:720px; width:min(720px,95vw);
-  background:#fff; border-radius:12px; padding:16px; margin:0;
-  transform: translate(0,0);
-  will-change: transform;
-  max-height: calc(100vh - 6cm);
-  overflow:auto;
-}
-.modal .drag-handle{ cursor: move; }
 .modal.dragging, .modal .drag-handle{ user-select: none; }
 
+/* Tarjeta / panel del modal (drag handle se mantiene en el header) */
+.modal .card,
+.modal .modal-card{
+  width:min(920px, 96vw);
+  max-height:90vh;
+  background:#fff;
+  border-radius:16px;
+  border:1px solid #e9ecef;
+  box-shadow:0 20px 60px rgba(0,0,0,0.25);
+  margin:0;
+  padding:0;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  transform: translate(0,0);
+  will-change: transform;
+}
+
+.modal-header{
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color:#fff;
+  padding:20px 24px;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+}
+.modal-header .title-wrap{ display:flex; flex-direction:column; gap:6px; }
+.modal-header h2{ margin:0; font-size:24px; font-weight:700; }
+.modal-header p{ margin:0; opacity:0.9; font-size:14px; }
+.modal-close{
+  background: rgba(255,255,255,0.2);
+  border:none;
+  color:#fff;
+  width:36px; height:36px;
+  border-radius:50%;
+  cursor:pointer;
+  display:grid; place-items:center;
+  font-size:18px;
+  transition: background .2s ease, transform .2s ease;
+}
+.modal-close:hover{ background: rgba(255,255,255,0.35); transform: translateY(-1px); }
+
+.progress-indicator{
+  display:flex;
+  padding:14px 20px;
+  background:#f8f9fa;
+  border-bottom:1px solid #e9ecef;
+  gap:18px;
+}
+.progress-indicator .step{ flex:1; display:flex; align-items:center; position:relative; gap:10px; }
+.progress-indicator .step:not(:last-child)::after{
+  content:''; position:absolute; left:50%; right:-50%; top:16px; height:2px;
+  background:#dee2e6; z-index:0;
+}
+.progress-indicator .step-number{
+  width:32px; height:32px; border-radius:50%;
+  background:#dee2e6; color:#6c757d;
+  display:grid; place-items:center;
+  font-weight:700; font-size:14px; z-index:1;
+}
+.progress-indicator .step-label{ color:#6c757d; font-weight:600; font-size:14px; }
+.progress-indicator .step.active .step-number{ background:#667eea; color:#fff; }
+.progress-indicator .step.active .step-label{ color:#667eea; }
+.progress-indicator .step.completed .step-number{ background:#28a745; color:#fff; }
+.progress-indicator .step.active:not(:last-child)::after{ background:#667eea; }
+
+.modal-body{
+  padding:22px 24px;
+  overflow-y:auto;
+  background:#fff;
+  flex:1;
+}
+.modal-footer{
+  padding:16px 24px;
+  background:#f8f9fa;
+  border-top:1px solid #e9ecef;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:wrap;
+}
+.modal-footer .footer-actions{ display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+.modal-footer .footer-left{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+
+/* Drag affordance se aplica sobre el header */
+.modal .drag-handle{ cursor: move; }
+
+/* Formularios en modales */
+.modal form{ margin:0; }
+.modal .form-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));
+  gap:16px;
+}
+.modal .form-grid .full-width,
+.modal .form-grid [data-span="full"]{
+  grid-column:1 / -1;
+}
+.modal label{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-weight:700;
+  color:#495057;
+  margin-bottom:6px;
+}
+.modal label .required{ color:#dc3545; }
+.modal input,
+.modal select,
+.modal textarea{
+  width:100%;
+  padding:10px 12px;
+  border:2px solid #e9ecef;
+  border-radius:10px;
+  font-size:14px;
+  transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+  font-family: inherit;
+}
+.modal input:focus,
+.modal select:focus,
+.modal textarea:focus{
+  outline:none;
+  border-color:#667eea;
+  box-shadow:0 0 0 3px rgba(102,126,234,0.12);
+}
+.modal input.valid{ border-color:#28a745; background:#f8fff9; }
+.modal input.error,
+.modal select.error{ border-color:#dc3545; background:#fff5f5; }
+.modal .info-text{ font-size:12px; color:#6c757d; margin-top:3px; }
+.modal .checkbox-row{
+  display:flex; align-items:center; gap:8px;
+  padding:10px 12px; border:1px solid #e9ecef; border-radius:10px; background:#f8f9fa;
+}
+.modal textarea{ resize:vertical; min-height:90px; }
+.modal .error-message{
+  color:#dc3545;
+  font-size:12px;
+  margin-top:4px;
+}
+
+/* ====== Patient search (turnos modal) ====== */
+.patient-selector .search-input-container{ position:relative; }
+.patient-search-input{
+  width:100%;
+  padding-left:38px;
+  cursor:pointer;
+}
+.search-icon{
+  position:absolute; left:12px; top:50%;
+  transform:translateY(-50%);
+  font-size:18px; color:#6c757d; pointer-events:none;
+}
+.clear-patient{
+  position:absolute; right:8px; top:50%;
+  transform:translateY(-50%);
+  background:#dc3545; color:#fff; border:none;
+  border-radius:50%; width:24px; height:24px;
+  cursor:pointer; font-size:14px; display:none;
+  align-items:center; justify-content:center;
+}
+.clear-patient.show{ display:flex; }
+.selected-patient-info{
+  margin-top:12px; padding:12px;
+  background:#e7f3ff; border-left:4px solid #0066cc;
+  border-radius:8px; display:none;
+}
+.selected-patient-info.show{ display:block; }
+.patient-info-header{ display:flex; align-items:center; gap:12px; margin-bottom:8px; }
+.patient-avatar-small{
+  width:40px; height:40px; border-radius:50%;
+  background: linear-gradient(135deg, #7b8fa3 0%, #596d7e 100%);
+  color:#fff; display:flex; align-items:center; justify-content:center;
+  font-weight:700; font-size:16px;
+}
+.patient-info-details{ flex:1; }
+.patient-name-small{ font-weight:700; font-size:15px; color:#212529; }
+.patient-details-small{ font-size:12px; color:#6c757d; margin-top:2px; }
+
+.search-modal-overlay{
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,0.7); z-index:2000;
+  justify-content:center; align-items:center;
+}
+.search-modal-overlay.show{ display:flex; }
+.search-modal{
+  background:#fff; border-radius:16px;
+  width:90%; max-width:600px; max-height:85vh;
+  overflow:hidden; display:flex; flex-direction:column;
+}
+.search-modal-header{
+  background: linear-gradient(135deg, #7b8fa3 0%, #596d7e 100%);
+  color:#fff; padding:16px 20px; display:flex;
+  align-items:center; justify-content:space-between;
+}
+.search-modal-body{ padding:16px; overflow-y:auto; flex:1; }
+.search-box{
+  width:100%; padding:12px 16px 12px 44px;
+  border:2px solid #e9ecef; border-radius:12px;
+  font-size:15px; margin-bottom:12px;
+}
+.search-box:focus{ border-color:#7b8fa3; box-shadow:0 0 0 3px rgba(123,143,163,0.1); outline:none; }
+.filter-tabs{ display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+.filter-tab{
+  padding:8px 16px; border:2px solid #e9ecef;
+  background:#fff; border-radius:20px; cursor:pointer;
+  font-size:13px; font-weight:600; color:#6c757d;
+}
+.filter-tab.active{ background: linear-gradient(135deg, #7b8fa3 0%, #596d7e 100%); color:#fff; border-color:transparent; }
+.patient-list{ display:flex; flex-direction:column; gap:10px; max-height:320px; overflow-y:auto; }
+.patient-item{
+  padding:12px; border:2px solid #e9ecef; border-radius:12px;
+  cursor:pointer; display:flex; align-items:center; gap:12px;
+}
+.patient-item:hover{ border-color:#7b8fa3; background:#f8f9fa; transform:translateX(4px); }
+.patient-avatar{
+  width:44px; height:44px; border-radius:50%;
+  background: linear-gradient(135deg, #7b8fa3 0%, #596d7e 100%);
+  color:#fff; display:flex; align-items:center; justify-content:center;
+  font-weight:700; font-size:16px; flex-shrink:0;
+}
+.patient-info{ flex:1; }
+.patient-name{ font-weight:700; font-size:14px; color:#212529; margin-bottom:4px; }
+.patient-details{ font-size:12px; color:#6c757d; }
+.highlight{ background:#fff176; padding:2px 0; }
+.empty-state{ text-align:center; padding:24px 12px; color:#6c757d; }
+.btn-new-patient{
+  width:100%; padding:12px; background:#fff;
+  border:2px dashed #7b8fa3; color:#7b8fa3;
+  border-radius:8px; cursor:pointer; font-weight:700;
+  margin-top:12px;
+}
+.btn-new-patient:hover{ background:#f8f9fa; border-color:#596d7e; }
+.modal .form-error{
+  margin-top:10px;
+  padding:10px 12px;
+  border-radius:10px;
+  border:1px solid #dc3545;
+  background:#fff5f5;
+  color:#721c24;
+  font-size:13px;
+}
+
+.form-section{ display:none; }
+.form-section.active{ display:block; }
+.representative-section{ display:none; animation: fadeIn .2s ease; }
+.representative-section.show{ display:block; }
+@keyframes fadeIn{
+  from{ opacity:0; transform: translateY(-8px); }
+  to{ opacity:1; transform: translateY(0); }
+}
+
+/* Botones dentro del modal con el look nuevo */
+.modal .btn{
+  padding:12px 20px;
+  border:none;
+  border-radius:10px;
+  font-size:14px;
+  font-weight:700;
+  cursor:pointer;
+  transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+  display:inline-flex; align-items:center; gap:8px;
+}
+.modal .btn:hover{ transform: translateY(-1px); }
+.modal .btn:disabled{ opacity:0.6; cursor:not-allowed; }
+.modal .btn-primary{ background:linear-gradient(135deg, #667eea 0%, #764ba2 100%); color:#fff; box-shadow:0 4px 14px rgba(102,126,234,0.35); }
+.modal .btn-primary:hover{ filter: brightness(1.02); }
+.modal .btn-secondary{ background:#6c757d; color:#fff; }
+.modal .btn-secondary:hover{ background:#5a6268; }
+.modal .btn-success{ background:#28a745; color:#fff; }
+.modal .btn-success:hover{ background:#218838; }
+.modal .btn-danger{ background:#dc3545; color:#fff; }
+.modal .btn-danger:hover{ background:#c82333; }
+.modal .btn-ghost{ background:rgba(255,255,255,0.12); color:#fff; border:1px solid rgba(255,255,255,0.3); }
+
 /* Utilidades grid para el formulario */
-.grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.grid-2{ display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:16px; }
 .col-span-2{ grid-column:1 / -1; }
 
 /* ==============================

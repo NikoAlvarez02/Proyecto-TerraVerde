@@ -51,5 +51,13 @@ admin.site.register(User, CustomUserAdmin)
 @admin.register(AuditoriaLog)
 class AuditoriaLogAdmin(admin.ModelAdmin):
     list_display = ('fecha','usuario','accion','modelo','objeto_id','ruta','ip')
-    list_filter = ('accion','fecha')
-    search_fields = ('usuario__username','modelo','objeto_id','ruta','detalle')
+    list_filter = ('accion','fecha','usuario')
+    search_fields = ('usuario__username','modelo','objeto_id','ruta','detalle','ip')
+    actions = None
+    readonly_fields = [f.name for f in AuditoriaLog._meta.fields]
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False

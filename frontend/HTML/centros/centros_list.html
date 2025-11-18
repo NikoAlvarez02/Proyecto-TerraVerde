@@ -53,57 +53,76 @@
 
   <!-- Modal Crear/Editar Centro -->
   <div id="modalCentro" class="modal">
-    <div class="modal-card card">
-      <div style="display:flex;justify-content:space-between;align-items:center;" class="drag-handle">
-        <h2 id="modalTitle" class="main-title" style="margin:0;">Nuevo Centro</h2>
-        <button id="btnCerrarCentro" class="btn btn-secundario">Cerrar</button>
+    <div class="card modal-card">
+      <div class="modal-header drag-handle">
+        <div class="title-wrap">
+          <h2 id="modalTitle" class="main-title" style="color:#fff;">Nuevo Centro</h2>
+          <p>Completa los datos principales del centro.</p>
+        </div>
+        <button id="btnCerrarCentro" class="modal-close" aria-label="Cerrar modal">✕</button>
       </div>
-      <form id="formCentro" class="grid-2" style="margin-top:12px;">
-        {% csrf_token %}
-        <input type="hidden" id="c_id">
+      <div class="modal-body">
+        <form id="formCentro" class="grid-2">
+          {% csrf_token %}
+          <input type="hidden" id="c_id">
 
-        <div>
-          <label>Código</label>
-          <input type="text" id="c_codigo" required>
+          <div>
+            <label>Código</label>
+            <input type="text" id="c_codigo" required>
+          </div>
+          <div>
+            <label>Nombre</label>
+            <input type="text" id="c_nombre" required>
+          </div>
+          <div class="col-span-2">
+            <label>Dirección</label>
+            <input type="text" id="c_direccion" required>
+          </div>
+          <div>
+            <label>Teléfono</label>
+            <input type="text" id="c_telefono">
+          </div>
+          <div>
+            <label>Email</label>
+            <input type="email" id="c_email">
+          </div>
+          <div class="col-span-2">
+            <label style="display:flex; align-items:center; gap:8px;">
+              <input type="checkbox" id="c_activo_chk" checked> Activo
+            </label>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <div class="footer-left"></div>
+        <div class="footer-actions">
+          <button type="button" id="btnCancelarCentro" class="btn btn-secondary">Cancelar</button>
+          <button type="submit" form="formCentro" class="btn btn-success">Guardar</button>
         </div>
-        <div>
-          <label>Nombre</label>
-          <input type="text" id="c_nombre" required>
-        </div>
-        <div class="col-span-2">
-          <label>Dirección</label>
-          <input type="text" id="c_direccion" required>
-        </div>
-        <div>
-          <label>Teléfono</label>
-          <input type="text" id="c_telefono">
-        </div>
-        <div>
-          <label>Email</label>
-          <input type="email" id="c_email">
-        </div>
-        <div class="col-span-2">
-          <label style="display:flex; align-items:center; gap:8px;">
-            <input type="checkbox" id="c_activo_chk" checked> Activo
-          </label>
-        </div>
-
-        <div class="col-span-2" style="display:flex; gap:8px; justify-content:flex-end;">
-          <button type="button" id="btnCancelarCentro" class="btn btn-cancelar-edit">Cancelar</button>
-          <button type="submit" class="btn btn-guardar">Guardar</button>
-        </div>
-      </form>
+      </div>
     </div>
   </div>
 
   <!-- Confirmación Eliminación -->
   <div id="modalConfirm" class="modal">
-    <div class="card" style="max-width:480px; width:95%; margin:40px auto; background:#fff; border-radius:12px; padding:16px;">
-      <h3 style="margin-top:0;">Confirmar eliminación</h3>
-      <p>¿Seguro que querés eliminar este centro?</p>
-      <div style="display:flex; gap:8px; justify-content:flex-end;">
-        <button id="btnNo" class="btn btn-regresar">Cancelar</button>
-        <button id="btnSi" class="btn btn-eliminar">Eliminar</button>
+    <div class="card modal-card" style="max-width:520px;">
+      <div class="modal-header">
+        <div class="title-wrap">
+          <h2 style="margin:0; color:#fff;">Confirmar eliminación</h2>
+          <p>Esta acción no se puede deshacer.</p>
+        </div>
+        <button class="modal-close" type="button" aria-label="Cerrar" onclick="document.getElementById('btnNo')?.click();">✕</button>
+      </div>
+      <div class="modal-body">
+        <p>¿Seguro que querés eliminar este centro?</p>
+      </div>
+      <div class="modal-footer">
+        <div class="footer-left">
+          <button id="btnNo" type="button" class="btn btn-secondary">Cancelar</button>
+        </div>
+        <div class="footer-actions">
+          <button id="btnSi" class="btn btn-danger">Eliminar</button>
+        </div>
       </div>
     </div>
   </div>

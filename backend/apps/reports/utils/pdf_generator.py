@@ -104,9 +104,16 @@ def _load_logo_base64() -> str | None:
         except Exception:
             pass
         root = Path(getattr(settings, 'ROOT_DIR', settings.BASE_DIR)).resolve()
-        # 1) Carpeta de frontend en el repo
+        # 1) Carpeta de frontend en el repo (mismo nivel que backend)
         fe = root / 'frontend' / 'ASSETS'
         candidates += [fe / n for n in (
+            'logo.png',
+            'logo_trifusion.png',
+            'terraverde.png',
+        )]
+        # 1b) Si BASE_DIR apunta a backend/, probar el padre
+        fe_parent = root.parent / 'frontend' / 'ASSETS'
+        candidates += [fe_parent / n for n in (
             'logo.png',
             'logo_trifusion.png',
             'terraverde.png',
@@ -178,6 +185,8 @@ def _logo_file_uri() -> str | None:
         try:
             root = Path(getattr(settings, 'ROOT_DIR', settings.BASE_DIR)).resolve()
             candidates += [root / 'frontend' / 'ASSETS' / n for n in ('terraverde.png','logo.png','logo_trifusion.png')]
+            # incluir padre si BASE_DIR es backend/
+            candidates += [root.parent / 'frontend' / 'ASSETS' / n for n in ('terraverde.png','logo.png','logo_trifusion.png')]
         except Exception:
             pass
         try:
@@ -423,3 +432,9 @@ def generate_certificate_pdf(paciente, profesional, datos: dict, params: dict, a
         f"Observaciones: {datos.get('observaciones','')} ",
     ]
     return _simple_pdf(title, lines, params.get('tamano_pagina','A4'), params.get('orientacion','portrait'))
+
+
+# Alias para compatibilidad: las vistas de estadísticas invocan generate_statistics_pdf
+def generate_statistics_pdf(title: str, resumen: dict, params: dict, charts=None, avatar_b64: str | None = None) -> bytes:
+    """Enruta al generador estadístico principal manteniendo el nombre esperado por las vistas."""
+    return generate_statistical_report_pdf(title, resumen, params, charts=charts, avatar_b64=avatar_b64)

@@ -56,114 +56,122 @@
 
 <!-- Modal Crear/Editar -->
 <div id="modalForm" class="modal">
-  <div class="card" style="max-width:720px; width:95%; background:#fff; border-radius:12px; padding:16px; margin:0;">
-    <div class="drag-handle" style="display:flex; justify-content:space-between; align-items:center;">
-      <h2 id="modalTitle" class="main-title" style="margin:0;">Nuevo Profesional</h2>
-      <button id="btnCerrarModal" class="btn btn-secundario">Cerrar</button>
+  <div class="card modal-card">
+    <div class="modal-header drag-handle">
+      <div class="title-wrap">
+        <h2 id="modalTitle" class="main-title" style="color:#fff;">Nuevo Profesional</h2>
+        <p>Registra o edita la información del profesional.</p>
+      </div>
+      <button id="btnCerrarModal" class="modal-close" aria-label="Cerrar modal">✕</button>
     </div>
 
-    <form id="formProfesional" class="form-modal" style="margin-top:12px;">
-      {% csrf_token %}
-      <input type="hidden" id="profesionalId">
+    <div class="modal-body">
+      <form id="formProfesional" class="form-modal">
+        {% csrf_token %}
+        <input type="hidden" id="profesionalId">
 
-      <div class="form-grid">
-        <div>
-          <label>Apellido</label>
-          <input type="text" id="apellido" name="apellido" required pattern="[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s']+" title="Solo letras y espacios">
+        <div class="form-grid">
+          <div>
+            <label>Apellido</label>
+            <input type="text" id="apellido" name="apellido" required>
+          </div>
+          <div>
+            <label>Nombre</label>
+            <input type="text" id="nombre" name="nombre" required>
+          </div>
+          <div>
+            <label>DNI</label>
+            <input type="text" id="dni" name="dni" required>
+          </div>
+          <div>
+            <label>Matrícula</label>
+            <input type="text" id="matricula" name="matricula">
+          </div>
+          <div>
+            <label>Especialidad</label>
+            <select id="especialidad" name="especialidad"></select>
+          </div>
+          <div>
+            <label>Teléfono</label>
+            <input type="text" id="telefono" name="telefono">
+          </div>
+          <div>
+            <label>Email</label>
+            <input type="email" id="email" name="email">
+          </div>
+          <div class="col-span-2">
+            <label>Dirección</label>
+            <input type="text" id="direccion" name="direccion">
+          </div>
+          <div class="col-span-2">
+            <label>
+              <input type="checkbox" id="activo" name="activo" checked> Activo
+            </label>
+          </div>
         </div>
-        <div>
-          <label>Nombre</label>
-          <input type="text" id="nombre" name="nombre" required pattern="[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s']+" title="Solo letras y espacios">
+      </form>
+
+      <!-- Gestión de horarios por centro -->
+      <div id="horariosWrap" style="margin-top:18px; border-top:1px solid #eee; padding-top:14px; display:none;">
+        <h3 style="margin:0 0 10px;">Horarios por Centro</h3>
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr 1fr; gap:10px; align-items:end;">
+          <div>
+            <label>Centro</label>
+            <select id="h_centro"></select>
+          </div>
+          <div>
+            <label>Día</label>
+            <select id="h_dia">
+              <option value="0">Lunes</option>
+              <option value="1">Martes</option>
+              <option value="2">Miércoles</option>
+              <option value="3">Jueves</option>
+              <option value="4">Viernes</option>
+              <option value="5">Sábado</option>
+              <option value="6">Domingo</option>
+            </select>
+          </div>
+          <div>
+            <label>Hora inicio</label>
+            <input type="time" id="h_inicio" />
+          </div>
+          <div>
+            <label>Hora fin</label>
+            <input type="time" id="h_fin" />
+          </div>
+          <div style="display:flex; gap:8px;">
+            <label style="display:flex; align-items:center; gap:6px;">
+              <input type="checkbox" id="h_activo" checked /> Activo
+            </label>
+            <button id="h_agregar" class="btn" type="button">Agregar</button>
+          </div>
         </div>
-        <div>
-          <label>DNI</label>
-          <input type="text" id="dni" name="dni" required>
-        </div>
-        <div>
-          <label>Matrícula</label>
-          <input type="text" id="matricula" name="matricula">
-        </div>
-        <div>
-          <label>Especialidad</label>
-          <select id="especialidad" name="especialidad"></select>
-        </div>
-        <div>
-          <label>Teléfono</label>
-          <input type="text" id="telefono" name="telefono">
-        </div>
-        <div>
-          <label>Email</label>
-          <input type="email" id="email" name="email">
-        </div>
-        <div style="grid-column:1 / -1;">
-          <label>Dirección</label>
-          <input type="text" id="direccion" name="direccion">
-        </div>
-        <div style="grid-column:1 / -1;">
-          <label>
-            <input type="checkbox" id="activo" name="activo" checked> Activo
-          </label>
+
+        <div style="overflow:auto; margin-top:10px;">
+          <table class="tabla-listado">
+            <thead>
+              <tr>
+                <th>Centro</th>
+                <th>Día</th>
+                <th>Desde</th>
+                <th>Hasta</th>
+                <th>Activo</th>
+                <th style="width:1%; white-space:nowrap;"></th>
+              </tr>
+            </thead>
+            <tbody id="horarios-tbody">
+              <tr><td colspan="6">Sin horarios</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
+    </div>
 
-      <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px;">
-        <button type="button" id="btnCancelar" class="btn btn-cancelar-edit">Cancelar</button>
-        <button type="submit" class="btn btn-guardar">Guardar</button>
-      </div>
-    </form>
-
-    <!-- Gestión de horarios por centro -->
-    <div id="horariosWrap" style="margin-top:18px; border-top:1px solid #eee; padding-top:14px; display:none;">
-      <h3 style="margin:0 0 10px;">Horarios por Centro</h3>
-      <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr 1fr; gap:10px; align-items:end;">
-        <div>
-          <label>Centro</label>
-          <select id="h_centro"></select>
-        </div>
-        <div>
-          <label>Día</label>
-          <select id="h_dia">
-            <option value="0">Lunes</option>
-            <option value="1">Martes</option>
-            <option value="2">Miércoles</option>
-            <option value="3">Jueves</option>
-            <option value="4">Viernes</option>
-            <option value="5">Sábado</option>
-            <option value="6">Domingo</option>
-          </select>
-        </div>
-        <div>
-          <label>Hora inicio</label>
-          <input type="time" id="h_inicio" />
-        </div>
-        <div>
-          <label>Hora fin</label>
-          <input type="time" id="h_fin" />
-        </div>
-        <div style="display:flex; gap:8px;">
-          <label style="display:flex; align-items:center; gap:6px;">
-            <input type="checkbox" id="h_activo" checked /> Activo
-          </label>
-          <button id="h_agregar" class="btn" type="button">Agregar</button>
-        </div>
-      </div>
-
-      <div style="overflow:auto; margin-top:10px;">
-        <table class="tabla-listado">
-          <thead>
-            <tr>
-              <th>Centro</th>
-              <th>Día</th>
-              <th>Desde</th>
-              <th>Hasta</th>
-              <th>Activo</th>
-              <th style="width:1%; white-space:nowrap;"></th>
-            </tr>
-          </thead>
-          <tbody id="horarios-tbody">
-            <tr><td colspan="6">Sin horarios</td></tr>
-          </tbody>
-        </table>
+    <div class="modal-footer">
+      <div class="footer-left"></div>
+      <div class="footer-actions">
+        <button type="button" id="btnCancelar" class="btn btn-secondary">Cancelar</button>
+        <button type="submit" form="formProfesional" class="btn btn-success">Guardar</button>
       </div>
     </div>
   </div>
@@ -175,7 +183,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   try{
     const modal = document.getElementById('modalForm');
     if(!modal) return;
-    // crear select múltiple si no existe aún
     if(!document.getElementById('centrosSelect')){
       const wrapper = document.createElement('div');
       wrapper.innerHTML = `
@@ -202,12 +209,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 <!-- Confirmación Eliminación -->
 <div id="modalConfirm" class="modal">
-  <div class="card" style="max-width:480px; width:95%; background:#fff; border-radius:12px; padding:16px; margin:0;">
-    <h3 style="margin-top:0;">Confirmar eliminación</h3>
-    <p>¿Seguro que querés eliminar este profesional?</p>
-    <div style="display:flex; gap:8px; justify-content:flex-end;">
-      <button id="btnNo" class="btn btn-regresar">Cancelar</button>
-      <button id="btnSi" class="btn btn-eliminar">Eliminar</button>
+  <div class="card modal-card" style="max-width:520px;">
+    <div class="modal-header">
+      <div class="title-wrap">
+        <h2 style="margin:0; color:#fff;">Confirmar eliminación</h2>
+        <p>Esta acción no se puede deshacer.</p>
+      </div>
+      <button type="button" class="modal-close" aria-label="Cerrar" onclick="document.getElementById('btnNo')?.click();">✕</button>
+    </div>
+    <div class="modal-body">
+      <p>¿Seguro que querés eliminar este profesional?</p>
+    </div>
+    <div class="modal-footer">
+      <div class="footer-left">
+        <button id="btnNo" class="btn btn-secondary" type="button">Cancelar</button>
+      </div>
+      <div class="footer-actions">
+        <button id="btnSi" class="btn btn-danger">Eliminar</button>
+      </div>
     </div>
   </div>
 </div>

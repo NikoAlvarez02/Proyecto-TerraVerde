@@ -56,99 +56,119 @@
 
 <!-- Modal Crear/Editar -->
 <div id="modalForm" class="modal">
-  <div class="card" style="max-width:720px; width:95%; background:#fff; border-radius:12px; padding:16px; margin:0;">
-    <div class="drag-handle" style="display:flex; justify-content:space-between; align-items:center;">
-      <h2 id="modalTitle" class="main-title" style="margin:0;">Nuevo Usuario</h2>
-      <button id="btnCerrarModal" class="btn btn-secundario">Cerrar</button>
+  <div class="card modal-card">
+    <div class="modal-header drag-handle">
+      <div class="title-wrap">
+        <h2 id="modalTitle" class="main-title" style="color:#fff;">Nuevo Usuario</h2>
+        <p>Asigna credenciales, rol y permisos.</p>
+      </div>
+      <button id="btnCerrarModal" class="modal-close" aria-label="Cerrar modal">✕</button>
     </div>
 
-    <form id="formUsuario" class="form-modal" style="margin-top:12px;">
-      {% csrf_token %}
-      <input type="hidden" id="usuarioId">
+    <div class="modal-body">
+      <form id="formUsuario" class="form-modal">
+        {% csrf_token %}
+        <input type="hidden" id="usuarioId">
 
-      <div class="form-grid">
-        <div>
-          <label>Username</label>
-          <input type="text" id="username" name="username" required>
-        </div>
-        <div>
-          <label>Email</label>
-          <input type="email" id="email" name="email" required>
-        </div>
-        <div>
-          <label>Nombre</label>
-          <input type="text" id="first_name" name="first_name">
-        </div>
-        <div>
-          <label>Apellido</label>
-          <input type="text" id="last_name" name="last_name">
+        <div class="form-grid">
+          <div>
+            <label>Username</label>
+            <input type="text" id="username" name="username" required>
+          </div>
+          <div>
+            <label>Email</label>
+            <input type="email" id="email" name="email" required>
+          </div>
+          <div>
+            <label>Nombre</label>
+            <input type="text" id="first_name" name="first_name">
+          </div>
+          <div>
+            <label>Apellido</label>
+            <input type="text" id="last_name" name="last_name">
+          </div>
+
+          <div>
+            <label>Password</label>
+            <input type="password" id="password" name="password">
+          </div>
+          <div>
+            <label>Confirmar Password</label>
+            <input type="password" id="password2" name="password2">
+          </div>
+
+          <div>
+            <label><input type="checkbox" id="is_active" name="is_active" checked> Activo</label>
+          </div>
+          <div>
+            <label><input type="checkbox" id="is_staff" name="is_staff"> Staff</label>
+          </div>
+          <div class="col-span-2">
+            <label><input type="checkbox" id="is_superuser" name="is_superuser"> Superusuario</label>
+          </div>
         </div>
 
-        <div>
-          <label>Password</label>
-          <input type="password" id="password" name="password">
+        <div class="col-span-2" style="grid-column:1 / -1; padding-top:8px; border-top:1px solid #eee;">
+          <h3 style="margin:6px 0;">Perfil y Permisos</h3>
         </div>
-        <div>
-          <label>Confirmar Password</label>
-          <input type="password" id="password2" name="password2">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div>
+            <label>Rol</label>
+            <select id="perfil_rol">
+              <option value="recep">Recepcionista</option>
+              <option value="prof">Profesional</option>
+              <option value="admin">Administrador</option>
+            </select>
+          </div>
+          <div>
+            <label><input type="checkbox" id="pf_admin_usuarios"> Puede administrar usuarios</label>
+          </div>
+          <div>
+            <label><input type="checkbox" id="pf_ver_pacientes" checked> Puede ver pacientes</label>
+          </div>
+          <div>
+            <label><input type="checkbox" id="pf_ver_calendario" checked> Puede ver calendario</label>
+          </div>
+          <div>
+            <label><input type="checkbox" id="pf_generar_reportes"> Puede generar reportes</label>
+          </div>
+          <div>
+            <label><input type="checkbox" id="pf_ver_estadisticas"> Puede ver estadisticas</label>
+          </div>
         </div>
+      </form>
+    </div>
 
-        <div>
-          <label><input type="checkbox" id="is_active" name="is_active" checked> Activo</label>
-        </div>
-        <div>
-          <label><input type="checkbox" id="is_staff" name="is_staff"> Staff</label>
-        </div>
-        <div style="grid-column:1 / -1;">
-          <label><input type="checkbox" id="is_superuser" name="is_superuser"> Superusuario</label>
-        </div>
+    <div class="modal-footer">
+      <div class="footer-left"></div>
+      <div class="footer-actions">
+        <button type="button" id="btnCancelar" class="btn btn-secondary">Cancelar</button>
+        <button type="submit" form="formUsuario" class="btn btn-success">Guardar</button>
       </div>
-
-      <div class="col-span-2" style="grid-column:1 / -1; padding-top:8px; border-top:1px solid #eee;">
-        <h3 style="margin:6px 0;">Perfil y Permisos</h3>
-      </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-        <div>
-          <label>Rol</label>
-          <select id="perfil_rol">
-            <option value="recep">Recepcionista</option>
-            <option value="prof">Profesional</option>
-            <option value="admin">Administrador</option>
-          </select>
-        </div>
-        <div>
-          <label><input type="checkbox" id="pf_admin_usuarios"> Puede administrar usuarios</label>
-        </div>
-        <div>
-          <label><input type="checkbox" id="pf_ver_pacientes" checked> Puede ver pacientes</label>
-        </div>
-        <div>
-          <label><input type="checkbox" id="pf_ver_calendario" checked> Puede ver calendario</label>
-        </div>
-        <div>
-          <label><input type="checkbox" id="pf_generar_reportes"> Puede generar reportes</label>
-        </div>
-        <div>
-          <label><input type="checkbox" id="pf_ver_estadisticas"> Puede ver estadisticas</label>
-        </div>
-      </div>
-
-      <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px;">
-        <button type="button" id="btnCancelar" class="btn btn-cancelar-edit">Cancelar</button>
-        <button type="submit" class="btn btn-guardar">Guardar</button>
-      </div>
-    </form>
+    </div>
   </div>
 </div>
 
 <!-- Confirmacion Eliminacion -->
 <div id="modalConfirm" class="modal">
-  <div class="card" style="max-width:480px; width:95%; background:#fff; border-radius:12px; padding:16px; margin:0;">
-    <h3 style="margin-top:0;">Confirmar eliminacion</h3>
-    <p>¿Seguro que queres eliminar este usuario?</p>
-    <div style="display:flex; gap:8px; justify-content:flex-end;">
-      <button id="btnNo" class="btn btn-regresar">Cancelar</button>
-      <button id="btnSi" class="btn btn-eliminar">Eliminar</button>
+  <div class="card modal-card" style="max-width:520px;">
+    <div class="modal-header">
+      <div class="title-wrap">
+        <h2 style="margin:0; color:#fff;">Confirmar eliminación</h2>
+        <p>Esta acción no se puede deshacer.</p>
+      </div>
+      <button type="button" class="modal-close" aria-label="Cerrar" onclick="document.getElementById('btnNo')?.click();">✕</button>
+    </div>
+    <div class="modal-body">
+      <p>¿Seguro que queres eliminar este usuario?</p>
+    </div>
+    <div class="modal-footer">
+      <div class="footer-left">
+        <button id="btnNo" class="btn btn-secondary" type="button">Cancelar</button>
+      </div>
+      <div class="footer-actions">
+        <button id="btnSi" class="btn btn-danger">Eliminar</button>
+      </div>
     </div>
   </div>
 </div>

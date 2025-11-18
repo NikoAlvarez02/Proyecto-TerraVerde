@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Administración | TerraVerde</title>
+  <title>Administraci&oacute;n | TerraVerde</title>
   <link rel="icon" href="{% static 'ASSETS/terraverde.ico' %}">
   <link rel="stylesheet" href="{% static 'CSS/stylespaciente.css' %}">
   <style>
@@ -13,7 +13,6 @@
       --blue-500:#4fa3f7; --purple-500:#9c89e9; --amber-200:#ffecb3; --ink-900:#263238;
       --card:#ffffff; --border:#e7ebef;
     }
-    /* Afinar header y sidebar con la paleta */
     header{ background: var(--card); border-bottom: 1px solid var(--border); }
     header h2{
       background: linear-gradient(135deg, var(--p-600) 0%, var(--p-500) 100%);
@@ -26,10 +25,10 @@
 </head>
 <body>
 <header>
-  <h2>Administración TerraVerde</h2>
+  <h2>Administraci&oacute;n TerraVerde</h2>
   <form method="post" action="{% url 'logout' %}" style="float: right;">
     {% csrf_token %}
-    <button class="sesion" type="submit">Cerrar Sesión</button>
+    <button class="sesion" type="submit">Cerrar Sesi&oacute;n</button>
   </form>
   <div style="clear: both;"></div>
 </header>
@@ -37,64 +36,59 @@
 <main>
   <section class="content full">
     <div class="hero">
-      <div class="hero-title">Submódulos</div>
-      <div class="hero-sub">Accesos rápidos para administrar tu sistema</div>
+      <div class="hero-title">Subm&oacute;dulos</div>
+      <div class="hero-sub">Accesos r&aacute;pidos para administrar tu sistema</div>
     </div>
     <div class="modules-grid">
       {% if request.user.is_authenticated %}
         {% if request.user.is_staff or request.user.is_superuser %}
           <a class="module-card" href="{% url 'admin:index' %}" target="_blank" rel="noopener">
-            <span class="icon">⚙️</span>
-            <span class="title">Panel de administración de Django</span>
-            <span class="desc">Gestión avanzada del sitio</span>
+            <span class="icon">🛠️</span>
+            <span class="title">Panel de administraci&oacute;n de Django</span>
+            <span class="desc">Gesti&oacute;n avanzada del sitio</span>
           </a>
           <a class="module-card" href="{% url 'centros:list' %}">
-            <span class="icon">🏢</span>
+            <span class="icon">🏥</span>
             <span class="title">Centros</span>
             <span class="desc">Administración de centros</span>
           </a>
           <a class="module-card" href="{% url 'obras:list' %}">
-            <span class="icon">🏥</span>
+            <span class="icon">🧾</span>
             <span class="title">Obras Sociales</span>
             <span class="desc">Cargar y gestionar</span>
           </a>
           <a class="module-card" href="{% url 'historias:historia' %}">
-            <span class="icon">📋</span>
-            <span class="title">Historia Clínica</span>
-            <span class="desc">Gestión de historias</span>
+            <span class="icon">📄</span>
+            <span class="title">Historia Cl&iacute;nica</span>
+            <span class="desc">Gesti&oacute;n de historias</span>
           </a>
           <a class="module-card" href="{% url 'reportes:dashboard' %}">
-            <span class="icon">📈</span>
+            <span class="icon">📊</span>
             <span class="title">Reportes</span>
             <span class="desc">Panel de reportes</span>
           </a>
-          <a class="module-card" href="{% url 'reportes:viewer' %}">
-            <span class="icon">🗂️</span>
-            <span class="title">Visor de Reportes</span>
-            <span class="desc">Visualiza y exporta</span>
+          <a class="module-card" href="{% url 'reportes:auditoria_view' %}">
+            <span class="icon">AU</span>
+            <span class="title">Auditor&iacute;as</span>
+            <span class="desc">Visualiza y exporta auditor&iacute;as</span>
           </a>
           <a class="module-card" href="{% url 'usuarios:list' %}">
             <span class="icon">👥</span>
             <span class="title">Usuarios</span>
-            <span class="desc">Gestión de cuentas</span>
+            <span class="desc">Gesti&oacute;n de cuentas</span>
           </a>
         {% endif %}
       {% endif %}
       <a class="module-card" href="{% url 'home' %}">
         <span class="icon">🏠</span>
         <span class="title">Volver al inicio</span>
-        <span class="desc">Pagina Principal</span>
+        <span class="desc">P&aacute;gina principal</span>
       </a>
     </div>
   </section>
 </main>
 
-<script>
-  </script>
-
 <style>
-  /* Layout básico para mostrar submódulos en el área principal */
-  /* Vista limpia sin sidebar */
   body { background: #f2f8f3; }
   main { display: block; padding: 16px 24px; }
   .content.full { max-width: 1200px; margin: 0 auto; }
@@ -111,4 +105,3 @@
 </style>
 </body>
 </html>
-

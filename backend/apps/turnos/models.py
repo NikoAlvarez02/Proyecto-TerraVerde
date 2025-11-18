@@ -36,6 +36,10 @@ class Turno(models.Model):
         ]
         constraints = [
             models.UniqueConstraint(
+                fields=['paciente', 'fecha_hora'],
+                name='uniq_turno_paciente_fecha'
+            ),
+            models.UniqueConstraint(
                 fields=['profesional', 'fecha_hora'],
                 name='uniq_turno_profesional_fecha'
             )
@@ -43,4 +47,3 @@ class Turno(models.Model):
 
     def __str__(self):
         return f'{self.paciente} con {self.profesional} - {self.fecha_hora:%d/%m/%Y %H:%M}'
-

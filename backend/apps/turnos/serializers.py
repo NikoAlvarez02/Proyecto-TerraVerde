@@ -77,6 +77,10 @@ class TurnoSerializer(serializers.ModelSerializer):
         if not profesional:
             errors['profesional'] = 'El profesional es requerido'
             raise serializers.ValidationError(errors)
+        paciente = data.get('paciente') or (self.instance.paciente if getattr(self, 'instance', None) else None)
+        if not paciente:
+            errors['paciente'] = 'El paciente es requerido'
+            raise serializers.ValidationError(errors)
 
         # Usar zona horaria actual para evitar desplazamientos
         tz = timezone.get_current_timezone()
@@ -122,6 +126,18 @@ class TurnoSerializer(serializers.ModelSerializer):
             mins = int(getattr(settings, 'TURNOS_INTERVALO_MIN', 30))
             raise serializers.ValidationError({'hora': f'Profesional con turno en el horario (ventana {mins} min)'})
 
+        # Coincidencia exacta: evitar duplicados de paciente/profesional en el mismo horario
+        slot_qs = Turno.objects.filter(fecha_hora=fecha_hora).exclude(estado='cancelado')
+        if getattr(self, 'instance', None):
+            slot_qs = slot_qs.exclude(pk=self.instance.pk)
+        conflict_errors = {}
+        if slot_qs.filter(paciente=paciente).exists():
+            conflict_errors['paciente'] = 'El paciente ya tiene un turno en ese horario'
+        if slot_qs.filter(profesional=profesional).exists():
+            conflict_errors['hora'] = 'El profesional ya tiene un turno en ese horario'
+        if conflict_errors:
+            raise serializers.ValidationError(conflict_errors)
+
         return data
     
     def create(self, validated_data):
@@ -132,8 +148,10 @@ class TurnoSerializer(serializers.ModelSerializer):
         validated_data['fecha_hora'] = timezone.make_aware(datetime.combine(fecha, hora), tz)
         try:
             return super().create(validated_data)
-        except IntegrityError:
-            # Choque exacto con la restricciÃ³n Ãºnica
+        except IntegrityError as exc:
+            msg = str(exc)
+            if 'uniq_turno_paciente_fecha' in msg:
+                raise serializers.ValidationError({'paciente': 'El paciente ya tiene un turno en ese horario'})
             raise serializers.ValidationError({'hora': 'Profesional con turno en el horario'})
     
     def update(self, instance, validated_data):

@@ -103,6 +103,8 @@ class AuditoriaLog(models.Model):
         ('delete', 'Eliminación'),
         ('export', 'Exportación'),
         ('report', 'Reporte'),
+        ('login', 'Login'),
+        ('logout', 'Logout'),
     )
     usuario = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
     accion = models.CharField(max_length=12, choices=ACCIONES)
@@ -110,17 +112,33 @@ class AuditoriaLog(models.Model):
     modelo = models.CharField(max_length=100, blank=True)
     objeto_id = models.CharField(max_length=64, blank=True)
     ruta = models.CharField(max_length=255, blank=True)
+    metodo = models.CharField(max_length=10, blank=True)
     ip = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.CharField(max_length=255, blank=True)
     detalle = models.TextField(blank=True)
+    exitoso = models.BooleanField(default=True)
     fecha = models.DateTimeField(default=timezone.now, db_index=True)
 
     class Meta:
         ordering = ['-fecha']
-        indexes = [models.Index(fields=['fecha']), models.Index(fields=['accion'])]
+        default_permissions = ('add', 'view')
+        indexes = [
+            models.Index(fields=['fecha']),
+            models.Index(fields=['accion']),
+            models.Index(fields=['usuario', 'fecha'])
+        ]
 
     def __str__(self):
         u = self.usuario.username if self.usuario else 'anon'
         return f"{self.fecha:%Y-%m-%d %H:%M} {u} {self.accion} {self.modelo}:{self.objeto_id}"
+
+    def save(self, *args, **kwargs):
+        if self.pk:
+            raise Exception("Las auditorías no pueden modificarse")
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise Exception("Las auditorías no pueden eliminarse")
 
 
 class LoginThrottle(models.Model):
@@ -162,4 +180,3 @@ class LoginThrottle(models.Model):
             return 0
         delta = (self.locked_until - timezone.now()).total_seconds()
         return int(delta) if delta > 0 else 0
-

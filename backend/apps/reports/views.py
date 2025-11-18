@@ -4,7 +4,7 @@ from rest_framework.authentication import SessionAuthentication, TokenAuthentica
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.core.files.base import ContentFile
 from django.utils.text import slugify
-from datetime import datetime, date
+from datetime import datetime, date, time
 from .models import ReportTemplate, GeneratedReport, ScheduledReport
 from .serializers import (
     ReportTemplateSerializer,
@@ -17,10 +17,14 @@ from .utils import report_data as rdata
 from apps.pacientes.models import Paciente
 from apps.medical_records.models import Observation
 from apps.profesionales.models import Profesional
-from django.db.models import Count
+from apps.usuarios.models import AuditoriaLog
+from django.db.models import Count, Q
 from django.conf import settings
+from django.http import HttpResponse
 import os
 import logging
+import base64
+from pathlib import Path
 from drf_spectacular.utils import extend_schema, OpenApiTypes
 
 
@@ -118,22 +122,18 @@ class PatientReportViewSet(viewsets.ViewSet):
     @extend_schema(
         request=ReportParametersSerializer,
         responses=GeneratedReportSerializer,
-        description="Genera PDF de Epicrisis / Resumen"
+        description="Genera PDF de Epicrisis del paciente"
     )
     @decorators.action(methods=["post"], detail=False, url_path="epicrisis")
     def epicrisis(self, request):
         try:
             params = ReportParametersSerializer(data=request.data)
             params.is_valid(raise_exception=True)
-            paciente_id = request.data.get("paciente")
-            paciente = Paciente.objects.get(pk=paciente_id)
+            paciente = Paciente.objects.get(pk=request.data.get("paciente"))
             if not _can_access_patient(request.user, paciente):
                 return response.Response({"detail": "No autorizado para este paciente"}, status=403)
-            resumen = {
-                "paciente": str(paciente),
-                "observaciones": Observation.objects.filter(paciente=paciente).count(),
-            }
-            pdf_bytes = pdf.generate_epicrisis_pdf(paciente, resumen, params.validated_data)
+            obs_qs = Observation.objects.filter(paciente=paciente).order_by("fecha_hora")
+            pdf_bytes = pdf.generate_epicrisis_pdf(paciente, list(obs_qs), params.validated_data)
             if not pdf_bytes:
                 return response.Response({"detail": "No se pudo generar el PDF"}, status=500)
             nombre = request.data.get("nombre_archivo") or f"Epicrisis_{slugify(str(paciente))}_{datetime.now():%Y-%m-%d}.pdf"
@@ -152,230 +152,332 @@ class PatientReportViewSet(viewsets.ViewSet):
     @extend_schema(
         request=ReportParametersSerializer,
         responses=GeneratedReportSerializer,
-        description="Genera Certificado Médico en PDF"
+        description="Genera PDF de Certificado médico"
     )
     @decorators.action(methods=["post"], detail=False, url_path="certificado")
     def certificado(self, request):
         try:
             params = ReportParametersSerializer(data=request.data)
-            params.is_valid(raise_exception=False)
-            paciente_id = request.data.get("paciente")
-            profesional_id = request.data.get("profesional")
-            datos = {
-                "diagnostico": request.data.get("diagnostico") or "",
-                "reposo_dias": request.data.get("reposo_dias") or "",
-                "observaciones": request.data.get("observaciones") or "",
-            }
-            paciente = Paciente.objects.get(pk=paciente_id)
+            params.is_valid(raise_exception=True)
+            paciente = Paciente.objects.get(pk=request.data.get("paciente"))
             if not _can_access_patient(request.user, paciente):
                 return response.Response({"detail": "No autorizado para este paciente"}, status=403)
-            profesional = None
-            if profesional_id:
-                profesional = Profesional.objects.filter(pk=profesional_id).first()
-            profesional_display = profesional or request.user.get_username()
-            pdf_bytes = pdf.generate_certificate_pdf(paciente, profesional_display, datos, request.data)
+            prof = None
+            if request.data.get("profesional"):
+                prof = Profesional.objects.get(pk=request.data.get("profesional"))
+            pdf_bytes = pdf.generate_certificate_pdf(paciente, prof, params.validated_data)
             if not pdf_bytes:
                 return response.Response({"detail": "No se pudo generar el PDF"}, status=500)
             nombre = request.data.get("nombre_archivo") or f"Certificado_{slugify(str(paciente))}_{datetime.now():%Y-%m-%d}.pdf"
             gr = GeneratedReport(
                 tipo="certificado",
-                parametros_json=_json_safe(request.data),
+                parametros_json=_json_safe(params.validated_data),
                 usuario_generador=request.user,
             )
             gr.archivo_pdf.save(nombre, ContentFile(pdf_bytes)); gr.save()
             return response.Response(GeneratedReportSerializer(gr, context={"request": request}).data, status=201)
         except Paciente.DoesNotExist:
             return response.Response({"detail": "Paciente no encontrado"}, status=404)
+        except Profesional.DoesNotExist:
+            return response.Response({"detail": "Profesional no encontrado"}, status=404)
         except Exception as e:
             return response.Response({"detail": f"Error generando PDF: {e}"}, status=500)
 
+
 class StatisticsReportViewSet(viewsets.ViewSet):
-    permission_classes = [permissions.IsAuthenticated, require_perfil_attr('puede_ver_estadisticas')]
+    permission_classes = [permissions.IsAuthenticated, require_perfil_attr("puede_generar_reportes")]
     authentication_classes = [CsrfExemptSessionAuthentication, TokenAuthentication, JWTAuthentication]
-    logger = logging.getLogger(__name__)
 
-    @extend_schema(request=ReportParametersSerializer, responses=GeneratedReportSerializer,
-                   description='Genera PDF: Gestión de Turnos y Asistencia')
-    @decorators.action(methods=['post'], detail=False, url_path='atenciones-por-centro')
+    @decorators.action(methods=["post"], detail=False, url_path="atenciones")
     def atenciones_por_centro(self, request):
-        params = ReportParametersSerializer(data=request.data)
-        params.is_valid(raise_exception=True)
-        resumen = rdata.get_attendance_statistics(params.validated_data)
-        # GrÃƒÂƒÃ‚Â¡fico: barras por centro
-        charts = []
         try:
-            labels = [it.get('centro__nombre') or 'N/A' for it in resumen.get('por_centro', [])]
-            values = [it.get('c', 0) for it in resumen.get('por_centro', [])]
-            from .utils import pdf_generator as _pg
-            ch = _pg.generate_chart_image('Gestión de Turnos y Asistencia', labels, values)
-            if ch: charts.append(ch)
-        except Exception:
-            pass
-        try:
-            pdf_bytes = pdf.generate_statistical_report_pdf('Gestión de Turnos y Asistencia', resumen, params.validated_data, charts)
+            params = ReportParametersSerializer(data=request.data)
+            params.is_valid(raise_exception=True)
+            generator = getattr(rdata, "generate_atenciones_por_centro", None) or getattr(rdata, "get_attendance_statistics", None)
+            if not generator:
+                return response.Response({"detail": "No se encuentra el generador de datos de atenciones (utils.report_data)."}, status=500)
+            data = generator(request.data)
+            pdf_bytes = pdf.generate_statistics_pdf("Atenciones por centro", data, request.data)
             if not pdf_bytes:
-                return response.Response({'detail': 'No se pudo generar el PDF (bytes vacÃƒÂƒÃ‚Â­os)'}, status=500)
-            try:
-                os.makedirs(settings.MEDIA_ROOT, exist_ok=True)
-                os.makedirs(os.path.join(settings.MEDIA_ROOT, 'reportes'), exist_ok=True)
-            except Exception:
-                pass
-            nombre = request.data.get('nombre_archivo') or f"Gestion_Turnos_Asistencia_{datetime.now():%Y-%m-%d}.pdf"
-            params_json = _json_safe(params.validated_data) or {}
-            if params_json is None:
-                params_json = {}
-            self.logger.info("[REPORTES] Guardando GeneratedReport atenciones params=%r (%s)", params_json, type(params_json))
-            gr = GeneratedReport(tipo='estadistico', parametros_json=params_json, usuario_generador=request.user)
-            # Guardar primero para asegurar PK y columnas NOT NULL
-            gr.save()
-            gr.archivo_pdf.save(nombre, ContentFile(pdf_bytes))
-            gr.save(update_fields=['archivo_pdf'])
-            return response.Response(GeneratedReportSerializer(gr, context={'request': request}).data, status=201)
+                return response.Response({"detail": "No se pudo generar el PDF"}, status=500)
+            nombre = f"Atenciones_{datetime.now():%Y-%m-%d}.pdf"
+            gr = GeneratedReport(
+                tipo="estadistico",
+                parametros_json=_json_safe(params.validated_data),
+                usuario_generador=request.user,
+            )
+            gr.archivo_pdf.save(nombre, ContentFile(pdf_bytes)); gr.save()
+            return response.Response(GeneratedReportSerializer(gr, context={"request": request}).data, status=201)
         except Exception as e:
-            return response.Response({'detail': f'Error generando PDF: {e}'}, status=500)
+            return response.Response({"detail": f"Error generando PDF: {e}"}, status=500)
 
-    @extend_schema(responses=OpenApiTypes.OBJECT, description='JSON: estadísticas de atenciones')
-    @decorators.action(methods=['get'], detail=False, url_path='atenciones/datos')
+    @decorators.action(methods=["get"], detail=False, url_path="atenciones/datos")
     def atenciones_datos(self, request):
-        """Devuelve JSON de estadísticas de atenciones (para exportar CSV/Excel)."""
-        try:
-            params = {
-                'desde': request.query_params.get('desde') or None,
-                'hasta': request.query_params.get('hasta') or None,
-            }
-            resumen = rdata.get_attendance_statistics(params)
-            return response.Response(resumen, status=200)
-        except Exception as e:
-            return response.Response({'detail': f'Error obteniendo datos: {e}'}, status=500)
+        generator = getattr(rdata, "generate_atenciones_por_centro", None) or getattr(rdata, "get_attendance_statistics", None)
+        if not generator:
+            return response.Response({"detail": "No se encuentra el generador de datos de atenciones (utils.report_data)."}, status=500)
+        data = generator(request.GET)
+        return response.Response(data)
 
-    @extend_schema(request=ReportParametersSerializer, responses=GeneratedReportSerializer,
-                   description='Genera PDF: Productividad por Profesional')
-    @decorators.action(methods=['post'], detail=False, url_path='productividad-profesional')
+    @decorators.action(methods=["post"], detail=False, url_path="productividad")
     def productividad_profesional(self, request):
-        params = ReportParametersSerializer(data=request.data)
-        params.is_valid(raise_exception=True)
-        resumen = rdata.get_professional_productivity(params.validated_data)
-        charts = []
         try:
-            labels = [f"{it.get('profesional__apellido','')}, {it.get('profesional__nombre','')}" for it in resumen.get('productividad', [])]
-            values = [it.get('c', 0) for it in resumen.get('productividad', [])]
-            from .utils import pdf_generator as _pg
-            ch = _pg.generate_chart_image('Desempeño por profesional', labels, values)
-            if ch: charts.append(ch)
-        except Exception:
-            pass
-        try:
-            pdf_bytes = pdf.generate_statistical_report_pdf('Desempeño por profesional', resumen, params.validated_data, charts)
+            params = ReportParametersSerializer(data=request.data)
+            params.is_valid(raise_exception=True)
+            generator = getattr(rdata, "generate_productividad_por_profesional", None) or getattr(rdata, "get_professional_productivity", None)
+            if not generator:
+                return response.Response({"detail": "No se encuentra el generador de productividad (utils.report_data)."}, status=500)
+            data = generator(request.data)
+            pdf_bytes = pdf.generate_statistics_pdf("Productividad por profesional", data, request.data)
             if not pdf_bytes:
-                return response.Response({'detail': 'No se pudo generar el PDF (bytes vacÃƒÂƒÃ‚Â­os)'}, status=500)
-            try:
-                os.makedirs(settings.MEDIA_ROOT, exist_ok=True)
-                os.makedirs(os.path.join(settings.MEDIA_ROOT, 'reportes'), exist_ok=True)
-            except Exception:
-                pass
-            nombre = request.data.get('nombre_archivo') or f"Desempeno_por_profesional_{datetime.now():%Y-%m-%d}.pdf"
-            params_json = _json_safe(params.validated_data) or {}
-            if params_json is None:
-                params_json = {}
-            self.logger.info("[REPORTES] Guardando GeneratedReport productividad params=%r (%s)", params_json, type(params_json))
-            gr = GeneratedReport(tipo='estadistico', parametros_json=params_json, usuario_generador=request.user)
-            gr.save()
-            gr.archivo_pdf.save(nombre, ContentFile(pdf_bytes))
-            gr.save(update_fields=['archivo_pdf'])
-            return response.Response(GeneratedReportSerializer(gr, context={'request': request}).data, status=201)
+                return response.Response({"detail": "No se pudo generar el PDF"}, status=500)
+            nombre = f"Productividad_{datetime.now():%Y-%m-%d}.pdf"
+            gr = GeneratedReport(
+                tipo="estadistico",
+                parametros_json=_json_safe(params.validated_data),
+                usuario_generador=request.user,
+            )
+            gr.archivo_pdf.save(nombre, ContentFile(pdf_bytes)); gr.save()
+            return response.Response(GeneratedReportSerializer(gr, context={"request": request}).data, status=201)
         except Exception as e:
-            return response.Response({'detail': f'Error generando PDF: {e}'}, status=500)
+            return response.Response({"detail": f"Error generando PDF: {e}"}, status=500)
 
-    @extend_schema(responses=OpenApiTypes.OBJECT, description='JSON: productividad por profesional')
-    @decorators.action(methods=['get'], detail=False, url_path='productividad/datos')
+    @decorators.action(methods=["get"], detail=False, url_path="productividad/datos")
     def productividad_datos(self, request):
-        """Devuelve JSON de productividad por profesional (solo productividad)."""
-        try:
-            params = {
-                'desde': request.query_params.get('desde') or None,
-                'hasta': request.query_params.get('hasta') or None,
-            }
-            resumen = rdata.get_professional_productivity(params)
-            return response.Response(resumen, status=200)
-        except Exception as e:
-            return response.Response({'detail': f'Error obteniendo datos: {e}'}, status=500)
+        generator = getattr(rdata, "generate_productividad_por_profesional", None) or getattr(rdata, "get_professional_productivity", None)
+        if not generator:
+            return response.Response({"detail": "No se encuentra el generador de productividad (utils.report_data)."}, status=500)
+        data = generator(request.GET)
+        return response.Response(data)
 
-    @extend_schema(request=ReportParametersSerializer, responses=GeneratedReportSerializer,
-                   description='Genera PDF: Distribución por Diagnósticos')
-    @decorators.action(methods=['post'], detail=False, url_path='diagnosticos')
+    @decorators.action(methods=["post"], detail=False, url_path="diagnosticos")
     def diagnosticos(self, request):
-        params = ReportParametersSerializer(data=request.data)
-        params.is_valid(raise_exception=True)
-        resumen = rdata.get_diagnostic_distribution(params.validated_data)
-        charts = []
         try:
-            labels = [it.get('diagnostico_codigo') or 'N/A' for it in resumen.get('por_cie10', [])]
-            values = [it.get('c', 0) for it in resumen.get('por_cie10', [])]
-            from .utils import pdf_generator as _pg
-            ch = _pg.generate_chart_image('Pacientes y Seguimiento Clínico', labels, values)
-            if ch: charts.append(ch)
-        except Exception:
-            pass
-        pdf_bytes = pdf.generate_statistical_report_pdf('Pacientes y Seguimiento Clínico', resumen, params.validated_data, charts)
-        nombre = request.data.get('nombre_archivo') or f"Pacientes_Seguimiento_Clinico_{datetime.now():%Y-%m-%d}.pdf"
-        params_json = _json_safe(params.validated_data) or {}
-        if params_json is None:
-            params_json = {}
-        logging.getLogger(__name__).info("[REPORTES] Guardando GeneratedReport diagnosticos params=%r (%s)", params_json, type(params_json))
-        gr = GeneratedReport(tipo='estadistico', parametros_json=params_json, usuario_generador=request.user)
-        gr.save()
-        gr.archivo_pdf.save(nombre, ContentFile(pdf_bytes))
-        gr.save(update_fields=['archivo_pdf'])
-        return response.Response(GeneratedReportSerializer(gr).data, status=201)
-
-    @extend_schema(responses=OpenApiTypes.OBJECT, description='JSON: distribución por diagnósticos')
-    @decorators.action(methods=['get'], detail=False, url_path='diagnosticos/datos')
-    def diagnosticos_datos(self, request):
-        """Devuelve JSON de distribución por diagnósticos (clínico/seguimiento)."""
-        try:
-            params = {
-                'desde': request.query_params.get('desde') or None,
-                'hasta': request.query_params.get('hasta') or None,
-            }
-            resumen = rdata.get_diagnostic_distribution(params)
-            return response.Response(resumen, status=200)
+            params = ReportParametersSerializer(data=request.data)
+            params.is_valid(raise_exception=True)
+            generator = getattr(rdata, "generate_diagnosticos", None) or getattr(rdata, "get_diagnostic_distribution", None) or getattr(rdata, "get_epidemiological_data", None)
+            if not generator:
+                return response.Response({"detail": "No se encuentra el generador de diagnósticos (utils.report_data)."}, status=500)
+            data = generator(request.data)
+            pdf_bytes = pdf.generate_statistics_pdf("Pacientes y seguimiento clínico", data, request.data)
+            nombre = f"Diagnosticos_{datetime.now():%Y-%m-%d}.pdf"
+            gr = GeneratedReport(
+                tipo="estadistico",
+                parametros_json=_json_safe(params.validated_data),
+                usuario_generador=request.user,
+            )
+            gr.archivo_pdf.save(nombre, ContentFile(pdf_bytes)); gr.save()
+            return response.Response(GeneratedReportSerializer(gr, context={"request": request}).data, status=201)
         except Exception as e:
-            return response.Response({'detail': f'Error obteniendo datos: {e}'}, status=500)
-    
+            return response.Response({"detail": f"Error generando PDF: {e}"}, status=500)
+
+    @decorators.action(methods=["get"], detail=False, url_path="diagnosticos/datos")
+    def diagnosticos_datos(self, request):
+        generator = getattr(rdata, "generate_diagnosticos", None) or getattr(rdata, "get_diagnostic_distribution", None) or getattr(rdata, "get_epidemiological_data", None)
+        if not generator:
+            return response.Response({"detail": "No se encuentra el generador de diagnósticos (utils.report_data)."}, status=500)
+        data = generator(request.GET)
+        return response.Response(data)
+
 
 class AdministrativeReportViewSet(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [CsrfExemptSessionAuthentication, TokenAuthentication, JWTAuthentication]
 
     @extend_schema(request=ReportParametersSerializer, responses=GeneratedReportSerializer,
-                   description='Genera PDF Administrativo')
-    @decorators.action(methods=['post'], detail=False, url_path='generar')
+        description="Genera reportes administrativos (placeholder)"
+    )
     def generar(self, request):
-        params = ReportParametersSerializer(data=request.data)
-        params.is_valid(raise_exception=True)
-        # Placeholder administrativo
-        pdf_bytes = pdf.generate_statistical_report_pdf('Reporte Administrativo', {'estado': 'OK'}, params.validated_data)
-        nombre = request.data.get('nombre_archivo') or f"Administrativo_{datetime.now():%Y-%m-%d}.pdf"
-        params_json = _json_safe(params.validated_data) or {}
-        if params_json is None:
-            params_json = {}
-        logging.getLogger(__name__).info("[REPORTES] Guardando GeneratedReport administrativo params=%r (%s)", params_json, type(params_json))
-        gr = GeneratedReport(tipo='administrativo', parametros_json=params_json, usuario_generador=request.user)
-        gr.save()
-        gr.archivo_pdf.save(nombre, ContentFile(pdf_bytes))
-        gr.save(update_fields=['archivo_pdf'])
-        return response.Response(GeneratedReportSerializer(gr).data, status=201)
+        try:
+            params = ReportParametersSerializer(data=request.data)
+            params.is_valid(raise_exception=True)
+            # Aqu� ir�a la l�gica real de reportes administrativos
+            params_json = _json_safe(params.validated_data)
+            gr = GeneratedReport(
+                tipo='administrativo',
+                parametros_json=params_json,
+                usuario_generador=request.user
+            )
+            # Generar PDF de ejemplo
+            pdf_bytes = pdf.generate_statistics_pdf("Reporte administrativo", {}, params.validated_data)
+            nombre = f"Administrativo_{datetime.now():%Y-%m-%d}.pdf"
+            gr.archivo_pdf.save(nombre, ContentFile(pdf_bytes))
+            gr.save()
+            return response.Response(GeneratedReportSerializer(gr, context={'request': request}).data, status=201)
+        except Exception as e:
+            return response.Response({"detail": str(e)}, status=500)
 
 
+# ============== Vista auditoría (filtros + export) =================
+class AuditLogView(viewsets.ViewSet):
+    permission_classes = [permissions.IsAuthenticated]
 
+    def _filter_qs(self, request):
+        qs = AuditoriaLog.objects.select_related('usuario').all()
+        accion = request.GET.get('accion')
+        usuario_id = request.GET.get('usuario')
+        fecha_gte = request.GET.get('fecha_desde') or request.GET.get('fecha_gte')
+        fecha_lte = request.GET.get('fecha_hasta') or request.GET.get('fecha_lte')
+        hora_gte = request.GET.get('hora_desde')
+        hora_lte = request.GET.get('hora_hasta')
+        q = (request.GET.get('q') or '').strip()
+        if accion:
+            qs = qs.filter(accion=accion)
+        if usuario_id:
+            qs = qs.filter(usuario_id=usuario_id)
+        if fecha_gte:
+            qs = qs.filter(fecha__date__gte=fecha_gte)
+        if fecha_lte:
+            qs = qs.filter(fecha__date__lte=fecha_lte)
+        if hora_gte:
+            try:
+                h, m = hora_gte.split(':')[:2]; qs = qs.filter(fecha__time__gte=time(int(h), int(m)))
+            except Exception:
+                pass
+        if hora_lte:
+            try:
+                h, m = hora_lte.split(':')[:2]; qs = qs.filter(fecha__time__lte=time(int(h), int(m)))
+            except Exception:
+                pass
+        if q:
+            qs = qs.filter(
+                Q(detalle__icontains=q) |
+                Q(ruta__icontains=q) |
+                Q(modelo__icontains=q) |
+                Q(objeto_id__icontains=q) |
+                Q(usuario__username__icontains=q)
+            )
+        return qs.order_by('-fecha')
 
+    def list(self, request):
+        qs = self._filter_qs(request)
+        export = (request.GET.get('export') or '').lower()
+        if export in ('csv','xlsx','excel'):
+            return self._export_csv(qs, export)
+        if export == 'pdf':
+            return self._export_pdf(qs, request)
+        limit = int(request.GET.get('limit') or 200)
+        data = [{
+            'fecha': a.fecha.isoformat(),
+            'usuario': a.usuario.username if a.usuario else 'anon',
+            'accion': a.accion,
+            'modelo': a.modelo,
+            'objeto_id': a.objeto_id,
+            'ruta': a.ruta,
+            'metodo': a.metodo,
+            'ip': a.ip,
+            'user_agent': a.user_agent,
+            'detalle': a.detalle,
+        } for a in qs[:max(1, min(limit, 1000))]]
+        return response.Response(data)
 
+    def _export_csv(self, qs, export):
+        import csv
+        resp = HttpResponse(content_type='text/csv')
+        ext = 'xlsx' if export in ('xlsx','excel') else 'csv'
+        resp['Content-Disposition'] = f'attachment; filename="auditorias.{ext}"'
+        writer = csv.writer(resp)
+        writer.writerow(['fecha','usuario','accion','modelo','objeto_id','ruta','metodo','ip','user_agent','detalle'])
+        for a in qs.iterator():
+            writer.writerow([
+                a.fecha.strftime('%Y-%m-%d %H:%M:%S'),
+                a.usuario.username if a.usuario else 'anon',
+                a.accion, a.modelo, a.objeto_id, a.ruta, a.metodo, a.ip, a.user_agent, a.detalle
+            ])
+        return resp
 
+    def _export_pdf(self, qs, request):
+        from weasyprint import HTML, CSS
 
+        def _logo_data_uri():
+            # 1) intentar con helper central
+            try:
+                from .utils import pdf_generator as pdfgen
+                loader = getattr(pdfgen, "_load_logo_base64", None)
+                if loader:
+                    b64 = loader()
+                    if b64:
+                        return "data:image/png;base64," + b64
+            except Exception:
+                pass
+            # 2) rutas conocidas (BASE_DIR apunta a backend)
+            candidates = [
+                Path(settings.BASE_DIR).parent / "frontend" / "ASSETS" / "terraverde.png",
+                Path(settings.BASE_DIR) / "frontend" / "ASSETS" / "terraverde.png",
+                Path(settings.BASE_DIR).parent / "frontend" / "ASSETS" / "logo.png",
+            ]
+            for p in candidates:
+                try:
+                    if p.exists():
+                        return "data:image/png;base64," + base64.b64encode(p.read_bytes()).decode()
+                except Exception:
+                    continue
+            return ""
 
+        logo_b64 = _logo_data_uri()
 
+        def safe(text):
+            return (text or "").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
+        rows = "".join([
+            f"""
+            <tr>
+                <td>{a.fecha.strftime('%Y-%m-%d %H:%M:%S')}</td>
+                <td>{safe(a.usuario.username if a.usuario else 'anon')}</td>
+                <td>{safe(a.accion)}</td>
+                <td>{safe(a.modelo)}</td>
+                <td>{safe(str(a.objeto_id))}</td>
+                <td>{safe(a.ruta)}</td>
+                <td>{safe(a.metodo)}</td>
+                <td>{safe(a.ip)}</td>
+                <td>{safe(a.detalle)}</td>
+            </tr>
+            """ for a in qs[:1000]
+        ])
 
+        html = f"""
+        <html>
+        <head>
+            <style>
+                body {{ font-family: 'Helvetica', Arial, sans-serif; font-size: 12px; color: #1b1b1b; }}
+                .header {{ display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }}
+                .header img {{ height: 42px; }}
+                .title {{ font-size: 18px; font-weight: 700; color: #215728; }}
+                .subtitle {{ font-size: 12px; color: #4a4a4a; }}
+                table {{ width: 100%; border-collapse: collapse; }}
+                th, td {{ padding: 6px 8px; border: 1px solid #d8e2d8; text-align: left; }}
+                th {{ background: #eaf4ea; color: #214722; font-weight: 700; }}
+                tr:nth-child(even) {{ background: #f8fbf8; }}
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                {f'<img src="{logo_b64}" alt="TerraVerde">' if logo_b64 else ''}
+                <div>
+                    <div class="title">Auditorías del sistema</div>
+                    <div class="subtitle">Exportado {datetime.now().strftime('%Y-%m-%d %H:%M')}</div>
+                </div>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Usuario</th>
+                  <th>Acción</th>
+                  <th>Modelo</th>
+                  <th>Objeto</th>
+                  <th>Ruta</th>
+                  <th>Método</th>
+                  <th>IP</th>
+                  <th>Detalle</th>
+                </tr>
+              </thead>
+              <tbody>{rows}</tbody>
+            </table>
+        </body>
+        </html>"""
 
-
-
-
+        pdf_bytes = HTML(string=html, base_url=request.build_absolute_uri('/')).write_pdf()
+        resp = HttpResponse(pdf_bytes, content_type='application/pdf')
+        resp['Content-Disposition'] = 'attachment; filename="auditorias.pdf"'
+        return resp
