@@ -165,7 +165,12 @@ class PatientReportViewSet(viewsets.ViewSet):
             prof = None
             if request.data.get("profesional"):
                 prof = Profesional.objects.get(pk=request.data.get("profesional"))
-            pdf_bytes = pdf.generate_certificate_pdf(paciente, prof, params.validated_data)
+            cert_data = {
+                "diagnostico": params.validated_data.get("diagnostico", "") or request.data.get("diagnostico", ""),
+                "reposo_dias": params.validated_data.get("reposo_dias", "") or request.data.get("reposo_dias", ""),
+                "observaciones": params.validated_data.get("observaciones", "") or request.data.get("observaciones", ""),
+            }
+            pdf_bytes = pdf.generate_certificate_pdf(paciente, prof, cert_data, params.validated_data)
             if not pdf_bytes:
                 return response.Response({"detail": "No se pudo generar el PDF"}, status=500)
             nombre = request.data.get("nombre_archivo") or f"Certificado_{slugify(str(paciente))}_{datetime.now():%Y-%m-%d}.pdf"

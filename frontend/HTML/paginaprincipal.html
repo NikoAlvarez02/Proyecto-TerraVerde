@@ -4,8 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" href="{% static 'ASSETS/terraverde.ico' %}">
-  <title>TerraVerde - Centro Psicopedagógico</title>
+  <link rel="icon" href="{% static 'ASSETS/favicon.ico' %}">
+  <title>ESPACIO TERRAVEDE</title>
   <link rel="stylesheet" href="{% static 'CSS/home.css' %}">
   <meta http-equiv="Content-Language" content="es" />
 </head>
@@ -15,9 +15,9 @@
       <div class="header-left">
         <div class="logo">
           <div class="logo-icon">
-            <img src="{% static 'ASSETS/logo_trifusion.png' %}" alt="TerraVerde">
+            <img src="{% static 'ASSETS/favicon.ico' %}" alt="ESPACIO TERRAVEDE">
           </div>
-          <h1>TerraVerde</h1>
+          <h1>ESPACIO TERRAVEDE</h1>
         </div>
         <div class="quick-links">
           {% if request.user.is_authenticated and request.user.perfil and request.user.perfil.puede_ver_calendario %}
@@ -198,4 +198,3 @@
   </script>
 </body>
 </html>
-

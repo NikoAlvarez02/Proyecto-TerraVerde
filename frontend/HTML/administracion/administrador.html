@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Administraci&oacute;n | TerraVerde</title>
-  <link rel="icon" href="{% static 'ASSETS/terraverde.ico' %}">
+  <link rel="icon" href="{% static 'ASSETS/favicon.ico' %}">
   <link rel="stylesheet" href="{% static 'CSS/stylespaciente.css' %}">
   <style>
     :root{
@@ -44,7 +44,7 @@
         {% if request.user.is_staff or request.user.is_superuser %}
           <a class="module-card" href="{% url 'admin:index' %}" target="_blank" rel="noopener">
             <span class="icon">🛠️</span>
-            <span class="title">Panel de administraci&oacute;n de Django</span>
+            <span class="title">Panel de administraci&oacute;n</span>
             <span class="desc">Gesti&oacute;n avanzada del sitio</span>
           </a>
           <a class="module-card" href="{% url 'centros:list' %}">

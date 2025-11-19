@@ -209,7 +209,7 @@
         <button class="filter-tab" data-filter="frecuentes">⭐ Frecuentes</button>
       </div>
       <div class="patient-list" id="patientList"></div>
-      <button class="btn-new-patient" type="button" onclick="crearNuevoPaciente()">➕ Crear Nuevo Paciente</button>
+      <button class="btn-new-patient" type="button" data-new-url="{% url 'pacientes:list' %}?nuevo=1" onclick="crearNuevoPaciente()">➕ Crear Nuevo Paciente</button>
     </div>
   </div>
 </div>

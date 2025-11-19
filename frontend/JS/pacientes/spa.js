@@ -534,6 +534,16 @@ document.addEventListener('DOMContentLoaded', () => {
   if(inputFechaNac){
     inputFechaNac.addEventListener('input', ()=> clearFieldError(inputFechaNac));
   }
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('nuevo') === '1') {
+    openModalCreate();
+    params.delete('nuevo');
+    const qs = params.toString();
+    if (window.history?.replaceState) {
+      const newUrl = window.location.pathname + (qs ? `?${qs}` : '') + window.location.hash;
+      window.history.replaceState({}, document.title, newUrl);
+    }
+  }
   // Mantener los modales abiertos: solo botones cierran
 });
 

@@ -51,6 +51,12 @@ class ReportParametersSerializer(serializers.Serializer):
     incluir_tablas = serializers.BooleanField(default=True)
     nombre_archivo = serializers.CharField(required=False)
 
+    # Campos especificos para certificados medicos
+    diagnostico = serializers.CharField(required=False, allow_blank=True)
+    reposo_dias = serializers.CharField(required=False, allow_blank=True)
+    observaciones = serializers.CharField(required=False, allow_blank=True)
+
+
     # Campos opcionales para informes médicos/epicrisis
     numero_informe = serializers.CharField(required=False, allow_blank=True)
     motivo = serializers.CharField(required=False, allow_blank=True)

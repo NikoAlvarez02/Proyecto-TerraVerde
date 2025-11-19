@@ -308,8 +308,9 @@ function renderPatientList() {
   });
 }
 function crearNuevoPaciente(){
-  showFlash('Redirige a creación de paciente desde aquí', 'info');
-  closePatientSearch();
+  const btn = document.querySelector('.btn-new-patient');
+  const target = btn?.dataset?.newUrl || '/pacientes/';
+  window.location.href = target;
 }
 
 // Asegurar opciones de estado en el modal (defensa ante HTML cacheado)
