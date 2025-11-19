@@ -7,12 +7,14 @@
 
 {% block content %}
 <style>
+  body{ overflow-x:hidden; }
   .audit-shell{
     background:linear-gradient(140deg,#f5fff5,#eef7ee);
     padding:22px;
     border-radius:18px;
     box-shadow:0 12px 30px rgba(0,0,0,0.08);
-    width:min(100%, 1200px);
+    width:100%;
+    max-width:1150px;
     margin:0 auto;
     box-sizing:border-box;
   }
@@ -49,10 +51,11 @@
     gap:8px;
     flex-wrap:wrap;
     align-items:center;
+    justify-content:center;
   }
   .filter-actions .btn{
-    flex:1 1 140px;
-    min-width:120px;
+    flex:0 0 auto;
+    min-width:140px;
   }
   .btn-primary{background:#3d9a3d;color:#fff;}
   .btn-primary:hover{background:#2f7b2f;}
@@ -62,9 +65,11 @@
     border:1px solid #e6ece6;
     box-shadow:0 6px 16px rgba(0,0,0,0.05);
     width:100%;
+    margin:0 auto;
   }
   #tabla-audit{
-    min-width:900px;
+    min-width:840px;
+    width:100%;
   }
   @media (max-width: 768px){
     .filter-grid{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));}
