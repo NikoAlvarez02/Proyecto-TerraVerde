@@ -7,16 +7,72 @@
 
 {% block content %}
 <style>
-  body { overflow-x: hidden; }
-  .audit-shell{background:linear-gradient(140deg,#f5fff5,#eef7ee);padding:22px;border-radius:18px;box-shadow:0 12px 30px rgba(0,0,0,0.08);width:100%;max-width:1200px;margin:0 auto;box-sizing:border-box;}
-  .audit-card{background:#fff;border-radius:14px;padding:20px;box-shadow:0 8px 20px rgba(0,0,0,0.06);border:1px solid #e6ece6;box-sizing:border-box;}
-  .filter-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;align-items:end;margin-bottom:14px;}
+  .audit-shell{
+    background:linear-gradient(140deg,#f5fff5,#eef7ee);
+    padding:22px;
+    border-radius:18px;
+    box-shadow:0 12px 30px rgba(0,0,0,0.08);
+    width:min(100%, 1200px);
+    margin:0 auto;
+    box-sizing:border-box;
+  }
+  .audit-card{
+    background:#fff;
+    border-radius:14px;
+    padding:20px;
+    box-shadow:0 8px 20px rgba(0,0,0,0.06);
+    border:1px solid #e6ece6;
+    box-sizing:border-box;
+  }
+  .filter-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:12px;
+    align-items:end;
+    margin-bottom:14px;
+  }
   .filter-grid label{font-weight:600;color:#215728;margin-bottom:4px;display:block;}
-  .filter-grid input,.filter-grid select{padding:8px 10px;border:1px solid #cfe3cf;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,0.05);width:100%;}
-  .filter-grid input:focus,.filter-grid select:focus{outline:none;border-color:#3d9a3d;box-shadow:0 0 0 3px rgba(61,154,61,0.15);}
+  .filter-grid input,.filter-grid select{
+    padding:8px 10px;
+    border:1px solid #cfe3cf;
+    border-radius:10px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.05);
+    width:100%;
+  }
+  .filter-grid input:focus,.filter-grid select:focus{
+    outline:none;
+    border-color:#3d9a3d;
+    box-shadow:0 0 0 3px rgba(61,154,61,0.15);
+  }
+  .filter-actions{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  .filter-actions .btn{
+    flex:1 1 140px;
+    min-width:120px;
+  }
   .btn-primary{background:#3d9a3d;color:#fff;}
   .btn-primary:hover{background:#2f7b2f;}
-  .table-wrap{overflow:auto;border-radius:12px;border:1px solid #e6ece6;box-shadow:0 6px 16px rgba(0,0,0,0.05);}
+  .table-wrap{
+    overflow-x:auto;
+    border-radius:12px;
+    border:1px solid #e6ece6;
+    box-shadow:0 6px 16px rgba(0,0,0,0.05);
+    width:100%;
+  }
+  #tabla-audit{
+    min-width:900px;
+  }
+  @media (max-width: 768px){
+    .filter-grid{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));}
+    #tabla-audit{min-width:720px;}
+  }
+  @media (max-width: 520px){
+    .filter-actions .btn{flex:1 1 100%; min-width:0;}
+  }
 </style>
 <div class="audit-shell">
   <div class="audit-card">
@@ -62,7 +118,7 @@
         <label>Busqueda</label>
         <input type="search" id="f_q" placeholder="ruta, detalle, modelo...">
       </div>
-      <div style="display:flex;gap:8px;align-items:center;">
+      <div class="filter-actions">
         <button class="btn btn-primary" id="btnBuscar">Buscar</button>
         <button class="btn btn-guardar" id="btnPdf">Exportar PDF</button>
         <button class="btn btn-guardar" id="btnExcel">Exportar Excel</button>
