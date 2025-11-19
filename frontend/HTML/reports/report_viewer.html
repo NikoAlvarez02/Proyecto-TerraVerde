@@ -32,7 +32,11 @@
         <label>Hasta: <input id="hasta" type="date"></label>
       </span>
       <span class="cert" style="display:none; gap:6px;">
-        <label>Diagnóstico: <input id="diag" type="text"></label>
+        <label style="display:flex; flex-direction:column; flex:1 1 280px; min-width:260px;">
+          Diagnóstico:
+          <textarea id="diag" rows="3" placeholder="Ej: F41.1 - Trastorno de ansiedad generalizada con indicación de reposo y pautas de seguimiento." style="width:100%; resize:vertical;"></textarea>
+          <small id="diagCounter" style="color:#666; margin-top:4px;">0/500 palabras</small>
+        </label>
         <label>Días de reposo: <input id="reposo" type="number" min="0" style="width:80px;"></label>
         <label>Profesional (opcional):
           <select id="prof_sel" style="min-width:220px"></select>
@@ -71,6 +75,41 @@
     const statsSection = document.getElementById('statsSection');
     const docSection = document.getElementById('docSection');
     const resultDiv = document.getElementById('resultado');
+    const diagInput = document.getElementById('diag');
+    const diagCounter = document.getElementById('diagCounter');
+    const MAX_DIAG_WORDS = 500;
+
+    function getWords(text){
+      const trimmed = text.trim();
+      return trimmed ? trimmed.split(/\s+/) : [];
+    }
+
+    function updateDiagCounter(){
+      if(!diagInput || !diagCounter) return;
+      const words = getWords(diagInput.value);
+      let count = words.length;
+      let clipped = false;
+      if(count > MAX_DIAG_WORDS){
+        diagInput.value = words.slice(0, MAX_DIAG_WORDS).join(' ');
+        count = MAX_DIAG_WORDS;
+        clipped = true;
+      }
+      if(count > 450){
+        diagCounter.style.color = '#d32f2f';
+      }else if(count > 400){
+        diagCounter.style.color = '#f57c00';
+      }else{
+        diagCounter.style.color = '#666';
+      }
+      diagCounter.textContent = clipped
+        ? `${MAX_DIAG_WORDS}/${MAX_DIAG_WORDS} palabras (máximo alcanzado)`
+        : `${count}/${MAX_DIAG_WORDS} palabras`;
+    }
+
+    if(diagInput){
+      diagInput.addEventListener('input', updateDiagCounter);
+      updateDiagCounter();
+    }
 
     tipoSel.addEventListener('change', ()=>{
       const t = tipoSel.value;

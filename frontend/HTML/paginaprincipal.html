@@ -4,8 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" href="{% static 'ASSETS/favicon.ico' %}">
-  <title>ESPACIO TERRAVEDE</title>
+  <link rel="icon" type="image/x-icon" href="{% static 'ASSETS/favicon.ico' %}?v=2">
+  <title>ESPACIO TERRAVERDE</title>
   <link rel="stylesheet" href="{% static 'CSS/home.css' %}">
   <meta http-equiv="Content-Language" content="es" />
 </head>
@@ -15,9 +15,9 @@
       <div class="header-left">
         <div class="logo">
           <div class="logo-icon">
-            <img src="{% static 'ASSETS/favicon.ico' %}" alt="ESPACIO TERRAVEDE">
+            <img src="{% static 'ASSETS/favicon.ico' %}" alt="ESPACIO TERRAVERDE">
           </div>
-          <h1>ESPACIO TERRAVEDE</h1>
+          <h1>ESPACIO TERRAVERDE</h1>
         </div>
         <div class="quick-links">
           {% if request.user.is_authenticated and request.user.perfil and request.user.perfil.puede_ver_calendario %}
