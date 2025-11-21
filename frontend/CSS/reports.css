@@ -6,6 +6,51 @@
   --rp-primary-2: #43a047;
 }
 
+/* Contenedor general de filtros */
+.audit-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  align-items: flex-end;
+  margin-bottom: 18px;
+}
+
+/* Cada bloque label + input/select */
+.audit-filter {
+  flex: 1 1 190px;
+  min-width: 190px;
+}
+
+/* El campo de búsqueda que suele ser más largo */
+.audit-filter--full {
+  flex: 2 1 280px;
+}
+
+/* Estilo de los labels para que no queden pegados al input */
+.audit-filter label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+/* Contenedor de botones (Buscar, Exportar, etc.) */
+.audit-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.audit-actions .btn {
+  min-width: 140px;
+}
+
+@media (max-width: 1200px) {
+  .audit-filter {
+    flex: 1 1 220px;
+  }
+}
+
 .rp-page{ display:grid; gap:16px; }
 .card{ background:#fff; border:1px solid var(--rp-border); border-radius:14px; padding:16px; box-shadow:0 10px 26px rgba(0,0,0,.06); }
 .rp-actions{ display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-start; }
